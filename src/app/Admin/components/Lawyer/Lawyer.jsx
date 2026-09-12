@@ -1,16 +1,18 @@
-import React from 'react'
-import Header from '../Utils/Lawyers/Header'
-import LawyersCharts from '../Utils/Lawyers/LawyerChart'
-import LawyersTable from '../Utils/Lawyers/Table'
-import StatsCards from '../Utils/Lawyers/Cards'
+import React from "react";
+import Header from "../Utils/Lawyers/Header";
+import StatsCards from "../Utils/Lawyers/Cards";
+import LawyerOverview from "../Utils/Lawyers/LawyerOverview.jsx";
+import LawyersList from "../Utils/Lawyers/Table";
 
 const Lawyer = () => {
-  return <>
-  <Header/>
-  <StatsCards/>
-  <LawyersCharts/>
-  <LawyersTable/>
-  </>
-}
+  return (
+    <>
+      <Header />
+      <StatsCards />
+      <LawyerOverview />
+      <LawyersList />
+    </>
+  );
+};
 
-export default Lawyer
+export default Lawyer;

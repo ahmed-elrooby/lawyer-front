@@ -1,10 +1,10 @@
 import React from "react";
-import Home from "./components/Home/Home";
+import Offices from "../components/Offices/Offices.jsx";
 
 const page = () => {
   return (
     <>
-      <Home />
+      <Offices />
     </>
   );
 };

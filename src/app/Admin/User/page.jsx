@@ -1,10 +1,10 @@
 import React from "react";
-import Home from "./components/Home/Home";
+import Users from "../components/Users/Users.jsx";
 
 const page = () => {
   return (
     <>
-      <Home />
+      <Users />
     </>
   );
 };

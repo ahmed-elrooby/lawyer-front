@@ -32,7 +32,7 @@ const Activities = () => {
         سجل النشاطات
       </h2>
 
-      <div className="relative pr-2 space-y-4 overflow-y-auto max-h-64">
+      <div className="relative pr-2 space-y-4 overflow-y-auto custom-scrollbar max-h-64">
         {/* Vertical line */}
         {activitiesData.length > 0 && (
           <div className="absolute right-[11px] top-2 bottom-2 w-0.5 bg-blue-100" />

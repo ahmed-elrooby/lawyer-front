@@ -1,0 +1,48 @@
+"use client";
+
+import React, { useContext } from "react";
+import { FaGavel, FaPlus } from "react-icons/fa";
+import { AdminContext } from "../../../../../Providers/AdminContext/Admin.js";
+import AddType from "./AddType.jsx";
+
+const Header = () => {
+  const { openAddCaseType, setOpenAddCaseType } = useContext(AdminContext);
+  return (
+    <>
+      {openAddCaseType && <AddType />}
+
+      <div className="mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Title */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-12 h-12 text-blue-600 border border-blue-100 shadow-sm rounded-2xl bg-blue-50">
+              <FaGavel className="text-xl" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-800">
+                أنواع القضايا
+              </h1>
+
+              <p className="mt-1 text-sm text-slate-500">
+                إدارة وتصنيف أنواع القضايا المتاحة للمكاتب والمحامين
+              </p>
+            </div>
+          </div>
+
+          {/* Add Button */}
+          <button
+            type="button"
+            onClick={() => setOpenAddCaseType(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 bg-blue-600 shadow-lg rounded-xl shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-0.5"
+          >
+            <FaPlus className="text-xs" />
+            <span>إضافة نوع قضية</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Header;

@@ -14,6 +14,7 @@ import {
   FaSpinner,
   FaTrash,
 } from "react-icons/fa";
+
 import { AdminContext } from "../../../../../Providers/AdminContext/Admin.js";
 
 const UpdateUser = ({ user }) => {
@@ -21,12 +22,14 @@ const UpdateUser = ({ user }) => {
     useContext(AdminContext);
 
   const fileInputRef = useRef(null);
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
   // الصورة الحالية من السيرفر
   const currentImage = user?.profileImage?.url || null;
 
+  // تنظيف الصورة عند إغلاق المودال
   useEffect(() => {
     if (!openUpdateUser) {
       setSelectedImage(null);
@@ -34,6 +37,7 @@ const UpdateUser = ({ user }) => {
     }
   }, [openUpdateUser]);
 
+  // تنظيف Object URL
   useEffect(() => {
     return () => {
       if (preview) {
@@ -75,7 +79,7 @@ const UpdateUser = ({ user }) => {
 
     if (!file) return;
 
-    // التحقق من نوع الملف
+    // نوع الملف
     if (!file.type.startsWith("image/")) {
       return;
     }
@@ -109,7 +113,7 @@ const UpdateUser = ({ user }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/60 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           setOpenUpdateUser(false);
@@ -117,28 +121,32 @@ const UpdateUser = ({ user }) => {
       }}
     >
       <div
-        className="relative w-full max-w-2xl overflow-hidden bg-white shadow-2xl rounded-3xl"
         dir="rtl"
+        className="flex w-full max-w-2xl max-h-[92vh] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
       >
-        {/* Header */}
-        <div className="relative px-6 py-5 text-white border-b border-slate-100 bg-gradient-to-l from-blue-600 to-indigo-600">
+        {/* =========================
+            Header
+        ========================= */}
+        <div className="relative px-4 py-4 text-white border-b shrink-0 border-slate-100 bg-gradient-to-l from-blue-600 to-indigo-600 sm:px-6 sm:py-5">
           <button
             type="button"
             onClick={() => setOpenUpdateUser(false)}
-            className="absolute flex items-center justify-center transition left-5 top-5 h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20"
+            className="absolute flex items-center justify-center transition left-4 top-4 h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 sm:left-5 sm:top-5"
           >
-            <FaTimes size={15} />
+            <FaTimes size={14} />
           </button>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/15">
-              <FaUser size={20} />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15 sm:w-12 sm:h-12 sm:rounded-2xl">
+              <FaUser size={18} />
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold">تعديل بيانات المستخدم</h2>
+            <div className="pl-10 sm:pl-12">
+              <h2 className="text-lg font-bold sm:text-xl">
+                تعديل بيانات المستخدم
+              </h2>
 
-              <p className="mt-1 text-sm text-blue-100">
+              <p className="mt-1 text-xs text-blue-100 sm:text-sm">
                 تحديث بيانات الحساب والصورة الشخصية
               </p>
             </div>
@@ -160,17 +168,22 @@ const UpdateUser = ({ user }) => {
           }}
         >
           {({ isSubmitting }) => (
-            <Form>
-              <div className="max-h-[70vh] custom-scrollbar overflow-y-auto p-6">
-                {/* Profile Image */}
-                <div className="mb-7">
+            <Form className="flex flex-col min-h-0">
+              {/* =========================
+                  Scrollable Content
+              ========================= */}
+              <div className="flex-1 min-h-0 p-4 overflow-y-auto custom-scrollbar sm:p-6">
+                {/* =========================
+                    Profile Image
+                ========================= */}
+                <div className="mb-5 sm:mb-7">
                   <label className="block mb-3 text-sm font-bold text-slate-700">
                     الصورة الشخصية
                   </label>
 
-                  <div className="flex flex-col items-center justify-center p-6 border rounded-2xl border-slate-200 bg-slate-50">
+                  <div className="flex flex-col items-center justify-center p-4 border rounded-2xl border-slate-200 bg-slate-50 sm:p-6">
                     <div className="relative">
-                      <div className="flex items-center justify-center overflow-hidden border-4 border-white rounded-full shadow-lg h-28 w-28 bg-gradient-to-br from-blue-100 to-indigo-100">
+                      <div className="flex items-center justify-center w-24 h-24 overflow-hidden border-4 border-white rounded-full shadow-lg sm:h-28 sm:w-28 bg-gradient-to-br from-blue-100 to-indigo-100">
                         {preview || currentImage ? (
                           <img
                             src={preview || currentImage}
@@ -178,36 +191,39 @@ const UpdateUser = ({ user }) => {
                             className="object-cover w-full h-full"
                           />
                         ) : (
-                          <FaUser size={38} className="text-blue-500" />
+                          <FaUser
+                            size={34}
+                            className="text-blue-500 sm:text-[38px]"
+                          />
                         )}
                       </div>
 
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute bottom-0 left-0 flex items-center justify-center text-white transition bg-blue-600 border-4 border-white rounded-full shadow-md h-9 w-9 hover:bg-blue-700"
+                        className="absolute bottom-0 left-0 flex items-center justify-center w-8 h-8 text-white transition bg-blue-600 border-4 border-white rounded-full shadow-md hover:bg-blue-700 sm:h-9 sm:w-9"
                       >
-                        <FaCamera size={13} />
+                        <FaCamera size={12} />
                       </button>
                     </div>
 
-                    <div className="mt-4 text-center">
-                      <p className="font-semibold text-slate-800">
+                    <div className="mt-3 text-center sm:mt-4">
+                      <p className="text-sm font-semibold text-slate-800">
                         {user?.name}
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-[11px] text-slate-500 sm:text-xs">
                         JPG, JPEG أو PNG — الحد الأقصى 5MB
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-4">
+                    <div className="flex flex-wrap items-center justify-center gap-2 mt-3 sm:mt-4">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 transition rounded-xl bg-blue-50 hover:bg-blue-100"
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 transition rounded-xl bg-blue-50 hover:bg-blue-100 sm:px-4 sm:text-sm"
                       >
-                        <FaImage size={14} />
+                        <FaImage size={13} />
                         تغيير الصورة
                       </button>
 
@@ -215,9 +231,9 @@ const UpdateUser = ({ user }) => {
                         <button
                           type="button"
                           onClick={removeSelectedImage}
-                          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 transition rounded-xl bg-red-50 hover:bg-red-100"
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 transition rounded-xl bg-red-50 hover:bg-red-100 sm:px-4 sm:text-sm"
                         >
-                          <FaTrash size={13} />
+                          <FaTrash size={12} />
                           إلغاء
                         </button>
                       )}
@@ -233,8 +249,10 @@ const UpdateUser = ({ user }) => {
                   </div>
                 </div>
 
-                {/* Inputs */}
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {/* =========================
+                    Inputs
+                ========================= */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 sm:gap-5">
                   {/* Name */}
                   <div>
                     <label className="block mb-2 text-sm font-bold text-slate-700">
@@ -310,20 +328,22 @@ const UpdateUser = ({ user }) => {
                   </div>
                 </div>
 
-                {/* User info */}
-                <div className="p-4 mt-6 border border-blue-100 rounded-2xl bg-blue-50/60">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
+                {/* =========================
+                    User Info
+                ========================= */}
+                <div className="p-3 mt-5 border border-blue-100 rounded-2xl bg-blue-50/60 sm:p-4 sm:mt-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <div className="min-w-0">
                       <p className="text-xs font-medium text-slate-500">
                         البريد الحالي
                       </p>
 
-                      <p className="mt-1 text-sm font-semibold text-slate-800">
+                      <p className="mt-1 text-sm font-semibold truncate text-slate-800">
                         {user?.email || "—"}
                       </p>
                     </div>
 
-                    <div className="w-px h-8 bg-blue-100" />
+                    <div className="hidden w-px h-8 bg-blue-100 sm:block" />
 
                     <div>
                       <p className="text-xs font-medium text-slate-500">
@@ -342,20 +362,23 @@ const UpdateUser = ({ user }) => {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="flex flex-col-reverse gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 sm:flex-row sm:justify-end">
+              {/* =========================
+                  Footer
+              ========================= */}
+              <div className="flex flex-col-reverse gap-2 px-4 py-3 border-t shrink-0 border-slate-100 bg-slate-50 sm:flex-row sm:justify-end sm:gap-3 sm:px-6 sm:py-4">
                 <button
                   type="button"
                   onClick={() => setOpenUpdateUser(false)}
-                  disabled={isSubmitting}
-                  className="px-6 py-3 text-sm font-bold transition bg-white border rounded-xl border-slate-200 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting || loadding}
+                  className="w-full px-6 py-2.5 text-sm font-bold transition bg-white border rounded-xl sm:w-auto sm:py-3 border-slate-200 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   إلغاء
                 </button>
 
                 <button
                   type="submit"
-                  className="flex items-center justify-center gap-2 py-3 text-sm font-bold text-white transition shadow-lg rounded-xl bg-gradient-to-l from-blue-600 to-indigo-600 px-7 shadow-blue-600/20 hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSubmitting || loadding}
+                  className="flex items-center justify-center w-full gap-2 px-7 py-2.5 text-sm font-bold text-white transition shadow-lg rounded-xl sm:w-auto sm:py-3 bg-gradient-to-l from-blue-600 to-indigo-600 shadow-blue-600/20 hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loadding ? (
                     <>

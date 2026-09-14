@@ -205,10 +205,9 @@ const ResetPassword = () => {
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || loadding}
                   className="flex items-center justify-center w-full gap-2 py-3.5 text-sm font-bold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting || loadding ? (
+                  { loadding ? (
                     <>
                       <span className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin" />
                       جاري تحديث كلمة المرور...

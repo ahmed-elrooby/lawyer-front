@@ -1,18 +1,13 @@
 "use client";
 
 import React, { useContext } from "react";
-import {
-  Briefcase,
-  Users,
-  Calendar,
-  Scale,
-} from "lucide-react";
+import { Briefcase, Users, Calendar, Scale } from "lucide-react";
 
 import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
 
 const Cards = () => {
   const { dashboardStatisics } = useContext(LawyerContext);
-
+  console.log(dashboardStatisics);
   const cases = dashboardStatisics?.cases;
   const clients = dashboardStatisics?.clients;
   const sessions = dashboardStatisics?.sessions;
@@ -75,24 +70,16 @@ const Cards = () => {
                 <Icon className={`w-6 h-6 ${card.iconColor}`} />
               </div>
 
-              <span
-                className={`${card.changeColor} text-sm font-medium`}
-              >
+              <span className={`${card.changeColor} text-sm font-medium`}>
                 {card.change}
               </span>
             </div>
 
-            <h3 className="mt-3 text-2xl font-bold text-white">
-              {card.value}
-            </h3>
+            <h3 className="mt-3 text-2xl font-bold text-white">{card.value}</h3>
 
-            <p className="text-sm text-white">
-              {card.title}
-            </p>
+            <p className="text-sm text-white">{card.title}</p>
 
-            <p className="mt-1 text-xs text-gray-400">
-              {card.description}
-            </p>
+            <p className="mt-1 text-xs text-gray-400">{card.description}</p>
           </div>
         );
       })}

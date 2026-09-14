@@ -298,7 +298,7 @@ const LawyerProvider = ({ children }) => {
         },
       });
       console.log(data);
-      return data?.client;
+      return data;
     } catch (error) {
       console.log(error);
       throw error;
@@ -445,7 +445,7 @@ const LawyerProvider = ({ children }) => {
         },
       });
       console.log(data);
-      return data?.documents;
+      return data;
     } catch (error) {
       console.log(error);
       throw error;
@@ -713,7 +713,127 @@ const LawyerProvider = ({ children }) => {
     queryKey: ["timeline"],
     queryFn: getTimeline,
   });
+  // ================== GET NOTIFICATIONS ==================
+  const getNotifications = async () => {
+    try {
+      const { data } = await axios.get(`${baseUrl}/notifications`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data?.notifications;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
 
+  const { data: notifications } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: getNotifications,
+  });
+  // ================================== unread count ==================================
+
+  const getUnreadNotifications = async () => {
+    try {
+      const { data } = await axios.get(
+        `${baseUrl}/notifications/unread-count`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        },
+      );
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  const { data: unreadNotifications } = useQuery({
+    queryKey: ["unreadNotifications"],
+    queryFn: getUnreadNotifications,
+  });
+  // =============================== READ NOTIFICATION ====================
+  const readNotification = async (id) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.patch(
+        `${baseUrl}/notifications/${id}/read`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        },
+      );
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const notificationQuery = useQueryClient();
+  const readNotificationMutation = useMutation({
+    mutationKey: ["readnotification"],
+    mutationFn: readNotification,
+    onSuccess: (data) => {
+      toast.success(data?.message || "تم قراءة الاشعار بنجاح");
+      notificationQuery.invalidateQueries(["notifications"]);
+    },
+    onError: (err) => {
+      toast.error(
+        err?.response?.data?.message || "حدث خطاء اثناء قراءة الاشعار",
+      );
+    },
+  });
+  const handleReadNotificationFun = (id) => {
+    readNotificationMutation.mutate(id);
+  };
+  // ============================== READ ALL NOTIFICATION ====================
+  const readNote = async () => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.patch(
+        `${baseUrl}/notifications/read-all`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        },
+      );
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  const readNoteMutation = useMutation({
+    mutationKey: ["readnote"],
+    mutationFn: readNote,
+    onSuccess: (data) => {
+      toast.success(data?.message || "تم قراءة الاشعارات بنجاح");
+      noteQuery.invalidateQueries(["notifications"]);
+    },
+    onError: (err) => {
+      toast.error(
+        err?.response?.data?.message || "حدث خطاء اثناء قراءة الاشعارات",
+      );
+    },
+  });
+  const handleReadNoteFun = () => {
+    readNoteMutation.mutate();
+  };
   return (
     <LawyerContext.Provider
       value={{
@@ -777,6 +897,13 @@ const LawyerProvider = ({ children }) => {
         setOpenDeleteNote,
         // timeline
         timeline,
+
+        // notifications
+        notifications,
+        unreadNotifications,
+
+        handleReadNotificationFun,
+        handleReadNoteFun,
       }}
     >
       {children}

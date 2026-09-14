@@ -3,11 +3,13 @@ import React, { useState } from "react";
 import Aside from "./components/Aside/Aside";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
+import LawyerProvider from "../../Providers/LawyerContext/lawyer.js";
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
 
-  return (
+  return <LawyerProvider>
+  
     <div className="flex min-h-screen text-white bg-slate-800">
       
       {/* Sidebar */}
@@ -28,7 +30,7 @@ const Layout = ({ children }) => {
       </div>
      
     </div>
-  );
+</LawyerProvider>
 };
 
 export default Layout;

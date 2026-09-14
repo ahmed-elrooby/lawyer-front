@@ -21,7 +21,6 @@ const Auth = ({ children }) => {
       const { data } = await axios.post(`${baseUrl}/login`, values);
       return data;
     } catch (error) {
-      console.log(error);
       throw error;
     } finally {
       setLoadding(false);
@@ -38,9 +37,11 @@ const Auth = ({ children }) => {
       if (data?.user?.role === "admin") {
         router.push("/Admin");
       } else if (data?.user?.role === "lawyer") {
-        router.push("/");
+        router.push("/Lawyer");
       }
-    },
+    },onError:(err)=>{
+      toast.error(err?.response?.data?.message)
+    }
   });
   const handleLoginFun = (values) => {
     handleLoginMutation.mutate(values);

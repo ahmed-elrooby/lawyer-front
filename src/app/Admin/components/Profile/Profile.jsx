@@ -17,7 +17,7 @@ import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
 import UpdateProfile from "./UpdateProfile.jsx";
 
 const Profile = () => {
-  const { profile,openUpdateProfile, setOpenUpdateProfile } = useContext(authContext);
+  const { profile,openUpdateProfile, setOpenUpdateProfile,handleLogoutFun } = useContext(authContext);
 const [selectProfile,setSelectProfile]=useState(null)
   const user = profile?.user;
 
@@ -353,6 +353,7 @@ const [selectProfile,setSelectProfile]=useState(null)
 
                 <button
                   type="button"
+                  onClick={handleLogoutFun}
                   className="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-bold text-red-600 transition border border-red-200 rounded-xl bg-red-50 hover:bg-red-100"
                 >
                   <FaSignOutAlt />

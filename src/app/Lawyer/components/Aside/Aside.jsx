@@ -149,11 +149,11 @@ children: [
             </span>
           )}
 
-          {item.badge && (
-            <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
-              {item.badge}
-            </span>
-          )}
+         {item.badge && !collapsed && (
+  <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
+    {item.badge}
+  </span>
+)}
         </Link>
       </div>
 
@@ -177,11 +177,11 @@ children: [
               >
                 <child.icon className="w-4 h-4" />
                 {child.title}
-                {child.badge && (
-                  <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                    {child.badge}
-                  </span>
-                )}
+                {child.badge && !collapsed && (
+  <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
+    {child.badge}
+  </span>
+)}
               </Link>
             );
           })}

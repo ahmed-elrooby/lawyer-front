@@ -213,6 +213,7 @@ const handleResetPasswordMutation = useMutation({
 
   onSuccess: (data) => {
     toast.success(data?.message || "تم تغيير كلمة المرور بنجاح");
+    router.push("/");
   },
 
   onError: (error) => {

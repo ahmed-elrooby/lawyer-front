@@ -167,7 +167,7 @@ const LawyerProvider = ({ children }) => {
     queryKey: ["sessions"],
     queryFn: getSessions,
   });
-  // =============== ADD CASES =================
+  // =============== ADD SESSIONS =================
   const handleAddSession = async (values) => {
     try {
       setLoadding(true);
@@ -201,7 +201,7 @@ const LawyerProvider = ({ children }) => {
   const handleAddSessionFun = (values) => {
     handleAddSessionMutation.mutate(values);
   };
-  // =============== UPDATE CASES =================
+  // =============== UPDATE SESSIONS =================
   const handleUpdateSession = async ({ values, id }) => {
     try {
       setLoadding(true);
@@ -234,7 +234,7 @@ const LawyerProvider = ({ children }) => {
   const handleUpdateSessionFun = ({ values, id }) => {
     handleUpdateSessionMutation.mutate({ values, id });
   };
-  // =============== DELETE CASES =================
+  // =============== DELETE SESSIONS =================
   const handleDeleteSession = async (id) => {
     try {
       setLoadding(true);
@@ -268,6 +268,7 @@ const LawyerProvider = ({ children }) => {
     handleDeleteSessionMutation.mutate(id);
   };
   // ===================== CASE TYPE ============
+  // ===================================== GET CASES TYPES ================
   const getCaseTypes = async () => {
     try {
       const { data } = await axios.get(`${baseUrl}/caseType`, {
@@ -283,10 +284,122 @@ const LawyerProvider = ({ children }) => {
       throw error;
     }
   };
-  const { data: caseType } = useQuery({
-    queryKey: ["caseType"],
+  const { data: caseTypes } = useQuery({
+    queryKey: ["caseTypes"],
     queryFn: getCaseTypes,
   });
+  // ===================================== ADD CASES TYPES ================================
+    // =============================== ADD CASES TYPES ================================
+  const handleAddCaseType = async (values) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.post(`${baseUrl}/caseType`, values, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+  const [openAddCaseType, setOpenAddCaseType] = useState(false);
+  const caseTypeQuery = useQueryClient();
+  const handleAddCaseTypeMutation = useMutation({
+    mutationKey: ["addCaseType"],
+    mutationFn: handleAddCaseType,
+    onSuccess: (data) => {
+      toast.success("تم اضافة نوع الحالة بنجاح" || data?.message);
+      caseTypeQuery.invalidateQueries(["caseType"]);
+      setOpenAddCaseType(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+  const handleAddCaseTypeFun = (values) => {
+    handleAddCaseTypeMutation.mutate(values);
+  };
+  // ===================================== DELETE CASES TYPES ================================
+  
+  const handleDeleteCaseType = async (id) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.delete(`${baseUrl}/caseType/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+  const [openDeleteCaseType, setOpenDeleteCaseType] = useState(false);
+
+  const handleDeleteCaseTypeMutation = useMutation({
+    mutationKey: ["deleteCaseType"],
+    mutationFn: handleDeleteCaseType,
+    onSuccess: (data) => {
+      toast.success("تم حذف نوع الحالة بنجاح" || data?.message);
+      caseTypeQuery.invalidateQueries(["caseType"]);
+      setOpenDeleteCaseType(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+  const handleDeleteCaseTypeFun = (id) => {
+    handleDeleteCaseTypeMutation.mutate(id);
+  };
+  // ===================================== UPDATE CASES TYPES ================================
+  const handleUpdateCaseType = async ({ id, values }) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.put(`${baseUrl}/caseType/${id}`, values, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+  const [openUpdateCaseType, setOpenUpdateCaseType] = useState(false);
+
+  const handleUpdateCaseTypeMutation = useMutation({
+    mutationKey: ["updateCaseType"],
+    mutationFn: handleUpdateCaseType,
+    onSuccess: (data) => {
+      toast.success("تم تعديل نوع الحالة بنجاح" || data?.message);
+      caseTypeQuery.invalidateQueries(["caseType"]);
+      setOpenUpdateCaseType(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+  const handleUpdateCaseTypeFun = ({ id, values }) => {
+    handleUpdateCaseTypeMutation.mutate({ id, values });
+  };
   // =======================  CLIENTS ====================
   // ===================== GET CLIENTS =================
   const getClients = async () => {
@@ -434,6 +547,122 @@ const LawyerProvider = ({ children }) => {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+  // ===================== CREATE DOCUMENT CATEGORIES ====================
+   const handleAddDocumentCategory = async (values) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.post(`${baseUrl}/category`, values, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+  const [openAddCategory, setOpenAddCategory] = useState(false);
+  const categoryQuery = useQueryClient();
+
+  const handleAddCategoryMutation = useMutation({
+    mutationKey: ["addCategory"],
+    mutationFn: handleAddDocumentCategory,
+    onSuccess: (data) => {
+      toast.success("تم اضافة فئة المستند بنجاح" || data?.message);
+      categoryQuery.invalidateQueries(["categories"]);
+      setOpenAddCategory(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+  const handleAddCategoryFun = (values) => {
+    handleAddCategoryMutation.mutate(values);
+  };
+  // ===================== DELETE CATEGORY ====================
+    const handleDeleteCategory = async (id) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.delete(`${baseUrl}/category/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+
+  const [openDeleteCategory, setOpenDeleteCategory] = useState(false);
+
+  const handleDeleteCategoryMutation = useMutation({
+    mutationKey: ["deleteCategory"],
+    mutationFn: handleDeleteCategory,
+    onSuccess: (data) => {
+      toast.success("تم حذف فئة المستند بنجاح" || data?.message);
+      categoryQuery.invalidateQueries(["categories"]);
+      setOpenDeleteCategory(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+
+  const handleDeleteCategoryFun = (id) => {
+    handleDeleteCategoryMutation.mutate(id);
+  };
+  // ===================================== UPDATE DOCUMENT CATEGORIES ================================
+  const handleUpdateCategory = async ({ id, values }) => {
+    try {
+      setLoadding(true);
+      const { data } = await axios.put(`${baseUrl}/category/${id}`, values, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      setLoadding(false);
+    }
+  };
+
+  const [openUpdateCategory, setOpenUpdateCategory] = useState(false);
+
+  const handleUpdateCategoryMutation = useMutation({
+    mutationKey: ["updateCategory"],
+    mutationFn: handleUpdateCategory,
+    onSuccess: (data) => {
+      toast.success("تم تعديل فئة المستند بنجاح" || data?.message);
+      categoryQuery.invalidateQueries(["categories"]);
+      setOpenUpdateCategory(false);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    },
+  });
+
+  const handleUpdateCategoryFun = ({ id, values }) => {
+    handleUpdateCategoryMutation.mutate({ id, values });
+  };
   // ==================== DOCUMENT  ====================
   // ==================== GET DOCUMENT CATEGORIES ================================
   const getDocument = async () => {
@@ -840,7 +1069,6 @@ const LawyerProvider = ({ children }) => {
         dashboardStatisics,
         // cases
         cases,
-        caseType,
         handleAddCaseFun,
         openAddCase,
         setOpenAddCase,
@@ -851,6 +1079,8 @@ const LawyerProvider = ({ children }) => {
         openDeleteCase,
         setOpenDeleteCase,
         loadding,
+        // casetype
+        handleUpdateCaseTypeFun,openUpdateCaseType, setOpenUpdateCaseType,handleDeleteCaseTypeFun,openDeleteCaseType, setOpenDeleteCaseType,caseTypes,handleAddCaseTypeFun,openAddCaseType, setOpenAddCaseType,
         // sessions
         handleAddSessionFun,
         openAddSession,
@@ -872,7 +1102,8 @@ const LawyerProvider = ({ children }) => {
         handleDeleteClientFun,
         openDeleteClient,
         setOpenDeleteClient,
-        categories,
+        // categories
+        categories,openAddCategory, setOpenAddCategory,handleAddCategoryFun,handleUpdateCategoryFun,openUpdateCategory, setOpenUpdateCategory,handleDeleteCategoryFun,openDeleteCategory, setOpenDeleteCategory,
         // documents
         documents,
         handleAddDocumentFun,

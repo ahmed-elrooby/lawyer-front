@@ -61,20 +61,6 @@ const navGroups = [
         page: "lawyers",
         statKey: "lawyers",
       },
-      {
-        href: "/Admin/CaseType",
-        label: "أنواع القضايا",
-        icon: FaGavel,
-        page: "case-types",
-        statKey: "caseTypes",
-      },
-      {
-        href: "/Admin/FileCategories",
-        label: "تصنيفات الملفات",
-        icon: FaFolderOpen,
-        page: "file-categories",
-        statKey: "categories",
-      },
     ],
   },
 
@@ -111,14 +97,12 @@ const navGroups = [
       },
     ],
   },
-
-
 ];
 
 const Sidebar = () => {
-  const { users, offices, lawyers,timeLine, caseTypes, categories, activityLogs,notifications } =
+  const { users, offices, lawyers, timeLine, activityLogs, notifications } =
     useContext(AdminContext);
-const {profile,handleLogoutFun}=useContext(authContext)
+  const { profile, handleLogoutFun } = useContext(authContext);
 
   const pathname = usePathname();
 
@@ -127,15 +111,13 @@ const {profile,handleLogoutFun}=useContext(authContext)
       users: Array.isArray(users) ? users.length : 0,
       offices: Array.isArray(offices) ? offices.length : 0,
       lawyers: Array.isArray(lawyers) ? lawyers.length : 0,
-      caseTypes: Array.isArray(caseTypes) ? caseTypes.length : 0,
-      categories: Array.isArray(categories) ? categories.length : 0,
       activityLogs: Array.isArray(activityLogs) ? activityLogs.length : 0,
 
       // سيتم ربطها لاحقًا من خلال AdminContext
-      notifications: Array.isArray(notifications)?notifications?.length:0,
-      timeLine: Array.isArray(timeLine)?timeLine?.length:0
+      notifications: Array.isArray(notifications) ? notifications?.length : 0,
+      timeLine: Array.isArray(timeLine) ? timeLine?.length : 0,
     };
-  }, [users, offices, lawyers, caseTypes, categories, activityLogs,notifications,timeLine]);
+  }, [users, offices, lawyers, activityLogs, notifications, timeLine]);
 
   const isActive = useMemo(
     () => (href) => {
@@ -263,32 +245,30 @@ const {profile,handleLogoutFun}=useContext(authContext)
       </div>
 
       {/* Bottom */}
- 
-<div className="px-3 py-3 border-t border-gray-200/70 bg-white/80 backdrop-blur-sm">
-  {/* Profile */}
-  <Link
-    href="/Admin/Profile"
-    className="flex items-center w-full gap-3 px-3 py-3 transition-all duration-200 group rounded-2xl hover:bg-blue-50/70"
-  >
-    {/* Avatar */}
-    <div
-      className="relative flex items-center justify-center flex-shrink-0 w-10 h-10 overflow-hidden border border-blue-100 shadow-sm rounded-xl bg-gradient-to-br from-blue-100 to-blue-200"
-    >
-      {profile?.user?.profileImage?.url ? (
-        <img
-          src={profile.user.profileImage.url}
-          alt={profile?.user?.name || "المستخدم"}
-          className="object-cover w-full h-full"
-        />
-      ) : (
-        <span className="text-sm font-bold text-blue-600">
-          {profile?.user?.name?.charAt(0) || "م"}
-        </span>
-      )}
 
-      {/* Online indicator */}
-      <span
-        className="
+      <div className="px-3 py-3 border-t border-gray-200/70 bg-white/80 backdrop-blur-sm">
+        {/* Profile */}
+        <Link
+          href="/Admin/Profile"
+          className="flex items-center w-full gap-3 px-3 py-3 transition-all duration-200 group rounded-2xl hover:bg-blue-50/70"
+        >
+          {/* Avatar */}
+          <div className="relative flex items-center justify-center flex-shrink-0 w-10 h-10 overflow-hidden border border-blue-100 shadow-sm rounded-xl bg-gradient-to-br from-blue-100 to-blue-200">
+            {profile?.user?.profileImage?.url ? (
+              <img
+                src={profile.user.profileImage.url}
+                alt={profile?.user?.name || "المستخدم"}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <span className="text-sm font-bold text-blue-600">
+                {profile?.user?.name?.charAt(0) || "م"}
+              </span>
+            )}
+
+            {/* Online indicator */}
+            <span
+              className="
           absolute
           bottom-0.5
           right-0.5
@@ -297,33 +277,31 @@ const {profile,handleLogoutFun}=useContext(authContext)
           bg-emerald-500
           border-2 border-white
         "
-      />
-    </div>
+            />
+          </div>
 
-    {/* User Info */}
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-bold text-gray-800 truncate transition-colors group-hover:text-blue-600">
-        {profile?.user?.name || "المستخدم"}
-      </p>
+          {/* User Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-800 truncate transition-colors group-hover:text-blue-600">
+              {profile?.user?.name || "المستخدم"}
+            </p>
 
-      <p className="mt-0.5 text-[11px] text-gray-400 truncate">
-        إدارة الحساب والملف الشخصي
-      </p>
-    </div>
+            <p className="mt-0.5 text-[11px] text-gray-400 truncate">
+              إدارة الحساب والملف الشخصي
+            </p>
+          </div>
 
-    {/* Arrow */}
-    <span
-      className="flex items-center justify-center flex-shrink-0 text-xs text-gray-300 transition-all duration-200 rounded-lg w-7 h-7 group-hover:text-blue-500 group-hover:bg-blue-100"
-    >
-      ←
-    </span>
-  </Link>
+          {/* Arrow */}
+          <span className="flex items-center justify-center flex-shrink-0 text-xs text-gray-300 transition-all duration-200 rounded-lg w-7 h-7 group-hover:text-blue-500 group-hover:bg-blue-100">
+            ←
+          </span>
+        </Link>
 
-  {/* Logout */}
-  <button
-    type="button"
-    onClick={handleLogoutFun}
-    className="
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogoutFun}
+          className="
       group
       flex items-center gap-3
       w-full
@@ -337,24 +315,18 @@ const {profile,handleLogoutFun}=useContext(authContext)
       hover:text-red-600
       active:scale-[0.98]
     "
-  >
-    <span
-      className="flex items-center justify-center text-red-500 transition-all duration-200 w-9 h-9 rounded-xl bg-red-50 group-hover:bg-red-100"
-    >
-      <FaSignOutAlt className="text-sm" />
-    </span>
+        >
+          <span className="flex items-center justify-center text-red-500 transition-all duration-200 w-9 h-9 rounded-xl bg-red-50 group-hover:bg-red-100">
+            <FaSignOutAlt className="text-sm" />
+          </span>
 
-    <span className="flex-1 text-right">
-      تسجيل الخروج
-    </span>
+          <span className="flex-1 text-right">تسجيل الخروج</span>
 
-    <span className="text-[10px] text-red-300 transition-transform duration-200 group-hover:-translate-x-1">
-      ←
-    </span>
-  </button>
-</div>
-
-
+          <span className="text-[10px] text-red-300 transition-transform duration-200 group-hover:-translate-x-1">
+            ←
+          </span>
+        </button>
+      </div>
     </aside>
   );
 };

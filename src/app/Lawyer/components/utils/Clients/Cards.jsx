@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Users, UserCheck, Calendar, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  Calendar,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 const Cards = () => {
   const cardsData = [
@@ -106,7 +113,11 @@ const Cards = () => {
       };
       requestAnimationFrame(animate);
     }, [target]);
-    return <span className="text-3xl font-black tracking-tight text-white md:text-4xl drop-shadow-md">{count}</span>;
+    return (
+      <span className="text-3xl font-black tracking-tight text-white md:text-4xl drop-shadow-md">
+        {count}
+      </span>
+    );
   };
 
   return (
@@ -146,22 +157,32 @@ const Cards = () => {
 
             <div className="relative z-10 p-5">
               <div className="flex items-start justify-between mb-4">
-                <div className={`
+                <div
+                  className={`
                   p-3 rounded-2xl bg-gradient-to-br ${style.bgFrom} ${style.bgTo}
                   backdrop-blur-sm shadow-lg border border-white/10
                   transition-all duration-300 group-hover:scale-110 group-hover:rotate-3
-                `}>
+                `}
+                >
                   <Icon className={`h-6 w-6 ${style.text} drop-shadow-md`} />
                 </div>
-                
+
                 {/* Change indicator */}
-                <div className={`
+                <div
+                  className={`
                   flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                   ${style.badge} backdrop-blur-sm border border-white/10
-                `}>
-                  {card.changeType === "up" && <TrendingUp className="w-3 h-3" />}
-                  {card.changeType === "warning" && <AlertTriangle className="w-3 h-3" />}
-                  {card.changeType === "info" && <Calendar className="w-3 h-3" />}
+                `}
+                >
+                  {card.changeType === "up" && (
+                    <TrendingUp className="w-3 h-3" />
+                  )}
+                  {card.changeType === "warning" && (
+                    <AlertTriangle className="w-3 h-3" />
+                  )}
+                  {card.changeType === "info" && (
+                    <Calendar className="w-3 h-3" />
+                  )}
                   <span>{card.change}</span>
                 </div>
               </div>
@@ -169,7 +190,9 @@ const Cards = () => {
               <div className="mt-3">
                 <div className="flex items-baseline gap-1.5">
                   <AnimatedCounter target={card.value} color={card.color} />
-                  <span className="text-sm font-medium text-slate-400">{card.suffix}</span>
+                  <span className="text-sm font-medium text-slate-400">
+                    {card.suffix}
+                  </span>
                 </div>
                 <p className="mt-2 text-sm font-medium tracking-wide text-slate-300">
                   {card.title}

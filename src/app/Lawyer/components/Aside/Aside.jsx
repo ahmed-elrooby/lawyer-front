@@ -1,216 +1,332 @@
+
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   LayoutDashboard,
   FolderOpen,
   Users,
   Scale,
   Calendar,
-  CheckSquare,
   BarChart3,
   ChevronRight,
   ChevronLeft,
   Menu,
   X,
-  CheckCircle2,
-  Archive,
+  Tags,
+  FileText,
 } from "lucide-react";
 
 const Aside = ({ collapsed, setCollapsed }) => {
   const pathname = usePathname();
-  const [openCases, setOpenCases] = useState(false);
+
   const [openMobile, setOpenMobile] = useState(false);
-const menu = [
-  { title: "لوحة التحكم", icon: LayoutDashboard, href: "/User" },
 
-  { title: "إدارة الملفات", badge: "4", icon: FolderOpen, href: "/User/FilesPage" },
-  { title: "العملاء", badge: "4", icon: Users, href: "/User/ClientsPage" },
+  const menu = [
+    {
+      title: "لوحة التحكم",
+      icon: LayoutDashboard,
+      href: "/Lawyer",
+    },
+    {
+      title: "إدارة الملفات",
+      icon: FolderOpen,
+      href: "/Lawyer/FilesPage",
+    },
+    {
+      title: "العملاء",
+      icon: Users,
+      href: "/Lawyer/ClientsPage",
+    },
+    {
+      title: "القضايا",
+      icon: Scale,
+      href: "/Lawyer/CasesPage",
+    },
+    {
+      title: "أنواع القضايا",
+      icon: Tags,
+      href: "/Lawyer/CaseType",
+    },
+    {
+      title: "الجلسات",
+      icon: Calendar,
+      href: "/Lawyer/sessions",
+    },
+    {
+      title: "أنواع المستندات",
+      icon: FileText,
+      href: "/Lawyer/FileCategories",
+    },
+    {
+      title: "التقارير",
+      icon: BarChart3,
+      href: "/reports",
+    },
+  ];
 
-  {
-    title: "القضايا",
-    icon: Scale,
-    badge: "3",
-
-children: [
-  { title: "كل القضايا", badge: "3", icon: Scale, href: "/User/CasesPage" },
-  { title: "القضايا الحالية", badge: "2", icon: CheckCircle2, href: "/cases/active" },
-  { title: "القضايا المؤرشفة", badge: "1", icon: Archive, href: "/cases/archived" },
-],
-  },
-
-  { title: "الجلسات", badge: "8", icon: Calendar, href: "/sessions" },
-  { title: "المهام", badge: "3", icon: CheckSquare, href: "/tasks" },
-  { title: "التقارير", icon: BarChart3, href: "/reports" },
-];
   return (
     <>
-      {/* 📱 زرار الموبايل */}
+      {/* ================= Mobile Menu Button ================= */}
       <button
+        type="button"
         onClick={() => setOpenMobile(true)}
-        className="fixed z-50 p-2 rounded-lg shadow-md bg-slate-900 top-4 right-4 md:hidden"
+        className="fixed z-50 flex items-center justify-center w-10 h-10 transition-all duration-200 border shadow-lg top-4 right-4 rounded-xl bg-slate-900 border-slate-700 hover:bg-slate-800 md:hidden"
       >
-        <Menu className="text-white" />
+        <Menu className="w-5 h-5 text-white" />
       </button>
 
-      {/* Overlay */}
+      {/* ================= Overlay ================= */}
       {openMobile && (
         <div
           onClick={() => setOpenMobile(false)}
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          className="
+            fixed
+            inset-0
+            z-40
+            bg-black/60
+            backdrop-blur-[2px]
+            md:hidden
+          "
         />
       )}
 
-      {/* Sidebar */}
+      {/* ================= Sidebar ================= */}
       <aside
         className={`
-        fixed top-0 right-0 h-full bg-slate-900 z-50 flex flex-col
-        transition-all duration-300
+          fixed
+          top-0
+          right-0
+          z-50
+          flex
+          flex-col
+          h-full
+          bg-slate-900
+          border-l
+          border-slate-800
+          transition-all
+          duration-300
 
-        ${collapsed ? "md:w-[80px]" : "md:w-[260px]"}
-        
+          ${collapsed ? "md:w-[80px]" : "md:w-[260px]"}
 
-        ${openMobile ? "translate-x-0" : "translate-x-full md:translate-x-0"}
+          ${
+            openMobile
+              ? "translate-x-0 w-[260px]"
+              : "translate-x-full md:translate-x-0"
+          }
         `}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-5 border-b border-slate-800">
+        {/* ================= Header ================= */}
+        <div
+          className="flex items-center justify-between px-4 py-5 border-b border-slate-800 shrink-0"
+        >
           {!collapsed && (
             <div className="flex items-center gap-2.5">
-              <Scale className="w-6 h-6 text-blue-500" />
-              <span className="text-lg font-bold text-white">
-                Main Tech
-              </span>
+              <div
+                className="flex items-center justify-center border w-9 h-9 rounded-xl bg-emerald-500/10 border-emerald-500/20"
+              >
+                <Scale className="w-5 h-5 text-emerald-400" />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white">
+                  Main Tech
+                </span>
+
+                <span className="text-[10px] text-slate-500">
+                  Lawyer System
+                </span>
+              </div>
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            {/* Collapse (Desktop فقط) */}
-       <button
-  onClick={() => setCollapsed(!collapsed)}
-  className="p-1.5 rounded-lg hover:bg-slate-700 transition"
->
-  {collapsed ? (
-    <ChevronLeft className="w-5 h-5 text-gray-400" />
-  ) : (
-    <ChevronRight className="w-5 h-5 text-gray-400" />
-  )}
-</button>
-
-            {/* Close Mobile */}
-            <button
-              onClick={() => setOpenMobile(false)}
-              className="md:hidden p-1.5"
+          {/* Collapsed Logo */}
+          {collapsed && (
+            <div
+              className="flex items-center justify-center w-10 h-10 mx-auto border rounded-xl bg-emerald-500/10 border-emerald-500/20"
             >
-              <X className="w-5 h-5 text-white" />
+              <Scale className="w-5 h-5 text-emerald-400" />
+            </div>
+          )}
+
+          <div className="flex items-center gap-1">
+            {/* Desktop Collapse */}
+            <button
+              type="button"
+              onClick={() => setCollapsed(!collapsed)}
+              className="items-center justify-center hidden w-8 h-8 transition-all duration-200 rounded-lg md:flex text-slate-400 hover:bg-slate-800 hover:text-white"
+            >
+              {collapsed ? (
+                <ChevronLeft className="w-5 h-5" />
+              ) : (
+                <ChevronRight className="w-5 h-5" />
+              )}
+            </button>
+
+            {/* Mobile Close */}
+            <button
+              type="button"
+              onClick={() => setOpenMobile(false)}
+              className="flex items-center justify-center w-8 h-8 transition rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white md:hidden"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Menu */}
-        <nav className="flex-1 px-2 mt-6 space-y-2 overflow-y-auto">
-          {menu.map((item) => {
-  const isActive = item.href && pathname === item.href;
-  const isCases = item.title === "القضايا";
+        {/* ================= Menu ================= */}
+        <nav
+          className="
+            flex-1
+            px-3
+            py-5
+            space-y-1.5
+            overflow-y-auto
 
-  return (
-    <div key={item.title}>
-      {/* MAIN ITEM */}
-      <div
-        onClick={() => {
-          if (isCases) {
-            setOpenCases(!openCases);
-          }
-        }}
-      >
-        <Link
-          href={item.href || "#"}
-          onClick={() => setOpenMobile(false)}
-          className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
-          ${
-            isActive
-              ? "bg-slate-700 text-white"
-              : "text-gray-300 hover:bg-slate-700 hover:text-white"
-          }`}
+            [&::-webkit-scrollbar]:w-1.5
+            [&::-webkit-scrollbar-track]:bg-slate-900
+            [&::-webkit-scrollbar-thumb]:bg-slate-700
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            hover:[&::-webkit-scrollbar-thumb]:bg-slate-600
+
+            scrollbar-thin
+            scrollbar-track-slate-900
+            scrollbar-thumb-slate-700
+          "
         >
-          <item.icon className="w-5 h-5" />
-
+          {/* Section Label */}
           {!collapsed && (
-            <span className="flex items-center justify-between w-full gap-2 text-sm font-medium">
-              {item.title}
-
-              {isCases && (
-               <ChevronRight
-  className={`w-4 h-4 transition ${openCases ? "rotate-90" : ""}`}
-/>
-              )}
-            </span>
+            <div className="px-3 pb-2">
+              <span className="text-[10px] font-semibold tracking-wider text-slate-500">
+                القائمة الرئيسية
+              </span>
+            </div>
           )}
 
-         {item.badge && !collapsed && (
-  <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
-    {item.badge}
-  </span>
-)}
-        </Link>
-      </div>
-
-      {/* SUB MENU - CASES ONLY */}
-      {isCases && openCases && !collapsed && (
-        <div className="pr-3 mt-2 ml-6 space-y-2 border-r border-slate-700">
-          {item.children.map((child) => {
-            const isChildActive = pathname === child.href;
+          {menu.map((item) => {
+            const isActive = pathname === item.href;
 
             return (
               <Link
-                key={child.href}
-                href={child.href}
+                key={item.href}
+                href={item.href}
                 onClick={() => setOpenMobile(false)}
-                className={`flex items-center gap-3 text-sm px-2 py-2 rounded-lg transition
-                ${
-                  isChildActive
-                    ? "text-white bg-slate-700"
-                    : "text-gray-400 hover:text-white hover:bg-slate-700"
-                }`}
+                className={`
+                  relative
+                  flex
+                  items-center
+                  gap-3
+                  px-3
+                  py-3
+                  rounded-xl
+                  transition-all
+                  duration-200
+                  group
+
+                  ${
+                    isActive
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  }
+
+                  ${collapsed ? "justify-center" : ""}
+                `}
               >
-                <child.icon className="w-4 h-4" />
-                {child.title}
-                {child.badge && !collapsed && (
-  <span className="mr-auto text-xs font-semibold bg-blue-500 text-white px-2 py-0.5 rounded-full">
-    {child.badge}
-  </span>
-)}
+                {/* Active Indicator */}
+                {isActive && (
+                  <span
+                    className="absolute right-0 w-1 h-6 -translate-y-1/2 rounded-l-full top-1/2 bg-emerald-500"
+                  />
+                )}
+
+                {/* Icon */}
+                <item.icon
+                  className={`
+                    w-5
+                    h-5
+                    shrink-0
+                    transition-colors
+
+                    ${
+                      isActive
+                        ? "text-emerald-400"
+                        : "text-slate-400 group-hover:text-white"
+                    }
+                  `}
+                />
+
+                {/* Title */}
+                {!collapsed && (
+                  <span
+                    className={`
+                      text-sm
+                      font-medium
+                      truncate
+
+                      ${
+                        isActive
+                          ? "text-emerald-400"
+                          : "text-slate-300 group-hover:text-white"
+                      }
+                    `}
+                  >
+                    {item.title}
+                  </span>
+                )}
+
+                {/* Tooltip when collapsed */}
+                {collapsed && (
+                  <span
+                    className="absolute invisible px-3 py-2 mr-3 text-xs font-medium text-white transition-all duration-200 translate-x-1 border rounded-lg shadow-xl opacity-0 pointer-events-none right-full whitespace-nowrap bg-slate-800 border-slate-700 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0"
+                  >
+                    {item.title}
+                  </span>
+                )}
               </Link>
             );
           })}
-        </div>
-      )}
-    </div>
-  );
-})}
         </nav>
 
-        {/* Bottom Section */}
-        <div className="p-3 border-t border-slate-800">
+        {/* ================= Bottom Section ================= */}
+        <div
+          className="p-3 border-t shrink-0 border-slate-800"
+        >
           {/* Profile */}
           <Link
             href="/profile"
-            className="flex items-center gap-3 px-3 py-3 text-gray-200 transition rounded-xl hover:bg-slate-700"
+            onClick={() => setOpenMobile(false)}
+            className={`
+              flex
+              items-center
+              gap-3
+              px-3
+              py-3
+              rounded-xl
+              text-slate-200
+              transition-all
+              duration-200
+              hover:bg-slate-800
+              group
+
+              ${collapsed ? "justify-center" : ""}
+            `}
           >
             <img
               src="https://i.pravatar.cc/40"
               alt="profile"
-              className="object-cover w-8 h-8 rounded-full"
+              className="object-cover w-8 h-8 border rounded-full border-slate-700"
             />
 
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium text-white truncate">
                   أحمد عيد
                 </span>
-                <span className="text-xs text-gray-400">
+
+                <span className="text-xs text-slate-500">
                   محامي
                 </span>
               </div>
@@ -219,11 +335,28 @@ children: [
 
           {/* Logout */}
           <button
-            className="flex items-center w-full gap-3 px-3 py-3 mt-2 text-red-400 transition rounded-xl hover:bg-red-500/10"
+            type="button"
+            className={`
+              flex
+              items-center
+              w-full
+              gap-3
+              px-3
+              py-3
+              mt-2
+              rounded-xl
+              text-slate-400
+              transition-all
+              duration-200
+              hover:bg-slate-800
+              hover:text-red-400
+
+              ${collapsed ? "justify-center" : ""}
+            `}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
+              className="w-5 h-5 shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

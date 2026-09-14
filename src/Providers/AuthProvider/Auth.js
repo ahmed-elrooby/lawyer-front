@@ -209,8 +209,7 @@ const handleResetPassword = async ({token, values}) => {
 
 const handleResetPasswordMutation = useMutation({
   mutationKey: ["resetPassword"],
-  mutationFn: ({ token, values }) =>
-    handleResetPassword(token, values),
+  mutationFn: handleResetPassword,
 
   onSuccess: (data) => {
     toast.success(data?.message || "تم تغيير كلمة المرور بنجاح");

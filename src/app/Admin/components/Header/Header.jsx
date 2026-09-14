@@ -1,54 +1,79 @@
-'use client';
 
-import React from 'react';
-import { FaSearch, FaBell, FaBars } from 'react-icons/fa';
+"use client";
+
+import React, { useContext } from "react";
+import { FaSearch, FaBars } from "react-icons/fa";
+
+import { AdminContext } from "../../../../Providers/AdminContext/Admin.js";
+import NotificationsDropdown from "./NotificationsDropdown.jsx";
+import ProfileDropdown from "./ProfileDropdown.jsx";
+import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
+
+
 
 const Header = ({ onMenuClick }) => {
+  const {
+    notifications,
+    unreadNotifications,
+    handleMarkAsReadFun,
+    handleReadAllNotificationsFun,
+    
+  } = useContext(AdminContext);
+const {profile,handleLogoutFun}=useContext(authContext)
   return (
-    <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-100 px-3 sm:px-6 py-3 flex items-center justify-between gap-3">
-
-      {/* زر القائمة (موبايل) */}
+    <header
+      dir="rtl"
+      className="sticky top-0 z-50 flex items-center justify-between gap-3 px-3 py-3 border-b border-gray-100 bg-white/90 backdrop-blur-sm sm:px-6"
+    >
+      {/* Mobile Menu */}
       <button
+        type="button"
         onClick={onMenuClick}
-        className="lg:hidden text-gray-600 hover:text-blue-500 transition p-2"
         aria-label="فتح القائمة"
+        className="flex items-center justify-center w-10 h-10 text-gray-600 border border-gray-100 bg-gray-50 rounded-xl lg:hidden hover:text-blue-600 hover:bg-blue-50"
       >
-        <FaBars className="text-xl" />
+        <FaBars />
       </button>
 
-      {/* البحث */}
-      <div className="relative flex-1 sm:flex-none sm:w-80">
-        <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-        <input
-          type="text"
-          placeholder="بحث في لوحة التحكم..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pr-10 pl-4 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-        />
-      </div>
+      {/* Search */}
+   {/* Page Info */}
+<div className="flex-1">
+  <div className="flex items-center gap-2">
+    <div className="items-center justify-center hidden text-blue-600 sm:flex w-9 h-9 bg-blue-50 rounded-xl">
+      <span className="text-sm">✦</span>
+    </div>
 
-      {/* الإشعارات + المستخدم */}
+    <div>
+      <h1 className="text-sm font-bold text-gray-800 sm:text-base">
+        لوحة التحكم
+      </h1>
+
+      <p className="hidden mt-0.5 text-[11px] text-gray-400 sm:block">
+        نظرة عامة على إدارة المنصة ومتابعة النشاط
+      </p>
+    </div>
+  </div>
+</div>
+
+      {/* Right */}
       <div className="flex items-center gap-2 sm:gap-4">
-        <div className="relative">
-          <FaBell className="text-gray-600 text-xl cursor-pointer hover:text-blue-500 transition" />
-          <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-            3
-          </span>
-        </div>
+        {/* Notifications */}
+   <NotificationsDropdown
+  notifications={Array.isArray(notifications) ? notifications : []}
+  unreadNotifications={unreadNotifications?.count ?? unreadNotifications ?? 0}
+  handleMarkAsReadFun={handleMarkAsReadFun}
+  handleReadAllNotificationsFun={handleReadAllNotificationsFun}
+/>
 
-        <div className="h-6 w-px bg-gray-200 hidden sm:block" />
+        {/* Divider */}
+        <div className="hidden w-px h-6 bg-gray-200 sm:block" />
 
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-            أ
-          </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-medium text-gray-700">أحمد المنصور</p>
-            <p className="text-xs text-gray-400">مدير النظام</p>
-          </div>
-        </div>
+        {/* Profile */}
+        <ProfileDropdown profile={profile} handleLogoutFun={handleLogoutFun} />
       </div>
     </header>
   );
 };
 
 export default Header;
+

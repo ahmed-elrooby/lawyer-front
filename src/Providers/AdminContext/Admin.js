@@ -789,7 +789,7 @@ const {
         },
       });
       console.log(data);
-      return data?.notifications;
+      return data;
     } catch (error) {
       console.log(error);
       throw error;
@@ -803,14 +803,14 @@ const {
 const handleMarkAsRead = async (id) => {
   try {
     setLoadding(true);
-    const { data } = await axios.patch(`${baseUrl}/admin/notifications/${id}/read`, {
+    const { data } = await axios.patch(`${baseUrl}/admin/notifications/${id}/read`,{}, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${Cookies.get("token")}`,
       },
     });
     console.log(data);
-    return data?.notifications;
+    return data;
   } catch (error) {
     console.log(error);
     throw error;
@@ -838,7 +838,7 @@ const handleMarkAsReadFun=(id)=>{
 const handleReadAllNotifications = async () => {
   try {
     setLoadding(true);
-    const { data } = await axios.patch(`${baseUrl}/admin/notifications/read-all`, {
+    const { data } = await axios.patch(`${baseUrl}/admin/notifications/read-all`,{}, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${Cookies.get("token")}`,
@@ -867,6 +867,42 @@ const handleReadAllNotificationsFunMutation = useMutation({
 })
 const handleReadAllNotificationsFun=()=>{
   handleReadAllNotificationsFunMutation.mutate()
+}
+// ================================= DELETE NOTIFICATION ================================
+const handleDeleteNotification = async (id) => {
+  try {
+    setLoadding(true);
+    const { data } = await axios.delete(`${baseUrl}/admin/notifications/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Cookies.get("token")}`,
+      },
+    });
+    console.log(data);
+    return data?.notifications;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }finally{
+    setLoadding(false);
+  }
+}
+const [openDeleteNotification, setOpenDeleteNotification] = useState(false);
+const handleDeleteNotificationFunMutation = useMutation({
+  mutationKey: ["deleteNotification"],
+  mutationFn: handleDeleteNotification,
+  onSuccess: (data) => {
+    notificationsQuery.invalidateQueries(["notifications"]);
+    toast.success("تم حذف الاشعار بنجاح" || data?.message);
+    setOpenDeleteNotification(false);
+  },
+  onError: (error) => {
+    console.log(error);
+    toast.error(error?.response?.data?.message);
+  },
+})
+const handleDeleteNotificationFun=(id)=>{
+  handleDeleteNotificationFunMutation.mutate(id)
 }
   return (
     <AdminContext.Provider
@@ -934,7 +970,7 @@ isExportingDashboardStatisics,
         handleUpdateCategoryFun,
         // notifications
         notifications,unreadNotifications,
-        handleMarkAsReadFun,handleReadAllNotificationsFun
+        handleMarkAsReadFun,handleReadAllNotificationsFun,handleDeleteNotificationFun,openDeleteNotification, setOpenDeleteNotification
       }}
     >
       {children}

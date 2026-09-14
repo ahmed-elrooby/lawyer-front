@@ -4,6 +4,7 @@ import React, { useContext } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { authContext } from "../../../Providers/AuthProvider/Auth.js";
+import Link from "next/link.js";
 
 const Login = () => {
   const { loadding, handleLoginFun } = useContext(authContext);
@@ -91,12 +92,12 @@ const Login = () => {
 
               {/* Remember / Forgot */}
               <div className="flex items-center justify-between text-sm">
-                <a
-                  href="/forgot-password"
+                <Link
+                  href="/ForgetPassword"
                   className="text-blue-500 transition hover:text-blue-600"
                 >
                   نسيت كلمة المرور؟
-                </a>
+                </Link>
               </div>
 
               {/* Submit */}

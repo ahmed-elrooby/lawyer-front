@@ -7,7 +7,7 @@ import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js"
 
 const Cards = () => {
   const { dashboardStatisics } = useContext(LawyerContext);
-  console.log(dashboardStatisics);
+
   const cases = dashboardStatisics?.cases;
   const clients = dashboardStatisics?.clients;
   const sessions = dashboardStatisics?.sessions;
@@ -31,7 +31,7 @@ const Cards = () => {
       iconBg: "bg-emerald-100",
       iconColor: "text-emerald-600",
       changeColor: "text-emerald-600",
-      description: "إجمالي العملاء المسجلين",
+      description: "العملاء المرتبطون بقضاياك",
     },
     {
       title: "الجلسات القادمة",
@@ -41,7 +41,7 @@ const Cards = () => {
       iconBg: "bg-amber-100",
       iconColor: "text-amber-600",
       changeColor: "text-amber-600",
-      description: "الجلسات المجدولة",
+      description: "الجلسات المجدولة القادمة",
     },
     {
       title: "إجمالي القضايا",
@@ -51,7 +51,7 @@ const Cards = () => {
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
       changeColor: "text-purple-600",
-      description: "إجمالي القضايا المسجلة",
+      description: "إجمالي القضايا المسندة إليك",
     },
   ];
 
@@ -75,11 +75,15 @@ const Cards = () => {
               </span>
             </div>
 
-            <h3 className="mt-3 text-2xl font-bold text-white">{card.value}</h3>
+            <h3 className="mt-3 text-2xl font-bold text-white">
+              {card.value}
+            </h3>
 
             <p className="text-sm text-white">{card.title}</p>
 
-            <p className="mt-1 text-xs text-gray-400">{card.description}</p>
+            <p className="mt-1 text-xs text-gray-400">
+              {card.description}
+            </p>
           </div>
         );
       })}

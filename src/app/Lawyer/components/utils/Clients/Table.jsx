@@ -1,378 +1,437 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
-  Briefcase,
-  Calendar,
-  FolderOpen,
-  CheckSquare,
-  Eye,
-  Edit,
-  Trash2,
-  ChevronRight,
-  ChevronLeft,
-  UserCheck,
-  AlertTriangle,
-  Search,
-} from "lucide-react";
+  FaSearch,
+  FaList,
+  FaThLarge,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaChevronRight,
+  FaChevronLeft,
+  FaUser,
+} from "react-icons/fa";
 
-// Sample client data
-const allClients = [
-  {
-    id: 5,
-    name: "ليلى السعيد",
-    phone: "0561122334",
-    casesCount: 1,
-    upcomingSessions: 2,
-    lastActivity: "منذ ساعات",
-    status: "active",
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
-  },
-  {
-    id: 4,
-    name: "مؤسسة البناء الحديث",
-    phone: "0598765432",
-    casesCount: 7,
-    upcomingSessions: 1,
-    lastActivity: "منذ يومين",
-    status: "active",
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
-  },
-  {
-    id: 3,
-    name: "نورة الحارثي",
-    phone: "0556789123",
-    casesCount: 2,
-    upcomingSessions: 0,
-    lastActivity: "منذ 5 أيام",
-    status: "inactive",
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
-  },
-  {
-    id: 2,
-    name: "شركة التقنية المتقدمة",
-    phone: "0112345678",
-    casesCount: 12,
-    upcomingSessions: 3,
-    lastActivity: "منذ 3 ساعات",
-    status: "active",
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
-  },
-  {
-    id: 1,
-    name: "أحمد المنصوري",
-    phone: "0501234567",
-    casesCount: 4,
-    upcomingSessions: 2,
-    lastActivity: "منذ ساعة",
-    status: "active",
-    image: "https://randomuser.me/api/portraits/men/1.jpg",
-  },
-];
-
-const getStatusBadge = (status) => {
-  if (status === "active") {
-    return {
-      text: "نشط",
-      className: "bg-emerald-900/40 text-emerald-300",
-      icon: UserCheck,
-    };
-  }
-  return {
-    text: "غير نشط",
-    className: "bg-rose-900/40 text-rose-300",
-    icon: AlertTriangle,
-  };
-};
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
 
 const Table = () => {
+  const { clients = [] } = useContext(LawyerContext);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState("table");
+
   const itemsPerPage = 5;
 
-  // Filter clients based on search term (name or phone)
   const filteredClients = useMemo(() => {
-    if (!searchTerm.trim()) return allClients;
     const term = searchTerm.trim().toLowerCase();
-    return allClients.filter(
+
+    if (!term) return clients;
+
+    return clients.filter(
       (client) =>
-        client.name.toLowerCase().includes(term) ||
-        client.phone.includes(term)
+        client.name?.toLowerCase().includes(term) ||
+        client.phone?.includes(term) ||
+        client.nationalId?.includes(term)
     );
-  }, [searchTerm]);
+  }, [clients, searchTerm]);
 
-  // Pagination logic applied to filtered data
-  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const totalPages = Math.ceil(
+    filteredClients.length / itemsPerPage
+  );
+
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedClients = filteredClients.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset to page 1 when filter changes
-  const handleSearchChange = (e) => {
+  const paginatedClients = filteredClients.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
 
-  const goToPage = (page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-
-  // Avatar helper (fallback if image fails)
-  const ClientAvatar = ({ src, name }) => (
-    <div className="flex items-center justify-center w-10 h-10 overflow-hidden border rounded-full border-emerald-500 bg-slate-700">
-      {src ? (
-        <img src={src} alt={name} className="object-cover w-full h-full" />
-      ) : (
-        <span className="text-sm font-bold text-white">{name.charAt(0)}</span>
-      )}
-    </div>
-  );
-
   return (
-    <div className="mt-6 overflow-hidden border shadow-xl rounded-2xl bg-slate-800/60 border-slate-700">
-      {/* Search Bar */}
-      <div className="p-4 border-b border-slate-700">
-        <div className="relative">
-          <Search className="absolute w-4 h-4 -translate-y-1/2 right-3 top-1/2 text-slate-500" />
+    <div className="w-full mt-6 overflow-hidden border rounded-xl border-slate-700 bg-slate-800/60">
+
+      {/* Header */}
+      <div className="flex flex-col gap-3 p-4 border-b border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+
+        {/* Search */}
+        <div className="relative w-full sm:max-w-sm">
+          <FaSearch className="absolute text-xs -translate-y-1/2 right-3 top-1/2 text-slate-500" />
+
           <input
             type="text"
-            placeholder="ابحث باسم العميل أو رقم الهاتف..."
             value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full py-2 pl-4 pr-10 text-sm text-white border bg-slate-800 border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none placeholder:text-slate-500"
+            onChange={handleSearch}
+            placeholder="ابحث عن عميل..."
+            className="
+              w-full rounded-lg
+              border border-slate-700
+              bg-slate-900
+              py-2.5 pl-4 pr-9
+              text-sm text-slate-100
+              outline-none
+              placeholder:text-slate-500
+              focus:border-emerald-500
+            "
           />
+        </div>
+
+        {/* View Mode */}
+        <div className="flex items-center gap-1 p-1 border rounded-lg border-slate-700 bg-slate-900">
+
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            title="جدول"
+            className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+              viewMode === "table"
+                ? "bg-emerald-600 text-white"
+                : "text-slate-500 hover:text-white"
+            }`}
+          >
+            <FaList className="text-sm" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode("cards")}
+            title="كروت"
+            className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+              viewMode === "cards"
+                ? "bg-emerald-600 text-white"
+                : "text-slate-500 hover:text-white"
+            }`}
+          >
+            <FaThLarge className="text-sm" />
+          </button>
+
         </div>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden overflow-x-auto md:block">
-        <table className="min-w-full divide-y divide-slate-700">
-          <thead className="sticky top-0 bg-slate-800">
-            <tr>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                صورة العميل
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                الاسم
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                رقم الهاتف
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                عدد القضايا
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                عدد الجلسات القادمة
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                آخر نشاط
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                الحالة
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                إجراءات سريعة
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-right uppercase text-slate-400">
-                إجراءات
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-700">
-            {paginatedClients.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-6 py-12 text-center text-slate-400">
-                  لا يوجد عملاء مطابقون للبحث
-                </td>
+      {/* Empty */}
+      {paginatedClients.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <FaUser className="mb-3 text-3xl" />
+          <p className="text-sm">لا يوجد عملاء</p>
+        </div>
+      ) : viewMode === "table" ? (
+
+        /* ================= TABLE ================= */
+
+        <div className="w-full overflow-x-auto table-scroll">
+          <table className="w-full min-w-[750px] text-right">
+
+            <thead>
+              <tr className="border-b border-slate-700 bg-slate-800">
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  العميل
+                </th>
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  الهاتف
+                </th>
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  الرقم القومي
+                </th>
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  المدينة
+                </th>
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  الحالة
+                </th>
+
+                <th className="px-5 py-3 text-xs font-medium text-slate-500">
+                  الإجراءات
+                </th>
+
               </tr>
-            ) : (
-              paginatedClients.map((client) => {
-                const badge = getStatusBadge(client.status);
-                const StatusIcon = badge.icon;
-                return (
-                  <tr
-                    key={client.id}
-                    className="transition duration-200 hover:bg-slate-700/40"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <ClientAvatar src={client.image} name={client.name} />
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-white whitespace-nowrap">
-                      {client.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-300">
-                      {client.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs rounded-full bg-slate-700 text-slate-200">
-                        {client.casesCount} قضية
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs rounded-full bg-amber-900/30 text-amber-300">
-                        {client.upcomingSessions} جلسة
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-400">
-                      {client.lastActivity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}
-                      >
-                        <StatusIcon className="w-3 h-3" />
-                        {badge.text}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        <button className="transition text-emerald-400 hover:scale-110">
-                          <Briefcase className="w-4 h-4" />
-                        </button>
-                        <button className="text-blue-400 transition hover:scale-110">
-                          <Calendar className="w-4 h-4" />
-                        </button>
-                        <button className="text-purple-400 transition hover:scale-110">
-                          <FolderOpen className="w-4 h-4" />
-                        </button>
-                        <button className="transition text-amber-400 hover:scale-110">
-                          <CheckSquare className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        <button className="transition text-emerald-400 hover:scale-110">
-                          <Eye className="w-5 h-5" />
-                        </button>
-                        <button className="text-blue-400 transition hover:scale-110">
-                          <Edit className="w-5 h-5" />
-                        </button>
-                        <button className="text-red-400 transition hover:scale-110">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
 
-      {/* Mobile Card View */}
-      <div className="divide-y md:hidden divide-slate-700">
-        {paginatedClients.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">
-            لا يوجد عملاء مطابقون للبحث
-          </div>
-        ) : (
-          paginatedClients.map((client) => {
-            const badge = getStatusBadge(client.status);
-            const StatusIcon = badge.icon;
-            return (
-              <div key={client.id} className="p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <ClientAvatar src={client.image} name={client.name} />
-                    <div>
-                      <p className="font-semibold text-white">{client.name}</p>
-                      <p className="text-sm text-slate-400">{client.phone}</p>
+            <tbody>
+              {paginatedClients.map((client) => (
+                <tr
+                  key={client._id}
+                  className="border-b border-slate-700/70 hover:bg-slate-700/30"
+                >
+
+                  {/* Client */}
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+
+                     {client.profileImage?.url ? (
+  <img
+    src={client.profileImage.url}
+    alt={client.name}
+    className="object-cover rounded-full h-9 w-9 shrink-0"
+  />
+) : (
+  <div className="flex items-center justify-center rounded-full h-9 w-9 shrink-0 bg-slate-700 text-emerald-400">
+    <FaUser className="text-sm" />
+  </div>
+)}
+
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {client.name}
+                        </p>
+
+                        {client.email && (
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {client.email}
+                          </p>
+                        )}
+                      </div>
+
                     </div>
-                  </div>
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}
-                  >
-                    <StatusIcon className="w-3 h-3" />
-                    {badge.text}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <span className="px-2 py-1 text-xs rounded-full bg-slate-700 text-slate-200">
-                    📋 {client.casesCount} قضية
-                  </span>
-                  <span className="px-2 py-1 text-xs rounded-full bg-amber-900/30 text-amber-300">
-                    🗓️ {client.upcomingSessions} جلسة
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    🕒 {client.lastActivity}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-slate-700">
-                  <div className="flex gap-3">
-                    <button className="text-emerald-400">
-                      <Briefcase className="w-4 h-4" />
-                    </button>
-                    <button className="text-blue-400">
-                      <Calendar className="w-4 h-4" />
-                    </button>
-                    <button className="text-purple-400">
-                      <FolderOpen className="w-4 h-4" />
-                    </button>
-                    <button className="text-amber-400">
-                      <CheckSquare className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="flex gap-3">
-                    <button className="text-emerald-400">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-blue-400">
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button className="text-red-400">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+                  </td>
 
-      {/* Pagination Controls */}
+                  {/* Phone */}
+                  <td className="px-5 py-4 text-sm text-slate-300">
+                    {client.phone || "-"}
+                  </td>
+
+                  {/* National ID */}
+                  <td className="px-5 py-4 text-sm text-slate-400">
+                    {client.nationalId || "-"}
+                  </td>
+
+                  {/* City */}
+                  <td className="px-5 py-4 text-sm text-slate-400">
+                    {client.city || "-"}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-5 py-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs ${
+                        client.isActive
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : "bg-red-500/10 text-red-400"
+                      }`}
+                    >
+                      {client.isActive ? "نشط" : "غير نشط"}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-2">
+
+                      <button
+                        type="button"
+                        title="التفاصيل"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-400"
+                      >
+                        <FaEye />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="تعديل"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-blue-500/10 hover:text-blue-400"
+                      >
+                        <FaEdit />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="حذف"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400"
+                      >
+                        <FaTrash />
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
+
+      ) : (
+
+        /* ================= CARDS ================= */
+
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          {paginatedClients.map((client) => (
+            <div
+              key={client._id}
+              className="p-4 transition border rounded-xl border-slate-700 bg-slate-800 hover:border-slate-600"
+            >
+
+              {/* Card Header */}
+              <div className="flex items-start justify-between gap-3">
+
+                <div className="flex items-center gap-3">
+
+                  {client.profileImage?.url ? (
+  <img
+    src={client.profileImage.url}
+    alt={client.name}
+    className="object-cover rounded-full h-9 w-9 shrink-0"
+  />
+) : (
+  <div className="flex items-center justify-center rounded-full h-9 w-9 shrink-0 bg-slate-700 text-emerald-400">
+    <FaUser className="text-sm" />
+  </div>
+)}
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">
+                      {client.name}
+                    </h3>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {client.phone || "لا يوجد هاتف"}
+                    </p>
+                  </div>
+
+                </div>
+
+                <span
+                  className={`rounded-full px-2 py-1 text-[11px] ${
+                    client.isActive
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-red-500/10 text-red-400"
+                  }`}
+                >
+                  {client.isActive ? "نشط" : "غير نشط"}
+                </span>
+
+              </div>
+
+              {/* Card Info */}
+              <div className="pt-3 mt-4 space-y-3 border-t border-slate-700">
+
+                <div className="flex justify-between gap-3 text-xs">
+                  <span className="text-slate-500">
+                    الرقم القومي
+                  </span>
+
+                  <span className="text-slate-300">
+                    {client.nationalId || "-"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-3 text-xs">
+                  <span className="text-slate-500">
+                    المدينة
+                  </span>
+
+                  <span className="text-slate-300">
+                    {client.city || "-"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-3 text-xs">
+                  <span className="text-slate-500">
+                    البريد
+                  </span>
+
+                  <span className="max-w-[180px] truncate text-slate-300">
+                    {client.email || "-"}
+                  </span>
+                </div>
+
+              </div>
+
+              {/* Card Actions */}
+              <div className="flex justify-end gap-2 pt-3 mt-4 border-t border-slate-700">
+
+                <button
+                  type="button"
+                  title="التفاصيل"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-400"
+                >
+                  <FaEye />
+                </button>
+
+                <button
+                  type="button"
+                  title="تعديل"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-blue-500/10 hover:text-blue-400"
+                >
+                  <FaEdit />
+                </button>
+
+                <button
+                  type="button"
+                  title="حذف"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400"
+                >
+                  <FaTrash />
+                </button>
+
+              </div>
+
+            </div>
+          ))}
+
+        </div>
+      )}
+
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between p-4 border-t border-slate-700">
+
           <button
-            onClick={() => goToPage(currentPage - 1)}
+            type="button"
             disabled={currentPage === 1}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-              currentPage === 1
-                ? "bg-slate-700 text-slate-500 cursor-not-allowed"
-                : "bg-slate-700 text-slate-200 hover:bg-slate-600"
-            }`}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className="flex items-center gap-1 text-xs transition text-slate-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
           >
-            <ChevronRight className="w-4 h-4" /> السابق
+            <FaChevronRight />
+            السابق
           </button>
-          <div className="flex gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+
+          <div className="flex items-center gap-1">
+
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1
+            ).map((page) => (
               <button
                 key={page}
-                onClick={() => goToPage(page)}
-                className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                  page === currentPage
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-xs transition ${
+                  currentPage === page
                     ? "bg-emerald-600 text-white"
-                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                    : "text-slate-500 hover:bg-slate-700 hover:text-white"
                 }`}
               >
                 {page}
               </button>
             ))}
+
           </div>
+
           <button
-            onClick={() => goToPage(currentPage + 1)}
+            type="button"
             disabled={currentPage === totalPages}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-              currentPage === totalPages
-                ? "bg-slate-700 text-slate-500 cursor-not-allowed"
-                : "bg-slate-700 text-slate-200 hover:bg-slate-600"
-            }`}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className="flex items-center gap-1 text-xs transition text-slate-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
           >
-            التالي <ChevronLeft className="w-4 h-4" />
+            التالي
+            <FaChevronLeft />
           </button>
+
         </div>
       )}
+
     </div>
   );
 };

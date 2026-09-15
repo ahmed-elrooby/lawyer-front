@@ -9,7 +9,7 @@ const Files = () => {
   return <>
   <SubHeader/>
   <Cards/>
-  <div className='grid grid-cols-1 gap-4 mt-6 md:grid-cols-3'>
+  <div className='grid grid-cols-1 gap-4 mt-6 lg:grid-cols-3'>
     <FilesChart/>
     <FileUpload/>
   </div>

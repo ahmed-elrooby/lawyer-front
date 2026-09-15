@@ -1,171 +1,111 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { CloudUpload, FileText, X } from "lucide-react";
+import React, { useContext } from "react";
+import {
+  CloudUpload,
+  FilePlus,
+  FolderOpen,
+  ArrowUp,
+} from "lucide-react";
+
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
 
 const FileUpload = () => {
-  const [files, setFiles] = useState([]);
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(null);
-  const inputRef = useRef(null);
+  const { setOpenAddDocument } = useContext(LawyerContext);
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    if (droppedFiles.length) {
-      setFiles((prev) => [...prev, ...droppedFiles]);
-      simulateUpload();
-    }
-  };
-
-  const handleChange = (e) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...selectedFiles]);
-      simulateUpload();
-    }
-  };
-
-  const simulateUpload = () => {
-    setUploadProgress(0);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => setUploadProgress(null), 1000);
-      }
-    }, 200);
-  };
-
-  const removeFile = (indexToRemove) => {
-    setFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
-  const onButtonClick = () => {
-    inputRef.current?.click();
+  const handleOpenUpload = () => {
+    setOpenAddDocument(true);
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm border border-slate-700/50 transition-all duration-500 hover:scale-[1.01] hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-400/50">
-      {/* Animated gradient background on hover */}
-      <div className="absolute inset-0 transition-all duration-700 bg-gradient-to-br from-blue-600/0 via-purple-600/0 to-emerald-600/0 group-hover:from-blue-600/10 group-hover:via-purple-600/5 group-hover:to-emerald-600/10 rounded-2xl" />
+    <div className="relative p-6 overflow-hidden transition-all duration-300 border shadow-xl group rounded-3xl border-slate-700/60 bg-slate-900 hover:border-emerald-500/40 hover:shadow-emerald-500/5">
+      {/* Background Glow */}
+      <div className="absolute transition-all duration-500 rounded-full pointer-events-none -right-20 -top-20 h-52 w-52 bg-emerald-500/10 blur-3xl group-hover:bg-emerald-500/20" />
 
-      {/* Glass reflection effect */}
-      <div className="absolute transition-all duration-1000 transform -skew-x-12 opacity-0 -inset-full group-hover:inset-0 group-hover:opacity-20 bg-gradient-to-r from-white/0 via-white/20 to-white/0" />
+      <div className="absolute transition-all duration-500 rounded-full pointer-events-none -bottom-20 -left-20 h-52 w-52 bg-blue-500/10 blur-3xl group-hover:bg-blue-500/15" />
 
-      <div
-        className={`
-          relative z-10 cursor-pointer p-6 transition-all duration-300
-          ${dragActive ? "bg-blue-500/10" : ""}
-        `}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        onClick={onButtonClick}
-      >
-        {/* Drag overlay with dashed border */}
-        <div
-          className={`
-            absolute inset-3 rounded-xl border-2 border-dashed transition-all duration-300 pointer-events-none
-            ${dragActive 
-              ? "border-blue-400 bg-blue-500/5 scale-[1.02]" 
-              : "border-slate-600 group-hover:border-blue-500/50"}
-          `}
-        />
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-white">
+              رفع مستند جديد
+            </h3>
 
-        <div className="relative z-20 text-center">
-          {/* Animated icon */}
-          <div className="relative inline-block">
-            <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-xl animate-pulse" />
-            <CloudUpload className="relative w-16 h-16 mx-auto mb-4 text-blue-400 transition-transform duration-300 drop-shadow-lg group-hover:scale-110 group-hover:rotate-3" />
+            <p className="mt-1 text-sm text-slate-400">
+              أضف مستندًا واربطه بقضية أو عميل
+            </p>
           </div>
 
-          <h4 className="mb-1 text-xl font-bold text-white">
-            رفع الملفات
+          <div className="flex items-center justify-center border h-11 w-11 rounded-2xl border-emerald-500/20 bg-emerald-500/10">
+            <FilePlus className="w-5 h-5 text-emerald-400" />
+          </div>
+        </div>
+
+        {/* Upload Area */}
+        <div
+          onClick={handleOpenUpload}
+          className="p-8 text-center transition-all duration-300 border border-dashed cursor-pointer rounded-2xl border-slate-700 bg-slate-800/40 hover:border-emerald-500/50 hover:bg-emerald-500/5"
+        >
+          {/* Icon */}
+          <div className="relative flex items-center justify-center w-20 h-20 mx-auto mb-5">
+            <div className="absolute inset-0 transition-all duration-500 rounded-full bg-emerald-500/10 blur-xl group-hover:bg-emerald-500/20" />
+
+            <div className="relative flex items-center justify-center w-16 h-16 transition-transform duration-300 border rounded-2xl border-emerald-500/20 bg-emerald-500/10 group-hover:-translate-y-1">
+              <CloudUpload className="w-8 h-8 text-emerald-400" />
+            </div>
+          </div>
+
+          <h4 className="text-base font-semibold text-white">
+            ارفع مستنداتك بسهولة
           </h4>
-          <p className="mb-2 text-sm text-slate-300">
-            اسحب ملفاتك هنا أو اضغط للاختيار
-          </p>
-          <p className="text-xs text-slate-400">
-            يدعم PDF، Word، Excel، الصور (حتى 10MB)
+
+          <p className="max-w-md mx-auto mt-2 text-sm leading-6 text-slate-400">
+            اضغط هنا لاختيار الملف وإضافة بيانات المستند
           </p>
 
-          {/* File list preview */}
-          {files.length > 0 && (
-            <div className="max-w-md mx-auto mt-6 text-right">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-slate-400">الملفات المرفوعة</span>
-                <span className="text-xs text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                  {files.length} ملف
-                </span>
-              </div>
-              <ul className="space-y-2 overflow-y-auto max-h-32 custom-scrollbar">
-                {files.map((file, idx) => (
-                  <li key={idx} className="flex items-center justify-between gap-2 p-2 border rounded-lg bg-white/5 backdrop-blur-sm border-white/10 group/file">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <FileText className="w-4 h-4 text-blue-400 shrink-0" />
-                      <span className="text-sm truncate text-slate-200">{file.name}</span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(idx);
-                      }}
-                      className="p-1 transition-colors rounded-full hover:bg-red-500/20"
-                    >
-                      <X className="w-3.5 h-3.5 text-red-400" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenUpload();
+            }}
+            className="inline-flex items-center gap-2 px-5 py-3 mt-6 text-sm font-bold transition-all duration-300 shadow-lg rounded-xl bg-emerald-500 text-slate-950 shadow-emerald-500/10 hover:bg-emerald-400 hover:shadow-emerald-500/20 active:scale-95"
+          >
+            <ArrowUp className="w-4 h-4" />
 
-          {/* Progress bar */}
-          {uploadProgress !== null && (
-            <div className="w-full max-w-md mx-auto mt-6">
-              <div className="flex justify-between mb-1 text-xs text-slate-400">
-                <span>جاري الرفع...</span>
-                <span>{uploadProgress}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full shadow-inner bg-slate-700">
-                <div
-                  className="relative h-2 transition-all duration-300 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
-                  style={{ width: `${uploadProgress}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-                </div>
-              </div>
-            </div>
-          )}
+            رفع مستند
+          </button>
+        </div>
 
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={handleChange}
-          />
+        {/* Supported Files */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-lg border-slate-700/60 bg-slate-800/50">
+            <FolderOpen className="w-4 h-4 text-slate-400" />
+
+            <span className="text-xs text-slate-400">
+              PDF
+            </span>
+          </div>
+
+          <div className="px-3 py-2 text-xs border rounded-lg border-slate-700/60 bg-slate-800/50 text-slate-400">
+            Word
+          </div>
+
+          <div className="px-3 py-2 text-xs border rounded-lg border-slate-700/60 bg-slate-800/50 text-slate-400">
+            Excel
+          </div>
+
+          <div className="px-3 py-2 text-xs border rounded-lg border-slate-700/60 bg-slate-800/50 text-slate-400">
+            صور
+          </div>
+
+          <div className="px-3 py-2 text-xs border rounded-lg border-slate-700/60 bg-slate-800/50 text-slate-400">
+            حتى 10MB
+          </div>
         </div>
       </div>
-
-      {/* Bottom decorative bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </div>
   );
 };

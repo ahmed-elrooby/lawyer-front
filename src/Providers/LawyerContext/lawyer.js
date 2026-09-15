@@ -39,7 +39,7 @@ const LawyerProvider = ({ children }) => {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      return data;
+      return data?.cases;
     } catch (error) {
       throw error;
     }
@@ -158,7 +158,7 @@ const LawyerProvider = ({ children }) => {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      return data;
+      return data?.sessions;
     } catch (error) {
       throw error;
     }
@@ -411,7 +411,7 @@ const LawyerProvider = ({ children }) => {
         },
       });
       console.log(data);
-      return data;
+      return data?.clients;
     } catch (error) {
       console.log(error);
       throw error;
@@ -423,22 +423,42 @@ const LawyerProvider = ({ children }) => {
     queryFn: getClients,
   });
   // ====================== CREATE CLIENTS ====================
-  const handleAddClient = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/clients`, values, {
+const handleAddClient = async (values) => {
+  try {
+    setLoadding(true);
+
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("email", values.email || "");
+    formData.append("phone", values.phone || "");
+    formData.append("address", values.address || "");
+    formData.append("city", values.city || "");
+    formData.append("country", values.country || "");
+    formData.append("nationalId", values.nationalId || "");
+    formData.append("notes", values.notes || "");
+
+    if (values.profileImage) {
+      formData.append("profileImage", values.profileImage);
+    }
+
+    const { data } = await axios.post(
+      `${baseUrl}/clients`,
+      formData,
+      {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
-      });
-      return data;
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoadding(false);
-    }
-  };
+      },
+    );
+
+    return data;
+  } catch (error) {
+    throw error;
+  } finally {
+    setLoadding(false);
+  }
+};
   const clientQuery = useQueryClient();
   const [openAddClient, setOpenAddClient] = useState(false);
   const handleAddClientMutation = useMutation({
@@ -450,6 +470,7 @@ const LawyerProvider = ({ children }) => {
       setOpenAddClient(false);
     },
     onError: (err) => {
+      
       toast.error(
         err?.response?.data?.message || "حدث خطاء اثناء اضافة العميل",
       );
@@ -674,7 +695,7 @@ const LawyerProvider = ({ children }) => {
         },
       });
       console.log(data);
-      return data;
+      return data?.attachments;
     } catch (error) {
       console.log(error);
       throw error;
@@ -686,22 +707,52 @@ const LawyerProvider = ({ children }) => {
     queryFn: getDocument,
   });
   // ==================== CREATE DOCUMENT CATEGORIES ================================
-  const handleAddDocument = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/document`, values, {
+ const handleAddDocument = async (values) => {
+  try {
+    setLoadding(true);
+
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("categoryId", values.categoryId);
+
+    if (values.caseId) {
+      formData.append("caseId", values.caseId);
+    }
+
+    if (values.clientId) {
+      formData.append("clientId", values.clientId);
+    }
+
+    if (values.sessionId) {
+      formData.append("sessionId", values.sessionId);
+    }
+
+    if (values.description) {
+      formData.append("description", values.description);
+    }
+
+    if (values.file) {
+      formData.append("file", values.file);
+    }
+
+    const { data } = await axios.post(
+      `${baseUrl}/document`,
+      formData,
+      {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
-      });
-      return data;
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoadding(false);
-    }
-  };
+      }
+    );
+
+    return data;
+  } catch (error) {
+    throw error;
+  } finally {
+    setLoadding(false);
+  }
+};
 
   const [openAddDocument, setOpenAddDocument] = useState(false);
   const documentQuery = useQueryClient();
@@ -798,7 +849,7 @@ const LawyerProvider = ({ children }) => {
   const handleAddNote = async (values) => {
     try {
       setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/note`, values, {
+      const { data } = await axios.post(`${baseUrl}/notes`, values, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -817,13 +868,13 @@ const LawyerProvider = ({ children }) => {
     mutationKey: ["addnote"],
     mutationFn: handleAddNote,
     onSuccess: (data) => {
-      toast.success(data?.message || "تم اضافة الاشعار بنجاح");
+      toast.success(data?.message || "تم اضافة الملاحظه بنجاح");
       noteQuery.invalidateQueries(["notes"]);
       setOpenAddNote(false);
     },
     onError: (err) => {
       toast.error(
-        err?.response?.data?.message || "حدث خطاء اثناء اضافة الاشعار",
+        err?.response?.data?.message || "حدث خطاء اثناء اضافة الملاحظه",
       );
     },
   });
@@ -835,13 +886,13 @@ const LawyerProvider = ({ children }) => {
   const handleGetNote = async () => {
     try {
       setLoadding(true);
-      const { data } = await axios.get(`${baseUrl}/note`, {
+      const { data } = await axios.get(`${baseUrl}/notes`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      return data;
+      return data?.notes;
     } catch (error) {
       throw error;
     } finally {
@@ -856,7 +907,7 @@ const LawyerProvider = ({ children }) => {
   const handleUpdateNote = async ({ values, id }) => {
     try {
       setLoadding(true);
-      const { data } = await axios.put(`${baseUrl}/note/${id}`, values, {
+      const { data } = await axios.put(`${baseUrl}/notes/${id}`, values, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -874,13 +925,13 @@ const LawyerProvider = ({ children }) => {
     mutationKey: ["updatenote"],
     mutationFn: handleUpdateNote,
     onSuccess: (data) => {
-      toast.success(data?.message || "تم تعديل الاشعار بنجاح");
+      toast.success(data?.message || "تم تعديل الملاحظه بنجاح");
       noteQuery.invalidateQueries(["notes"]);
       setOpenUpdateNote(false);
     },
     onError: (err) => {
       toast.error(
-        err?.response?.data?.message || "حدث خطاء اثناء تعديل الاشعار",
+        err?.response?.data?.message || "حدث خطاء اثناء تعديل الملاحظه",
       );
     },
   });
@@ -892,7 +943,7 @@ const LawyerProvider = ({ children }) => {
   const handleDeleteNote = async (id) => {
     try {
       setLoadding(true);
-      const { data } = await axios.delete(`${baseUrl}/note/${id}`, {
+      const { data } = await axios.delete(`${baseUrl}/notes/${id}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -910,38 +961,40 @@ const LawyerProvider = ({ children }) => {
     mutationKey: ["deletenote"],
     mutationFn: handleDeleteNote,
     onSuccess: (data) => {
-      toast.success(data?.message || "تم حذف الاشعار بنجاح");
+      toast.success(data?.message || "تم حذف الملاحظه بنجاح");
       noteQuery.invalidateQueries(["notes"]);
       setOpenDeleteNote(false);
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || "حدث خطاء اثناء حذف الاشعار");
+      toast.error(err?.response?.data?.message || "حدث خطاء اثناء حذف الملاحظه");
     },
   });
   const handleDeleteNoteFun = (id) => {
     handleDeleteNoteMutation.mutate(id);
   };
   // ================== TIMELINE ================================
-  const getTimeline = async () => {
-    try {
-      const { data } = await axios.get(`${baseUrl}/timeline`, {
+
+const getTimeline = async (caseId = null) => {
+  try {
+    const query = caseId ? `?caseId=${caseId}` : "";
+
+    const { data } = await axios.get(
+      `${baseUrl}/timeline${query}`,
+      {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
-      });
-      console.log(data);
-      return data?.timeLine;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
+      }
+    );
 
-  const { data: timeline } = useQuery({
-    queryKey: ["timeline"],
-    queryFn: getTimeline,
-  });
+    return data?.timeLine || [];
+  } catch (error) {
+    return [];
+  }
+};
+
+
+
   // ================== GET NOTIFICATIONS ==================
   const getNotifications = async () => {
     try {
@@ -1060,9 +1113,9 @@ const LawyerProvider = ({ children }) => {
       );
     },
   });
-  const handleReadNoteFun = () => {
-    readNoteMutation.mutate();
-  };
+const handleReadNoteFun = () => {
+  readNoteMutation.mutate();
+}
   return (
     <LawyerContext.Provider
       value={{
@@ -1082,6 +1135,7 @@ const LawyerProvider = ({ children }) => {
         // casetype
         handleUpdateCaseTypeFun,openUpdateCaseType, setOpenUpdateCaseType,handleDeleteCaseTypeFun,openDeleteCaseType, setOpenDeleteCaseType,caseTypes,handleAddCaseTypeFun,openAddCaseType, setOpenAddCaseType,
         // sessions
+        sessions,
         handleAddSessionFun,
         openAddSession,
         setOpenAddSession,
@@ -1127,7 +1181,7 @@ const LawyerProvider = ({ children }) => {
         openDeleteNote,
         setOpenDeleteNote,
         // timeline
-        timeline,
+        getTimeline,
 
         // notifications
         notifications,

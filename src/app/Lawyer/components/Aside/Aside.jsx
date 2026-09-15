@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,33 +18,25 @@ import {
   X,
   Tags,
   FileText,
+  Bell,
 } from "lucide-react";
+import { FaStickyNote } from "react-icons/fa";
+import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
 
 const Aside = ({ collapsed, setCollapsed }) => {
   const pathname = usePathname();
 
   const [openMobile, setOpenMobile] = useState(false);
-
+const {profile,handleLogoutFun} = useContext(authContext);
   const menu = [
     {
       title: "لوحة التحكم",
       icon: LayoutDashboard,
       href: "/Lawyer",
-    },
-    {
-      title: "إدارة الملفات",
-      icon: FolderOpen,
-      href: "/Lawyer/FilesPage",
-    },
-    {
+    },  {
       title: "العملاء",
       icon: Users,
       href: "/Lawyer/ClientsPage",
-    },
-    {
-      title: "القضايا",
-      icon: Scale,
-      href: "/Lawyer/CasesPage",
     },
     {
       title: "أنواع القضايا",
@@ -52,9 +44,9 @@ const Aside = ({ collapsed, setCollapsed }) => {
       href: "/Lawyer/CaseType",
     },
     {
-      title: "الجلسات",
-      icon: Calendar,
-      href: "/Lawyer/sessions",
+      title: "القضايا",
+      icon: Scale,
+      href: "/Lawyer/CasesPage",
     },
     {
       title: "أنواع المستندات",
@@ -62,10 +54,23 @@ const Aside = ({ collapsed, setCollapsed }) => {
       href: "/Lawyer/FileCategories",
     },
     {
-      title: "التقارير",
-      icon: BarChart3,
-      href: "/reports",
+      title: "إدارة الملفات",
+      icon: FolderOpen,
+      href: "/Lawyer/FilesPage",
     },
+  
+    
+    {
+      title: "الجلسات",
+      icon: Calendar,
+      href: "/Lawyer/Session",
+    },
+  {
+  title: "الملاحظات",
+  icon: FaStickyNote,
+  href: "/Lawyer/Notes",
+},
+{ title: "الإشعارات", icon: Bell, href: "/Lawyer/Notification", },
   ];
 
   return (
@@ -296,7 +301,7 @@ const Aside = ({ collapsed, setCollapsed }) => {
         >
           {/* Profile */}
           <Link
-            href="/profile"
+            href="/Lawyer/Profile"
             onClick={() => setOpenMobile(false)}
             className={`
               flex
@@ -315,7 +320,7 @@ const Aside = ({ collapsed, setCollapsed }) => {
             `}
           >
             <img
-              src="https://i.pravatar.cc/40"
+              src={profile?.user?.profileImage?.url}
               alt="profile"
               className="object-cover w-8 h-8 border rounded-full border-slate-700"
             />
@@ -323,7 +328,7 @@ const Aside = ({ collapsed, setCollapsed }) => {
             {!collapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-medium text-white truncate">
-                  أحمد عيد
+                 {profile?.user?.name}
                 </span>
 
                 <span className="text-xs text-slate-500">
@@ -370,7 +375,7 @@ const Aside = ({ collapsed, setCollapsed }) => {
             </svg>
 
             {!collapsed && (
-              <span className="text-sm font-medium">
+              <span onClick={handleLogoutFun} className="text-sm font-medium">
                 تسجيل الخروج
               </span>
             )}

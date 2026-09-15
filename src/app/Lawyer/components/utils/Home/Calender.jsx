@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 
 import {
   FaCalendarAlt,
@@ -9,16 +10,16 @@ import {
   FaCircle,
 } from "react-icons/fa";
 
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+
 const Calendar = () => {
   const today = new Date();
+
+  const { sessions = [] } = useContext(LawyerContext);
 
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
-
-  // أيام الجلسات - Static حاليًا
-  // بعدين نستبدلها بالـ Sessions API
-  const sessionsDays = [5, 12, 18, 22, 28];
 
   const monthNames = [
     "يناير",
@@ -35,7 +36,15 @@ const Calendar = () => {
     "ديسمبر",
   ];
 
-  const weekDays = ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+  const weekDays = [
+    "أحد",
+    "إثنين",
+    "ثلاثاء",
+    "أربعاء",
+    "خميس",
+    "جمعة",
+    "سبت",
+  ];
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -43,6 +52,24 @@ const Calendar = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const firstDay = new Date(year, month, 1).getDay();
+
+  // استخراج أيام الجلسات الخاصة بالشهر المعروض
+  const sessionsDays = useMemo(() => {
+    return sessions
+      .filter((session) => {
+        if (!session?.sessionDate) return false;
+
+        const date = new Date(session.sessionDate);
+
+        return (
+          date.getFullYear() === year &&
+          date.getMonth() === month
+        );
+      })
+      .map((session) => {
+        return new Date(session.sessionDate).getDate();
+      });
+  }, [sessions, year, month]);
 
   const days = useMemo(() => {
     const calendarDays = [];
@@ -83,7 +110,9 @@ const Calendar = () => {
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    setCurrentDate(
+      new Date(today.getFullYear(), today.getMonth(), 1)
+    );
   };
 
   return (
@@ -96,7 +125,9 @@ const Calendar = () => {
           </div>
 
           <div>
-            <h2 className="text-lg font-bold text-white">التقويم القضائي</h2>
+            <h2 className="text-lg font-bold text-white">
+              التقويم القضائي
+            </h2>
 
             <p className="mt-1 text-xs text-slate-400">
               مواعيد الجلسات والأحداث القادمة
@@ -114,8 +145,9 @@ const Calendar = () => {
         </button>
       </div>
 
-      {/* Calendar Header */}
+      {/* Calendar */}
       <div className="p-5">
+        {/* Calendar Header */}
         <div className="flex items-center justify-between mb-5">
           {/* Previous */}
           <button
@@ -162,7 +194,12 @@ const Calendar = () => {
             const sessionActive = hasSession(day);
 
             if (!day) {
-              return <div key={`empty-${index}`} className="aspect-square" />;
+              return (
+                <div
+                  key={`empty-${index}`}
+                  className="aspect-square"
+                />
+              );
             }
 
             return (
@@ -187,7 +224,11 @@ const Calendar = () => {
                   <FaCircle
                     className={`
                       absolute bottom-1 w-1 h-1
-                      ${todayActive ? "text-white" : "text-emerald-400"}
+                      ${
+                        todayActive
+                          ? "text-white"
+                          : "text-emerald-400"
+                      }
                     `}
                   />
                 )}

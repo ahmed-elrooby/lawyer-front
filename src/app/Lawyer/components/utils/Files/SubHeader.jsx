@@ -1,36 +1,75 @@
+
 "use client";
 
-import React from "react";
-import { FolderOpen, Grid, Upload } from "lucide-react";
+import React, { useContext } from "react";
+import {
+  FaFolderOpen,
+  FaThLarge,
+  FaUpload,
+  FaArrowLeft,
+} from "react-icons/fa";
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import UploadFile from "./UploadFile.jsx";
 
 const SubHeader = () => {
-  return (
-    <div className="relative p-6 overflow-hidden text-white shadow-2xl rounded-2xl bg-gradient-to-r from-blue-800 via-blue-700 to-indigo-800 animate-fade-in-up">
-      {/* Pattern background */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold md:text-3xl">
-            <FolderOpen className="w-8 h-8" />
-            إدارة الملفات
-          </h1>
-          <p className="mt-1 text-sm text-blue-100">
-            لوحة تحكم متكاملة مع إحصائيات دقيقة وجدول مرن - الوضع الداكن
-          </p>
+  const {openAddDocument, setOpenAddDocument}=useContext(LawyerContext)
+  return <>
+  {
+    openAddDocument && <UploadFile />
+  }
+  
+    <div className="relative px-6 py-5 mb-6 overflow-hidden border shadow-xl rounded-2xl border-slate-700/60 bg-slate-800/60 shadow-black/10">
+      {/* Background Glow */}
+      <div className="absolute w-40 h-40 rounded-full -right-20 -top-20 bg-blue-500/5 blur-3xl" />
+      <div className="absolute w-40 h-40 rounded-full -bottom-20 -left-20 bg-indigo-500/5 blur-3xl" />
+
+      <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Title */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center text-blue-400 border h-14 w-14 shrink-0 rounded-2xl border-blue-500/20 bg-blue-500/10">
+            <FaFolderOpen className="text-xl" />
+          </div>
+
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                إدارة الملفات
+              </h1>
+
+              <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[10px] font-semibold text-blue-400">
+                الملفات
+              </span>
+            </div>
+
+            <p className="text-sm text-slate-400">
+              إدارة وتنظيم جميع ملفاتك ومستنداتك بسهولة
+            </p>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20">
-            <Grid className="w-4 h-4" />
-            تبديل العرض
-          </button>
-          <button className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white transition transform bg-blue-600 shadow-xl rounded-xl hover:bg-blue-700 hover:scale-105">
-            <Upload className="w-4 h-4" />
+
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+        
+
+          <button
+            type="button"
+            onClick={()=>{
+              setOpenAddDocument(true)
+            }}
+            className="inline-flex items-center justify-center gap-3 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 bg-blue-600 shadow-lg group rounded-xl shadow-blue-600/10 hover:bg-blue-500"
+          >
+            <span className="flex items-center justify-center rounded-lg h-7 w-7 bg-white/10">
+              <FaUpload className="text-xs" />
+            </span>
+
             رفع ملف جديد
+
+            <FaArrowLeft className="text-[10px] opacity-50 transition-transform group-hover:-translate-x-0.5" />
           </button>
         </div>
       </div>
     </div>
-  );
+ </>
 };
 
 export default SubHeader;

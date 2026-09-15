@@ -16,9 +16,8 @@ import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js"
 
 const UpdateCaseType = ({ selectCaseType }) => {
   const {
-    openUpdateCase,
-        setOpenUpdateCase,
-    handleUpdateCaseFun,
+   setOpenUpdateCaseType,openUpdateCaseType,
+    handleUpdateCaseTypeFun,
     loadding,
   } = useContext(LawyerContext);
 
@@ -39,7 +38,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
     description: selectCaseType?.description || "",
   };
 
-  if (!openUpdateCase || !selectCaseType) {
+  if (!openUpdateCaseType || !selectCaseType) {
     return null;
   }
 
@@ -48,7 +47,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
       onClick={() => {
         if (!loadding) {
-          setOpenUpdateCase(false);
+          setOpenUpdateCaseType(false);
         }
       }}
     >
@@ -81,7 +80,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
           <button
             type="button"
             disabled={loadding}
-            onClick={() => setOpenUpdateCase(false)}
+            onClick={() => setOpenUpdateCaseType(false)}
             className="flex items-center justify-center transition-all border rounded-lg w-9 h-9 text-slate-500 bg-slate-800 border-slate-700 hover:bg-slate-700 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <FaTimes className="text-sm" />
@@ -95,7 +94,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
           validationSchema={validationSchema}
           onSubmit={
             (values)=>{
-              handleUpdateCaseFun({values, id: selectCaseType._id});
+              handleUpdateCaseTypeFun({values, id: selectCaseType._id});
             }
           }
         >
@@ -157,7 +156,6 @@ const UpdateCaseType = ({ selectCaseType }) => {
                       as="textarea"
                       name="description"
                       rows={4}
-                      disabled={loadding || isSubmitting}
                       placeholder="اكتب وصفًا مختصرًا لنوع القضية..."
                       className="w-full py-3 pl-4 text-sm text-white transition-all border outline-none resize-none pr-11 rounded-xl bg-slate-800 border-slate-700 placeholder:text-slate-500 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 disabled:bg-slate-800/60 disabled:text-slate-500 disabled:cursor-not-allowed"
                     />
@@ -184,7 +182,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
                 <button
                   type="button"
                   disabled={loadding }
-                  onClick={() => setOpenUpdateCase(false)}
+                  onClick={() => setOpenUpdateCaseType(false)}
                   className="
                     px-5 py-2.5
                     text-sm
@@ -210,7 +208,6 @@ const UpdateCaseType = ({ selectCaseType }) => {
                 {/* Save */}
                 <button
                   type="submit"
-                  disabled={loadding || isSubmitting}
                   className="
                     inline-flex
                     items-center
@@ -242,7 +239,7 @@ const UpdateCaseType = ({ selectCaseType }) => {
                 >
                   <FaSave className="text-xs" />
 
-                  {loadding || isSubmitting
+                  {loadding 
                     ? "جاري الحفظ..."
                     : "حفظ التعديلات"}
                 </button>

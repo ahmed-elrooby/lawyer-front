@@ -1,6 +1,7 @@
+
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
 
 import {
   FaCalendarAlt,
@@ -10,17 +11,30 @@ import {
   FaPauseCircle,
 } from "react-icons/fa";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
+
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import { useRouter } from "next/navigation.js";
 
 const ComingSeesion = () => {
-  const sessions = {
-    scheduled: 8,
-    attended: 12,
-    completed: 15,
-    postponed: 3,
-    cancelled: 2,
-    total: 40,
-  };
+  const { dashboardStatisics } = useContext(LawyerContext);
+const router =useRouter()
+  const sessions = useMemo(() => {
+    return {
+      scheduled: dashboardStatisics?.sessions?.scheduled || 0,
+      attended: dashboardStatisics?.sessions?.attended || 0,
+      completed: dashboardStatisics?.sessions?.completed || 0,
+      postponed: dashboardStatisics?.sessions?.postponed || 0,
+      cancelled: dashboardStatisics?.sessions?.cancelled || 0,
+      total: dashboardStatisics?.sessions?.total || 0,
+    };
+  }, [dashboardStatisics]);
 
   const chartData = [
     {
@@ -60,9 +74,13 @@ const ComingSeesion = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-slate-700">
         <div>
-          <h2 className="text-lg font-bold text-white">إحصائيات الجلسات</h2>
+          <h2 className="text-lg font-bold text-white">
+            إحصائيات الجلسات
+          </h2>
 
-          <p className="mt-1 text-xs text-slate-400">توزيع حالات الجلسات</p>
+          <p className="mt-1 text-xs text-slate-400">
+            توزيع حالات الجلسات
+          </p>
         </div>
 
         <div className="flex items-center justify-center w-10 h-10 text-amber-600 bg-amber-100 rounded-xl">
@@ -70,12 +88,17 @@ const ComingSeesion = () => {
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Content */}
       <div className="p-5">
         <div className="flex flex-col items-center gap-5 md:flex-row">
-          {/* Donut */}
+          {/* =========================
+              Donut Chart
+          ========================== */}
           <div className="relative w-full h-56 md:w-1/2">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
               <PieChart>
                 <Pie
                   data={chartData}
@@ -89,7 +112,10 @@ const ComingSeesion = () => {
                   stroke="none"
                 >
                   {chartData.map((item, index) => (
-                    <Cell key={`cell-${index}`} fill={item.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={item.color}
+                    />
                   ))}
                 </Pie>
 
@@ -113,11 +139,15 @@ const ComingSeesion = () => {
                 {sessions.total}
               </span>
 
-              <span className="text-xs text-slate-400">إجمالي الجلسات</span>
+              <span className="text-xs text-slate-400">
+                إجمالي الجلسات
+              </span>
             </div>
           </div>
 
-          {/* Statistics */}
+          {/* =========================
+              Statistics
+          ========================== */}
           <div className="w-full space-y-3 md:w-1/2">
             {chartData.map((item) => {
               const Icon = item.icon;
@@ -138,7 +168,9 @@ const ComingSeesion = () => {
                       <Icon className="w-4 h-4" />
                     </div>
 
-                    <span className="text-xs text-slate-300">{item.name}</span>
+                    <span className="text-xs text-slate-300">
+                      {item.name}
+                    </span>
                   </div>
 
                   <span className="text-sm font-bold text-white">
@@ -155,9 +187,13 @@ const ComingSeesion = () => {
       <div className="px-5 py-3 border-t border-slate-700">
         <button
           type="button"
+          onClick={() => {
+            router.push("/Lawyer/Session");
+          }}
           className="flex items-center justify-center w-full gap-2 text-sm font-medium transition-colors text-amber-500 hover:text-amber-400"
         >
           عرض كل الجلسات
+
           <FaClock className="w-4 h-4" />
         </button>
       </div>

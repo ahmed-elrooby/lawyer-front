@@ -1,43 +1,76 @@
 
 "use client";
 
-import React from "react";
-import { Menu, Scale, Plus } from "lucide-react";
+import React, { useContext } from "react";
+import {
+  FaGavel,
+  FaPlus,
+  FaArrowLeft,
+} from "react-icons/fa";
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import AddCase from "./AddCase.jsx";
 
 const Header = () => {
-  const toggleMobileMenu = () => {
-    console.log("Toggle mobile menu – integrate with your sidebar state");
-  };
+  const { 
+        openAddCase,
+        setOpenAddCase,}=useContext(LawyerContext)
+  return<>
+{
+  openAddCase && <AddCase/>
+}
+ <div className="relative px-6 py-5 mb-6 overflow-hidden border shadow-xl rounded-2xl border-slate-700/70 bg-slate-800/70 shadow-black/10">
+      {/* Background Decoration */}
+      <div className="absolute w-40 h-40 rounded-full -top-20 -right-20 bg-emerald-500/5 blur-3xl" />
+      <div className="absolute w-40 h-40 rounded-full -bottom-20 -left-20 bg-emerald-500/5 blur-3xl" />
 
-  return (
-    <header className="z-10 flex flex-wrap items-center justify-between gap-4 px-4 py-4 border-b rounded-lg bg-slate-900/90 backdrop-blur-md border-slate-800 md:px-6">
-      <div className="flex items-center gap-4">
-        <button
-          id="mobileMenuBtn"
-          onClick={toggleMobileMenu}
-          className="p-2 transition rounded-lg md:hidden bg-slate-800 text-slate-200 hover:bg-slate-700"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold md:text-3xl">
-            <Scale className="h-7 w-7 text-emerald-500" />
-            كل القضايا
-          </h1>
-          <p className="hidden text-sm text-slate-400 md:block">
-            إدارة ومتابعة جميع القضايا القانونية
-          </p>
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Title Section */}
+        <div className="flex items-center gap-4">
+          {/* Icon */}
+          <div className="flex items-center justify-center border shadow-lg h-14 w-14 shrink-0 rounded-2xl border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-emerald-500/5">
+            <FaGavel className="text-xl" />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                القضايا
+              </h1>
+
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-400">
+                إدارة القضايا
+              </span>
+            </div>
+
+            <p className="text-sm text-slate-400">
+              إدارة ومتابعة القضايا والجلسات الخاصة بك
+            </p>
+          </div>
         </div>
+
+      
+    
+<button
+  type="button"
+  onClick={()=>{setOpenAddCase(true)}}
+  className="inline-flex items-center justify-center gap-3 px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 shadow-lg group rounded-xl bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-500"
+>
+  <span className="flex items-center justify-center rounded-lg h-7 w-7 bg-white/10">
+    <FaPlus className="text-xs" />
+  </span>
+
+  إضافة قضية
+
+  <FaArrowLeft className="text-[10px] opacity-60" />
+</button>
+
+
       </div>
-      <button
-        id="addCaseBtn"
-        className="flex items-center gap-2 px-5 py-2 text-white transition transform shadow-lg bg-emerald-600 hover:bg-emerald-700 rounded-xl hover:scale-105"
-      >
-        <Plus className="w-5 h-5" />
-        إضافة قضية جديدة
-      </button>
-    </header>
-  );
+    </div>
+
+  </>
+   
 };
 
 export default Header;
+

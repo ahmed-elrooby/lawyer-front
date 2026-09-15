@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
+
 import {
   PieChart,
   Pie,
@@ -8,97 +9,169 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+
 import { PieChart as PieChartIcon, TrendingUp } from "lucide-react";
 
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+
 const FilesChart = () => {
-  const data = [
-    { name: "مكتملة", value: 4, color: "#10B981" },
-    { name: "قيد المراجعة", value: 3, color: "#F59E0B" },
-    { name: "مرفوعة حديثاً", value: 3, color: "#3B82F6" },
+  const { documents = [] } = useContext(LawyerContext);
+
+  const chartData = useMemo(() => {
+    const categories = {};
+
+    documents.forEach((document) => {
+      const categoryName = document?.categoryId?.name || "بدون تصنيف";
+
+      if (!categories[categoryName]) {
+        categories[categoryName] = 0;
+      }
+
+      categories[categoryName]++;
+    });
+
+    return Object.entries(categories).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [documents]);
+
+  const totalFiles = documents.length;
+
+  const COLORS = [
+    "#10b981",
+    "#3b82f6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#06b6d4",
   ];
 
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-
   return (
-    <div className="relative lg:col-span-2">
-      {/* Card */}
-      <div className="relative p-5 overflow-hidden transition-all duration-300 border rounded-2xl border-slate-700/50 bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1">
-
-        {/* Background glow (lightweight) */}
-        <div className="absolute inset-0 transition opacity-0 bg-gradient-to-br from-blue-600/0 via-purple-600/0 to-emerald-600/0 group-hover:opacity-10" />
-
-        {/* Header */}
-        <div className="relative z-10 flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 border rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-white/10">
-              <PieChartIcon className="w-5 h-5 text-blue-300" />
-            </div>
-
-            <h3 className="text-lg font-bold text-white">
-              توزيع الملفات حسب الحالة
-            </h3>
+    <div className="col-span-1 p-6 border shadow-xl lg:col-span-2 rounded-3xl border-slate-700/60 bg-slate-900">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center h-11 w-11 rounded-2xl bg-emerald-500/10">
+            <PieChartIcon className="w-5 h-5 text-emerald-400" />
           </div>
 
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/5">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs font-medium text-emerald-300">
-              إجمالي {total}
-            </span>
+          <div>
+            <h2 className="text-lg font-bold text-white">
+              توزيع الملفات
+            </h2>
+
+            <p className="text-sm text-slate-400">
+              توزيع المستندات حسب التصنيف
+            </p>
           </div>
         </div>
 
-        {/* CHART (FIXED) */}
-        <div className="relative z-10 w-full h-[240px] flex justify-center">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={5}
-                dataKey="value"
-                stroke="none"
-              >
-                {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
+        <div className="flex items-center gap-2 px-3 py-2 border rounded-xl border-slate-700 bg-slate-800/60">
+          <TrendingUp className="w-4 h-4 text-emerald-400" />
 
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0F172A",
-                  borderColor: "#334155",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  color: "#F1F5F9",
-                }}
-                formatter={(value, name) => [`${value} ملف`, name]}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Legend */}
-        <div className="relative z-10 flex flex-wrap justify-center gap-4 mt-3">
-          {data.map((item) => (
-            <div
-              key={item.name}
-              className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/5"
-            >
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-xs text-slate-200">
-                {item.name}:{" "}
-                <span className="font-bold text-white">{item.value}</span>
-              </span>
-            </div>
-          ))}
+          <span className="text-sm text-slate-300">
+            {totalFiles} ملف
+          </span>
         </div>
       </div>
+
+      {chartData.length > 0 ? (
+        <div className="grid items-center grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Chart */}
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={75}
+                  outerRadius={110}
+                  paddingAngle={3}
+                  dataKey="value"
+                  nameKey="name"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#0f172a",
+                    border: "1px solid #334155",
+                    borderRadius: "12px",
+                    color: "#fff",
+                  }}
+                  formatter={(value, name) => [
+                    `${value} ملف`,
+                    name,
+                  ]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend */}
+          <div className="space-y-3">
+            {chartData.map((item, index) => {
+              const percentage =
+                totalFiles > 0
+                  ? Math.round((item.value / totalFiles) * 100)
+                  : 0;
+
+              return (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between px-4 py-3 border rounded-2xl border-slate-700/50 bg-slate-800/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{
+                        backgroundColor:
+                          COLORS[index % COLORS.length],
+                      }}
+                    />
+
+                    <span className="text-sm font-medium text-slate-200">
+                      {item.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-white">
+                      {item.value}
+                    </span>
+
+                    <span className="text-xs text-slate-500">
+                      {percentage}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex h-[300px] flex-col items-center justify-center text-center">
+          <div className="flex items-center justify-center mb-4 h-14 w-14 rounded-2xl bg-slate-800">
+            <PieChartIcon className="w-6 h-6 text-slate-500" />
+          </div>
+
+          <p className="font-medium text-slate-300">
+            لا توجد ملفات لعرض الإحصائيات
+          </p>
+
+          <p className="mt-1 text-sm text-slate-500">
+            أضف بعض الملفات وستظهر الإحصائيات هنا
+          </p>
+        </div>
+      )}
     </div>
   );
 };

@@ -19,9 +19,10 @@ import {
   FaBell,
   FaGavel,
 } from "react-icons/fa";
-
+import logo from "../../../../Images/قضاء.jpg"
 import { AdminContext } from "../../../../Providers/AdminContext/Admin.js";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
+import Image from "next/image.js";
 
 const navGroups = [
   {
@@ -130,33 +131,34 @@ const Sidebar = () => {
     [pathname],
   );
 
-  const handleLogout = () => {
-    // سيتم ربط تسجيل الخروج بالـ backend لاحقًا
-  };
+ 
 
   return (
     <aside className="relative z-20 flex flex-col flex-shrink-0 w-64 h-screen overflow-hidden border-l shadow-2xl bg-slate-50 sidebar-scroll border-gray-200/60">
       {/* Logo */}
-      <div className="relative px-5 py-6 bg-white border-b border-gray-200/70">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center shadow-lg h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30">
-            <FaBalanceScale className="text-2xl text-white" />
-          </div>
+ 
 
-          <div>
-            <span className="text-xl font-bold tracking-tight text-gray-800">
-              سوليس
-              <span className="text-blue-600">قضاء</span>
-            </span>
+<div className="flex items-center gap-3 p-3">
+  <div className="flex items-center justify-center w-10 h-10">
+    <Image
+      src={logo}
+      alt="قضاء Logo"
+      className="object-cover w-10 h-10 rounded-full"
+    />
+  </div>
 
-            <p className="text-[11px] font-medium text-gray-400/80 leading-tight">
-              منصة إدارة المحامين الذكية
-            </p>
-          </div>
-        </div>
+  <div>
+    <p className="text-sm font-bold text-gray-800">
+      قضاء
+    </p>
 
-        <div className="absolute bottom-0 left-0 h-0.5 w-1/3 rounded-full bg-gradient-to-r from-blue-500 to-transparent" />
-      </div>
+    <p className="text-xs text-gray-400">
+      منصة إدارة المحامين الذكية
+    </p>
+  </div>
+</div>
+
+
 
       {/* Navigation */}
       <div className="flex-1 px-3 py-4 overflow-y-auto">

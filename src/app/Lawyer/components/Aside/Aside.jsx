@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { FaStickyNote } from "react-icons/fa";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
+import logo from "../../../../Images/قضاء.jpg"
+import Image from "next/image.js";
 
 const Aside = ({ collapsed, setCollapsed }) => {
   const pathname = usePathname();
@@ -128,33 +130,44 @@ const {profile,handleLogoutFun} = useContext(authContext);
         <div
           className="flex items-center justify-between px-4 py-5 border-b border-slate-800 shrink-0"
         >
-          {!collapsed && (
-            <div className="flex items-center gap-2.5">
-              <div
-                className="flex items-center justify-center border w-9 h-9 rounded-xl bg-emerald-500/10 border-emerald-500/20"
-              >
-                <Scale className="w-5 h-5 text-emerald-400" />
-              </div>
+      
+{!collapsed && (
+  <div className="flex items-center gap-2.5">
+    <div className="flex items-center justify-center overflow-hidden border w-9 h-9 rounded-xl border-slate-700/50">
+      <Image
+        src={logo}
+        alt="قضاء Logo"
+        className="object-cover w-full h-full rounded-xl"
+      />
+    </div>
 
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">
-                  Main Tech
-                </span>
+    <div className="flex flex-col">
+      <span className="text-sm font-bold text-white">
+        قضاء
+      </span>
 
-                <span className="text-[10px] text-slate-500">
-                  Lawyer System
-                </span>
-              </div>
-            </div>
-          )}
+      <span className="text-[10px] text-slate-500">
+        منصة إدارة المحامين
+      </span>
+    </div>
+  </div>
+)}
+
+
+
 
           {/* Collapsed Logo */}
           {collapsed && (
-            <div
-              className="flex items-center justify-center w-10 h-10 mx-auto border rounded-xl bg-emerald-500/10 border-emerald-500/20"
-            >
-              <Scale className="w-5 h-5 text-emerald-400" />
-            </div>
+        
+<div className="flex items-center justify-center w-10 h-10 mx-auto overflow-hidden border rounded-xl bg-emerald-500/10 border-emerald-500/20">
+  <Image
+    src={logo}
+    alt="قضاء"
+    className="object-cover w-full h-full rounded-xl"
+  />
+</div>
+
+
           )}
 
           <div className="flex items-center gap-1">

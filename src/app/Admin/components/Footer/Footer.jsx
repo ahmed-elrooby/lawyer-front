@@ -11,13 +11,15 @@ import logo from "../../../../Images/image.png";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const whatsappNumber = "201125161651";
 
-  const whatsappMessage = encodeURIComponent(
-    "السلام عليكم، أحتاج إلى مساعدة بخصوص منصة سوليسقضاء."
-  );
+const whatsappNumber = "201125161651";
 
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+const whatsappMessage = encodeURIComponent(
+  "السلام عليكم، أحتاج إلى المساعدة بخصوص منصة قضاء."
+);
+
+const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
 
   return (
     <footer className="mt-8 bg-white border-t border-gray-100">
@@ -47,9 +49,12 @@ const Footer = () => {
 
           {/* Copyright */}
           <div className="text-center">
-            <p className="text-sm text-gray-500">
-              © {currentYear} منصة سوليسقضاء – نظام إدارة المحامين
-            </p>
+         
+<p className="text-sm text-gray-500">
+  © {currentYear} منصة قضاء – نظام إدارة المحامين
+</p>
+
+
 
             <p className="flex items-center justify-center gap-1 mt-1 text-xs text-gray-400">
               طور بواسطة

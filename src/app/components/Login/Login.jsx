@@ -7,7 +7,7 @@ import { authContext } from "../../../Providers/AuthProvider/Auth.js";
 import Link from "next/link.js";
 import Image from "next/image";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import logo from "../../../Images/image.png";
+import logo from "../../../Images/قضاء.jpg";
 
 const Login = () => {
   const { loadding, handleLoginFun } = useContext(authContext);

@@ -1,7 +1,6 @@
-
 "use client";
 
-import React from "react";
+import React, { useContext } from "react";
 import {
   FaTimes,
   FaGavel,
@@ -17,7 +16,10 @@ import {
   FaTrash,
   FaPlusCircle,
   FaCalendarCheck,
+  FaEye,
 } from "react-icons/fa";
+
+import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
 
 const CaseDetails = ({
   selectCase,
@@ -25,10 +27,12 @@ const CaseDetails = ({
   openDetails,
   timeline = [],
 }) => {
+  const { deleteCaseDocument,handleDeleteDocumentOfCaseFun } = useContext(LawyerContext);
+
   if (!openDetails || !selectCase) {
     return null;
   }
-console.log(timeline)
+
   // ==========================================
   // STATUS
   // ==========================================
@@ -191,6 +195,12 @@ console.log(timeline)
     }
   };
 
+  // ==========================================
+  // DELETE DOCUMENT
+  // ==========================================
+
+  
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -269,21 +279,21 @@ console.log(timeline)
                 />
 
                 <InfoItem
-                  label="اسم القضية"
-                  value={selectCase.title}
-                  icon={<FaFileAlt />}
+                  label="المحكمة"
+                  value={selectCase.court}
+                  icon={<FaUniversity />}
                 />
 
                 <InfoItem
-                  label="نوع القضية"
-                  value={selectCase.caseTypeId?.name}
+                  label="حالة القضية"
+                  value={status.label}
                   icon={<FaGavel />}
                 />
 
                 <InfoItem
-                  label="المحكمة"
-                  value={selectCase.court}
-                  icon={<FaUniversity />}
+                  label="عدد المستندات"
+                  value={`${selectCase.documents?.length || 0} مستند`}
+                  icon={<FaFileAlt />}
                 />
               </div>
             </section>
@@ -326,22 +336,12 @@ console.log(timeline)
                   </div>
                 </div>
 
-                {(selectCase.clientId?.phone ||
-                  selectCase.clientId?.email) && (
-                  <div className="grid grid-cols-1 gap-3 pt-4 mt-4 border-t border-slate-700/60 sm:grid-cols-2">
-                    {selectCase.clientId?.phone && (
-                      <InfoItem
-                        label="رقم الهاتف"
-                        value={selectCase.clientId.phone}
-                      />
-                    )}
-
-                    {selectCase.clientId?.email && (
-                      <InfoItem
-                        label="البريد الإلكتروني"
-                        value={selectCase.clientId.email}
-                      />
-                    )}
+                {selectCase.clientId?.phone && (
+                  <div className="pt-4 mt-4 border-t border-slate-700/60">
+                    <InfoItem
+                      label="رقم الهاتف"
+                      value={selectCase.clientId.phone}
+                    />
                   </div>
                 )}
               </div>
@@ -418,6 +418,99 @@ console.log(timeline)
                 </div>
               </section>
             )}
+
+            {/* ==========================================
+                DOCUMENTS
+            ========================================== */}
+
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <FaFileAlt className="text-xs text-emerald-400" />
+
+                  <h3 className="text-sm font-bold text-white">
+                    مستندات القضية
+                  </h3>
+                </div>
+
+                <span className="rounded-lg bg-slate-800 px-2.5 py-1 text-[10px] font-medium text-slate-400">
+                  {selectCase.documents?.length || 0} مستند
+                </span>
+              </div>
+
+              {selectCase.documents?.length > 0 ? (
+                <div className="space-y-2">
+                  {selectCase.documents.map((document) => (
+                    <div
+                      key={document._id}
+                      className="flex items-center justify-between gap-3 p-3 border rounded-xl border-slate-700 bg-slate-800/30"
+                    >
+                      {/* Document Info */}
+
+                      <div className="flex items-center min-w-0 gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 text-blue-400 rounded-lg shrink-0 bg-blue-500/10">
+                          <FaFileAlt className="text-sm" />
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate text-slate-200">
+                            {document.name || "مستند بدون اسم"}
+                          </p>
+
+                          <p className="mt-1 text-[10px] text-slate-500 uppercase">
+                            {document.fileType || "file"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* View */}
+
+                        <a
+                          href={document.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-8 h-8 text-blue-400 transition-colors rounded-lg bg-blue-500/10 hover:bg-blue-500/20"
+                          title="عرض المستند"
+                        >
+                          <FaEye className="text-xs" />
+                        </a>
+
+                        {/* Delete */}
+
+                        <button
+                          type="button"
+                          onClick={() =>{
+                            handleDeleteDocumentOfCaseFun({caseId: selectCase._id, documentId: document._id})
+                          }
+                          }
+                          className="flex items-center justify-center w-8 h-8 text-red-400 transition-colors rounded-lg bg-red-500/10 hover:bg-red-500/20"
+                          title="حذف المستند"
+                        >
+                          <FaTrash className="text-xs" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4 py-8 text-center border border-dashed rounded-xl border-slate-700 bg-slate-800/20">
+                  <div className="flex items-center justify-center mx-auto h-11 w-11 rounded-xl bg-slate-800 text-slate-500">
+                    <FaFileAlt />
+                  </div>
+
+                  <p className="mt-3 text-sm font-medium text-slate-400">
+                    لا توجد مستندات
+                  </p>
+
+                  <p className="mt-1 text-[11px] text-slate-600">
+                    لم يتم إرفاق أي مستندات بهذه القضية
+                  </p>
+                </div>
+              )}
+            </section>
 
             {/* ==========================================
                 LAWYERS
@@ -621,11 +714,19 @@ console.log(timeline)
   );
 };
 
+// ==========================================
+// INFO ITEM
+// ==========================================
+
 const InfoItem = ({ label, value, icon }) => {
   return (
     <div className="p-4 border rounded-xl border-slate-700 bg-slate-800/30">
       <div className="flex items-center gap-2 mb-2 text-slate-500">
-        {icon && <span className="text-[10px]">{icon}</span>}
+        {icon && (
+          <span className="text-[10px]">
+            {icon}
+          </span>
+        )}
 
         <span className="text-[10px]">
           {label}

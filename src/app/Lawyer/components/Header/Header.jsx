@@ -157,7 +157,7 @@ const Header = () => {
               {/* =========================
                   Notifications List
               ========================== */}
-              <div className="overflow-y-auto max-h-80">
+              <div className="overflow-y-auto add-case-scrollbar max-h-80">
                 {notifications.length > 0 ? (
                   notifications.slice(0, 5).map((notification) => (
                     <div
@@ -169,7 +169,7 @@ const Header = () => {
                       }`}
                     >
                       {/* Notification Icon */}
-                      <div className="flex items-center justify-center flex-shrink-0 w-9 h-9 rounded-lg bg-blue-500/10">
+                      <div className="flex items-center justify-center flex-shrink-0 rounded-lg w-9 h-9 bg-blue-500/10">
                         <Bell className="w-4 h-4 text-blue-400" />
                       </div>
 
@@ -259,7 +259,7 @@ const Header = () => {
             className="flex items-center gap-2 p-1.5 transition rounded-xl hover:bg-slate-700"
           >
             {/* Profile Image */}
-            <div className="flex items-center justify-center w-9 h-9 overflow-hidden border-2 rounded-full bg-slate-700 border-emerald-500">
+            <div className="flex items-center justify-center overflow-hidden border-2 rounded-full w-9 h-9 bg-slate-700 border-emerald-500">
               {user?.profileImage?.url ? (
                 <img
                   src={user.profileImage.url}
@@ -303,7 +303,7 @@ const Header = () => {
               <div className="p-4 border-b border-slate-700">
                 <div className="flex items-center gap-3">
                   {/* Image */}
-                  <div className="flex items-center justify-center w-11 h-11 overflow-hidden border-2 rounded-full bg-slate-800 border-emerald-500">
+                  <div className="flex items-center justify-center overflow-hidden border-2 rounded-full w-11 h-11 bg-slate-800 border-emerald-500">
                     {user?.profileImage?.url ? (
                       <img
                         src={user.profileImage.url}

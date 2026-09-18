@@ -14,14 +14,18 @@ import {
 } from "react-icons/fa";
 
 import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import Details from "./Details.jsx";
+import DeleteModel from "./DeleteModel.jsx";
+import UpdateClient from "./UpdateClient.jsx";
 
 const Table = () => {
-  const { clients = [] } = useContext(LawyerContext);
+  const { clients = [],openDeleteClient, setOpenDeleteClient,openUpdateClient, setOpenUpdateClient } = useContext(LawyerContext);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("table");
-
+ const [openDetails,setOpenDetails]=useState(false)
+ const [client,setClient]=useState(null)
   const itemsPerPage = 5;
 
   const filteredClients = useMemo(() => {
@@ -53,7 +57,16 @@ const Table = () => {
     setCurrentPage(1);
   };
 
-  return (
+  return <>
+  {
+    openDetails && <Details client={client} setOpenDetails={setOpenDetails} />
+  }
+  {
+    openDeleteClient && <DeleteModel client={client}/>
+  }
+  {
+    openUpdateClient && <UpdateClient client={client}/>
+  }
     <div className="w-full mt-6 overflow-hidden border rounded-xl border-slate-700 bg-slate-800/60">
 
       {/* Header */}
@@ -227,6 +240,10 @@ const Table = () => {
                     <div className="flex items-center gap-2">
 
                       <button
+                      onClick={()=>{
+                        setClient(client)
+                        setOpenDetails(true)
+                      }}
                         type="button"
                         title="التفاصيل"
                         className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-400"
@@ -237,12 +254,20 @@ const Table = () => {
                       <button
                         type="button"
                         title="تعديل"
+                        onClick={()=>{
+                          setClient(client)
+                          setOpenUpdateClient(true)
+                        }}
                         className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-blue-500/10 hover:text-blue-400"
                       >
                         <FaEdit />
                       </button>
 
                       <button
+                      onClick={()=>{
+                        setClient(client)
+                        setOpenDeleteClient(true)
+                      }}
                         type="button"
                         title="حذف"
                         className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400"
@@ -352,6 +377,10 @@ const Table = () => {
               <div className="flex justify-end gap-2 pt-3 mt-4 border-t border-slate-700">
 
                 <button
+                    onClick={()=>{
+                        setClient(client)
+                        setOpenDetails(true)
+                      }}
                   type="button"
                   title="التفاصيل"
                   className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-400"
@@ -360,6 +389,10 @@ const Table = () => {
                 </button>
 
                 <button
+                  onClick={()=>{
+                          setClient(client)
+                          setOpenUpdateClient(true)
+                        }}
                   type="button"
                   title="تعديل"
                   className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-blue-500/10 hover:text-blue-400"
@@ -368,6 +401,10 @@ const Table = () => {
                 </button>
 
                 <button
+                onClick={()=>{
+                  setClient(client)
+                  setOpenDeleteClient(true)
+                }}
                   type="button"
                   title="حذف"
                   className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400"
@@ -433,7 +470,7 @@ const Table = () => {
       )}
 
     </div>
-  );
+</>  
 };
 
 export default Table;

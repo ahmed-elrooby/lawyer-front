@@ -40,21 +40,13 @@ const {profile,handleLogoutFun} = useContext(authContext);
       icon: Users,
       href: "/Lawyer/ClientsPage",
     },
-    {
-      title: "أنواع القضايا",
-      icon: Tags,
-      href: "/Lawyer/CaseType",
-    },
+    
     {
       title: "القضايا",
       icon: Scale,
       href: "/Lawyer/CasesPage",
     },
-    {
-      title: "أنواع المستندات",
-      icon: FileText,
-      href: "/Lawyer/FileCategories",
-    },
+   
     {
       title: "إدارة الملفات",
       icon: FolderOpen,

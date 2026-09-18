@@ -1,12 +1,11 @@
-
 "use client";
 
 import React, { useContext, useMemo } from "react";
 
 import {
   Files,
-  BriefcaseBusiness,
-  Users,
+  FileText,
+  FileSpreadsheet,
   UploadCloud,
 } from "lucide-react";
 
@@ -16,75 +15,119 @@ const Cards = () => {
   const { documents } = useContext(LawyerContext);
 
   const cardsData = useMemo(() => {
-    const docs = Array.isArray(documents) ? documents : [];
+    const attachments = Array.isArray(documents)
+      ? documents
+      : [];
 
-    const totalDocuments = docs.length;
+    // إجمالي المستندات
+    const totalDocuments = attachments.length;
 
-    const documentsWithCases = docs.filter(
-      (document) => document?.caseId
+    // ملفات PDF
+    const pdfDocuments = attachments.filter(
+      (document) =>
+        document?.mimeType === "application/pdf" ||
+        document?.extension?.toLowerCase() === ".pdf"
     ).length;
 
-    const documentsWithClients = docs.filter(
-      (document) => document?.clientId
+    // Word + Excel
+    const officeDocuments = attachments.filter(
+      (document) => {
+        const mimeType = document?.mimeType?.toLowerCase();
+        const extension = document?.extension?.toLowerCase();
+
+        return (
+          mimeType ===
+            "application/msword" ||
+          mimeType ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+          mimeType ===
+            "application/vnd.ms-excel" ||
+          mimeType ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+          [".doc", ".docx", ".xls", ".xlsx"].includes(
+            extension
+          )
+        );
+      }
     ).length;
 
-    const last24Hours = docs.filter((document) => {
-      if (!document?.createdAt) return false;
+    // المستندات المضافة خلال آخر 24 ساعة
+    const last24Hours = attachments.filter(
+      (document) => {
+        if (!document?.createdAt) return false;
 
-      const createdAt = new Date(document.createdAt);
-      const now = new Date();
+        const createdAt = new Date(
+          document.createdAt
+        );
 
-      const difference =
-        now.getTime() - createdAt.getTime();
+        const now = new Date();
 
-      return difference <= 24 * 60 * 60 * 1000;
-    }).length;
+        const difference =
+          now.getTime() - createdAt.getTime();
+
+        return (
+          difference >= 0 &&
+          difference <= 24 * 60 * 60 * 1000
+        );
+      }
+    ).length;
 
     return [
       {
         id: 1,
-        title: "إجمالي الملفات",
+        title: "إجمالي المستندات",
         value: totalDocuments,
-        description: "جميع الملفات المخزنة في النظام",
+        description:
+          "جميع المستندات المحفوظة في ملفات المكتب",
         icon: Files,
         gradient: "from-blue-600 to-cyan-500",
-        iconBg: "from-blue-500/30 to-cyan-500/20",
+        iconBg:
+          "from-blue-500/30 to-cyan-500/20",
         iconColor: "text-blue-300",
         glow: "rgba(59,130,246,0.25)",
       },
 
       {
         id: 2,
-        title: "مرتبطة بقضايا",
-        value: documentsWithCases,
-        description: "الملفات المرتبطة بقضايا",
-        icon: BriefcaseBusiness,
-        gradient: "from-emerald-600 to-teal-500",
-        iconBg: "from-emerald-500/30 to-teal-500/20",
+        title: "ملفات PDF",
+        value: pdfDocuments,
+        description:
+          "إجمالي المستندات المحفوظة بصيغة PDF",
+        icon: FileText,
+        gradient:
+          "from-emerald-600 to-teal-500",
+        iconBg:
+          "from-emerald-500/30 to-teal-500/20",
         iconColor: "text-emerald-300",
         glow: "rgba(16,185,129,0.25)",
       },
 
       {
         id: 3,
-        title: "مرتبطة بعملاء",
-        value: documentsWithClients,
-        description: "الملفات المرتبطة بعملاء",
-        icon: Users,
-        gradient: "from-amber-600 to-orange-500",
-        iconBg: "from-amber-500/30 to-orange-500/20",
+        title: "ملفات Office",
+        value: officeDocuments,
+        description:
+          "مستندات Word و Excel المحفوظة",
+        icon: FileSpreadsheet,
+        gradient:
+          "from-amber-600 to-orange-500",
+        iconBg:
+          "from-amber-500/30 to-orange-500/20",
         iconColor: "text-amber-300",
         glow: "rgba(245,158,11,0.25)",
       },
 
       {
         id: 4,
-        title: "مرفوعة حديثاً",
+        title: "مضافة حديثًا",
         value: last24Hours,
-        description: "الملفات المضافة خلال آخر 24 ساعة",
+        description:
+          "المستندات المضافة خلال آخر 24 ساعة",
         icon: UploadCloud,
-        gradient: "from-purple-600 to-pink-500",
-        iconBg: "from-purple-500/30 to-pink-500/20",
+        gradient:
+          "from-purple-600 to-pink-500",
+        iconBg:
+          "from-purple-500/30 to-pink-500/20",
         iconColor: "text-purple-300",
         glow: "rgba(168,85,247,0.25)",
       },
@@ -119,8 +162,11 @@ const Cards = () => {
             />
 
             <div className="relative z-10">
+
               {/* Top */}
               <div className="flex items-center justify-between mb-5">
+
+                {/* Icon */}
                 <div
                   className={`
                     p-3
@@ -139,6 +185,7 @@ const Cards = () => {
                   />
                 </div>
 
+                {/* Value */}
                 <div className="text-right">
                   <span
                     className="text-4xl font-black text-white"
@@ -157,13 +204,28 @@ const Cards = () => {
               </h4>
 
               {/* Description */}
-              <p className="mt-2 text-sm transition text-slate-300 opacity-80 group-hover:opacity-100">
+              <p className="mt-2 text-sm transition  text-slate-300 opacity-80 group-hover:opacity-100">
                 {card.description}
               </p>
             </div>
 
             {/* Bottom Glow */}
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition" />
+            <div
+              className="
+                absolute
+                bottom-0
+                left-0
+                right-0
+                h-[2px]
+                bg-gradient-to-r
+                from-transparent
+                via-white/20
+                to-transparent
+                opacity-0
+                group-hover:opacity-100
+                transition
+              "
+            />
           </div>
         );
       })}

@@ -1,20 +1,29 @@
-
 "use client";
 
-import React, { useContext } from "react";
+import React, {
+  useContext,
+  useState,
+} from "react";
+
 import {
   Formik,
   Form,
   Field,
   ErrorMessage,
 } from "formik";
+
 import * as Yup from "yup";
 
 import {
-  FaTimes,
-  FaEdit,
-  FaSave,
   FaGavel,
+  FaTimes,
+  FaSave,
+  FaCalendarAlt,
+  FaFileAlt,
+  FaFilePdf,
+  FaFileWord,
+  FaTrash,
+  FaPlus,
 } from "react-icons/fa";
 
 import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
@@ -24,104 +33,387 @@ const UpdateCase = ({ selectCase }) => {
     handleUpdateCaseFun,
     openUpdateCase,
     setOpenUpdateCase,
-    clients = [],
-    caseTypes = [],
+    clients,
+    lawyers,
+    loadding,handleDeleteDocumentOfCaseFun
   } = useContext(LawyerContext);
+
+  const [documents, setDocuments] =
+    useState([]);
+
+  const [deletedDocumentIds, setDeletedDocumentIds] =
+    useState([]);
 
   if (!openUpdateCase || !selectCase) {
     return null;
   }
 
-  const validationSchema = Yup.object({
-    clientId: Yup.string().required("العميل مطلوب"),
+  /*
+  |--------------------------------------------------------------------------
+  | Initial Documents
+  |--------------------------------------------------------------------------
+  */
 
-    caseTypeId: Yup.string().required(
-      "نوع القضية مطلوب",
+  const existingDocuments =
+    selectCase?.documents || [];
+
+  /*
+  |--------------------------------------------------------------------------
+  | Initial Values
+  |--------------------------------------------------------------------------
+  */
+
+  const initialValues = {
+    clientId:
+      selectCase?.clientId?._id ||
+      selectCase?.clientId ||
+      "",
+
+    lawyers:
+      selectCase?.lawyers?.map((lawyer) =>
+        typeof lawyer === "object"
+          ? lawyer._id
+          : lawyer
+      ) || [],
+
+    caseNumber:
+      selectCase?.caseNumber || "",
+
+    court:
+      selectCase?.court || "",
+
+    status:
+      selectCase?.status || "active",
+
+    filingDate: selectCase?.filingDate
+      ? new Date(
+          selectCase.filingDate
+        )
+          .toISOString()
+          .split("T")[0]
+      : "",
+
+    nextHearingDate:
+      selectCase?.nextHearingDate
+        ? new Date(
+            selectCase.nextHearingDate
+          )
+            .toISOString()
+            .split("T")[0]
+        : "",
+
+    description:
+      selectCase?.description || "",
+
+    notes:
+      selectCase?.notes || "",
+
+    documents: [],
+
+    deleteDocumentIds: [],
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Validation
+  |--------------------------------------------------------------------------
+  */
+
+  const validationSchema = Yup.object({
+    clientId: Yup.string().required(
+      "العميل مطلوب"
     ),
 
     caseNumber: Yup.string()
       .trim()
-      .required("رقم القضية مطلوب"),
-
-    title: Yup.string()
-      .trim()
-      .min(2, "عنوان القضية يجب أن يكون حرفين على الأقل")
-      .required("عنوان القضية مطلوب"),
+      .required("رقم القضية مطلوب")
+      .max(
+        100,
+        "رقم القضية يجب ألا يتجاوز 100 حرف"
+      ),
 
     court: Yup.string()
       .trim()
-      .min(2, "اسم المحكمة يجب أن يكون حرفين على الأقل")
-      .required("اسم المحكمة مطلوب"),
+      .max(
+        200,
+        "اسم المحكمة يجب ألا يتجاوز 200 حرف"
+      )
+      .nullable(),
 
     status: Yup.string()
-      .oneOf([
-        "active",
-        "reserved_for_judgment",
-        "judged",
-      ])
+      .oneOf(
+        [
+          "active",
+          "reserved_for_judgment",
+          "judged",
+        ],
+        "حالة القضية غير صحيحة"
+      )
       .required("حالة القضية مطلوبة"),
 
-    filingDate: Yup.string().required(
-      "تاريخ رفع القضية مطلوب",
-    ),
+    filingDate: Yup.date()
+      .required(
+        "تاريخ رفع القضية مطلوب"
+      )
+      .typeError(
+        "تاريخ رفع القضية غير صحيح"
+      ),
 
-    nextHearingDate: Yup.string().nullable(),
+    nextHearingDate: Yup.date()
+      .nullable()
+      .typeError(
+        "تاريخ الجلسة القادمة غير صحيح"
+      ),
 
-    description: Yup.string().max(
-      5000,
-      "الوصف يجب ألا يتجاوز 5000 حرف",
-    ),
+    description: Yup.string()
+      .trim()
+      .max(
+        2000,
+        "الوصف يجب ألا يتجاوز 2000 حرف"
+      ),
 
-    notes: Yup.string().max(
-      5000,
-      "الملاحظات يجب ألا تتجاوز 5000 حرف",
+    notes: Yup.string()
+      .trim()
+      .max(
+        2000,
+        "الملاحظات يجب ألا تتجاوز 2000 حرف"
+      ),
+
+    lawyers: Yup.array().min(
+      1,
+      "يجب تحديد محامي للقضية"
     ),
   });
 
-  const initialValues = {
-    clientId: selectCase.clientId?._id || "",
-    caseTypeId: selectCase.caseTypeId?._id || "",
-    caseNumber: selectCase.caseNumber || "",
-    title: selectCase.title || "",
-    court: selectCase.court || "",
-    status: selectCase.status || "active",
+  /*
+  |--------------------------------------------------------------------------
+  | Document Change
+  |--------------------------------------------------------------------------
+  */
 
-    filingDate: selectCase.filingDate
-      ? new Date(selectCase.filingDate)
-          .toISOString()
-          .split("T")[0]
-      : "",
+  const handleDocumentsChange = (
+    event,
+    setFieldValue,
+    values
+  ) => {
+    const files = Array.from(
+      event.target.files || []
+    );
 
-    nextHearingDate: selectCase.nextHearingDate
-      ? new Date(selectCase.nextHearingDate)
-          .toISOString()
-          .split("T")[0]
-      : "",
+    if (!files.length) return;
 
-    description: selectCase.description || "",
-    notes: selectCase.notes || "",
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    const validFiles = files.filter(
+      (file) => {
+        if (
+          !allowedTypes.includes(
+            file.type
+          )
+        ) {
+          alert(
+            `الملف ${file.name} غير مسموح به`
+          );
+
+          return false;
+        }
+
+        if (
+          file.size >
+          10 * 1024 * 1024
+        ) {
+          alert(
+            `الملف ${file.name} أكبر من 10MB`
+          );
+
+          return false;
+        }
+
+        return true;
+      }
+    );
+
+    const newDocuments =
+      validFiles.map((file) => ({
+        file,
+
+        name: file.name.replace(
+          /\.[^/.]+$/,
+          ""
+        ),
+      }));
+
+    const updatedDocuments = [
+      ...documents,
+      ...newDocuments,
+    ];
+
+    setDocuments(
+      updatedDocuments
+    );
+
+    setFieldValue(
+      "documents",
+      updatedDocuments
+    );
+
+    event.target.value = "";
   };
 
-  const inputClass =
-    "w-full rounded-xl border border-slate-700/70 bg-slate-800/40 px-4 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-600 focus:border-emerald-500/50 focus:bg-slate-800/60";
+  /*
+  |--------------------------------------------------------------------------
+  | Change New Document Name
+  |--------------------------------------------------------------------------
+  */
 
-  const labelClass =
-    "mb-2 block text-xs font-medium text-slate-400";
+  const handleDocumentNameChange = (
+    index,
+    value,
+    setFieldValue
+  ) => {
+    const updatedDocuments =
+      documents.map(
+        (document, i) =>
+          i === index
+            ? {
+                ...document,
+                name: value,
+              }
+            : document
+      );
+
+    setDocuments(
+      updatedDocuments
+    );
+
+    setFieldValue(
+      "documents",
+      updatedDocuments
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Remove New Document
+  |--------------------------------------------------------------------------
+  */
+
+  const removeDocument = (
+    index,
+    setFieldValue
+  ) => {
+    const updatedDocuments =
+      documents.filter(
+        (_, i) => i !== index
+      );
+
+    setDocuments(
+      updatedDocuments
+    );
+
+    setFieldValue(
+      "documents",
+      updatedDocuments
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Delete Existing Document
+  |--------------------------------------------------------------------------
+  */
+
+  const deleteExistingDocument = (
+    documentId,
+    setFieldValue,
+    values
+  ) => {
+    const updatedDeletedIds = [
+      ...(values.deleteDocumentIds || []),
+      documentId,
+    ];
+
+    setDeletedDocumentIds(
+      updatedDeletedIds
+    );
+
+    setFieldValue(
+      "deleteDocumentIds",
+      updatedDeletedIds
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Document Icon
+  |--------------------------------------------------------------------------
+  */
+
+  const getDocumentIcon = (
+    document
+  ) => {
+    if (!document) {
+      return <FaFileAlt />;
+    }
+
+    const fileType =
+      document.fileType ||
+      document.file?.type;
+
+    if (
+      fileType === "pdf" ||
+      fileType ===
+        "application/pdf"
+    ) {
+      return <FaFilePdf />;
+    }
+
+    if (
+      fileType === "word" ||
+      fileType ===
+        "application/msword" ||
+      fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      return <FaFileWord />;
+    }
+
+    return <FaFileAlt />;
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | UI
+  |--------------------------------------------------------------------------
+  */
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={() => setOpenUpdateCase(false)}
+      onClick={() =>
+        setOpenUpdateCase(false)
+      }
     >
       <div
-        className="dark-scrollbar max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className="flex add-case-scrollbar max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl"
+        onClick={(e) =>
+          e.stopPropagation()
+        }
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-700/60 bg-slate-900">
+        {/* ================= HEADER ================= */}
+
+        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0 border-slate-700 bg-slate-800/90">
           <div className="flex items-center gap-3">
+
             <div className="flex items-center justify-center h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <FaEdit />
+              <FaGavel className="text-lg" />
             </div>
 
             <div>
@@ -129,52 +421,61 @@ const UpdateCase = ({ selectCase }) => {
                 تعديل القضية
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-400">
                 تعديل بيانات القضية رقم{" "}
                 <span className="font-medium text-slate-300">
-                  {selectCase.caseNumber}
+                  {selectCase?.caseNumber}
                 </span>
               </p>
             </div>
+
           </div>
 
           <button
             type="button"
-            onClick={() => setOpenUpdateCase(false)}
-            className="flex items-center justify-center transition-colors h-9 w-9 rounded-xl text-slate-500 hover:bg-slate-800 hover:text-white"
+            onClick={() =>
+              setOpenUpdateCase(false)
+            }
+            className="flex items-center justify-center transition-colors h-9 w-9 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white"
           >
             <FaTimes />
           </button>
         </div>
 
+        {/* ================= FORMIK ================= */}
+
         <Formik
-          enableReinitialize
           initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={
-            (values)=>{
-                handleUpdateCaseFun({values,id:selectCase?._id})
-            }
+          validationSchema={
+            validationSchema
           }
+          enableReinitialize
+          onSubmit={(values) => {
+            handleUpdateCaseFun({
+              values,
+              id: selectCase?._id,
+            });
+          }}
         >
-          {({ isSubmitting }) => (
-            <Form className="p-6 space-y-6">
-              {/* البيانات الأساسية */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaGavel className="text-xs text-emerald-400" />
+          {({
+            values,
+            setFieldValue,
+            isSubmitting,
+          }) => (
+            <Form className="flex flex-col flex-1 min-h-0">
 
-                  <h3 className="text-sm font-bold text-white">
-                    البيانات الأساسية
-                  </h3>
-                </div>
+              {/* ================= SCROLL AREA ================= */}
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {/* العميل */}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+
+                <div className="grid grid-cols-1 gap-5 p-6 md:grid-cols-2">
+
+                  {/* ================= CLIENT ================= */}
+
                   <div>
                     <label
                       htmlFor="clientId"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
                       العميل
                     </label>
@@ -183,70 +484,99 @@ const UpdateCase = ({ selectCase }) => {
                       as="select"
                       name="clientId"
                       id="clientId"
-                      className={inputClass}
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
                     >
                       <option value="">
                         اختر العميل
                       </option>
 
-                      {clients.map((client) => (
-                        <option
-                          key={client._id}
-                          value={client._id}
-                        >
-                          {client.name}
-                        </option>
-                      ))}
+                      {clients?.map(
+                        (client) => (
+                          <option
+                            key={
+                              client?._id
+                            }
+                            value={
+                              client?._id
+                            }
+                          >
+                            {client?.name}
+                          </option>
+                        )
+                      )}
                     </Field>
 
                     <ErrorMessage
                       name="clientId"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* نوع القضية */}
+                  {/* ================= LAWYERS ================= */}
+
                   <div>
                     <label
-                      htmlFor="caseTypeId"
-                      className={labelClass}
+                      htmlFor="lawyers"
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
-                      نوع القضية
+                      المحامي
                     </label>
 
                     <Field
                       as="select"
-                      name="caseTypeId"
-                      id="caseTypeId"
-                      className={inputClass}
+                      name="lawyers"
+                      id="lawyers"
+                      value={
+                        values.lawyers?.[0] ||
+                        ""
+                      }
+                      onChange={(e) => {
+                        setFieldValue(
+                          "lawyers",
+                          e.target.value
+                            ? [
+                                e.target
+                                  .value,
+                              ]
+                            : []
+                        );
+                      }}
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
                     >
                       <option value="">
-                        اختر نوع القضية
+                        اختر المحامي
                       </option>
 
-                      {caseTypes.map((type) => (
-                        <option
-                          key={type._id}
-                          value={type._id}
-                        >
-                          {type.name}
-                        </option>
-                      ))}
+                      {lawyers?.map(
+                        (lawyer) => (
+                          <option
+                            key={
+                              lawyer?._id
+                            }
+                            value={
+                              lawyer?._id
+                            }
+                          >
+                            {lawyer?.name}
+                          </option>
+                        )
+                      )}
                     </Field>
 
                     <ErrorMessage
-                      name="caseTypeId"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      name="lawyers"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* رقم القضية */}
+                  {/* ================= CASE NUMBER ================= */}
+
                   <div>
                     <label
                       htmlFor="caseNumber"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
                       رقم القضية
                     </label>
@@ -255,70 +585,51 @@ const UpdateCase = ({ selectCase }) => {
                       type="text"
                       name="caseNumber"
                       id="caseNumber"
-                      placeholder="مثال: 1254 لسنة 2026"
-                      className={inputClass}
+                      placeholder="مثال: 2026/001"
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 placeholder:text-slate-600 focus:border-emerald-500"
                     />
 
                     <ErrorMessage
                       name="caseNumber"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* اسم القضية */}
-                  <div>
-                    <label
-                      htmlFor="title"
-                      className={labelClass}
-                    >
-                      اسم القضية
-                    </label>
+                  {/* ================= COURT ================= */}
 
-                    <Field
-                      type="text"
-                      name="title"
-                      id="title"
-                      placeholder="اسم أو عنوان القضية"
-                      className={inputClass}
-                    />
-
-                    <ErrorMessage
-                      name="title"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
-                    />
-                  </div>
-
-                  {/* المحكمة */}
                   <div>
                     <label
                       htmlFor="court"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
-                      المحكمة
+                      المحكمة{" "}
+                      <span className="text-xs text-slate-500">
+                        (اختياري)
+                      </span>
                     </label>
 
                     <Field
                       type="text"
                       name="court"
                       id="court"
-                      placeholder="اسم المحكمة"
-                      className={inputClass}
+                      placeholder="مثال: محكمة بني سويف الابتدائية"
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 placeholder:text-slate-600 focus:border-emerald-500"
                     />
 
                     <ErrorMessage
                       name="court"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* الحالة */}
+                  {/* ================= STATUS ================= */}
+
                   <div>
                     <label
                       htmlFor="status"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
                       حالة القضية
                     </label>
@@ -327,7 +638,7 @@ const UpdateCase = ({ selectCase }) => {
                       as="select"
                       name="status"
                       id="status"
-                      className={inputClass}
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
                     >
                       <option value="active">
                         نشطة
@@ -344,133 +655,364 @@ const UpdateCase = ({ selectCase }) => {
 
                     <ErrorMessage
                       name="status"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* تاريخ رفع القضية */}
+                  {/* ================= FILING DATE ================= */}
+
                   <div>
                     <label
                       htmlFor="filingDate"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
                       تاريخ رفع القضية
                     </label>
 
-                    <Field
-                      type="date"
-                      name="filingDate"
-                      id="filingDate"
-                      className={inputClass}
-                    />
+                    <div className="relative">
+                      <Field
+                        type="date"
+                        name="filingDate"
+                        id="filingDate"
+                        className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
+                      />
+
+                      <FaCalendarAlt className="absolute text-xs -translate-y-1/2 pointer-events-none left-4 top-1/2 text-slate-500" />
+                    </div>
 
                     <ErrorMessage
                       name="filingDate"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
 
-                  {/* الجلسة القادمة */}
+                  {/* ================= NEXT HEARING ================= */}
+
                   <div>
                     <label
                       htmlFor="nextHearingDate"
-                      className={labelClass}
+                      className="block mb-2 text-sm font-medium text-slate-300"
                     >
-                      الجلسة القادمة
+                      تاريخ الجلسة القادمة
                     </label>
 
-                    <Field
-                      type="date"
-                      name="nextHearingDate"
-                      id="nextHearingDate"
-                      className={inputClass}
-                    />
+                    <div className="relative">
+                      <Field
+                        type="date"
+                        name="nextHearingDate"
+                        id="nextHearingDate"
+                        className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
+                      />
+
+                      <FaCalendarAlt className="absolute text-xs -translate-y-1/2 pointer-events-none left-4 top-1/2 text-slate-500" />
+                    </div>
 
                     <ErrorMessage
                       name="nextHearingDate"
-                      component="div"
-                      className="mt-1.5 text-xs text-red-400"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
                     />
                   </div>
+
+                  {/* ================= DESCRIPTION ================= */}
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="description"
+                      className="block mb-2 text-sm font-medium text-slate-300"
+                    >
+                      وصف القضية
+                    </label>
+
+                    <Field
+                      as="textarea"
+                      name="description"
+                      id="description"
+                      rows={4}
+                      placeholder="اكتب وصفًا مختصرًا عن القضية..."
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none resize-none rounded-xl border-slate-700 bg-slate-800 placeholder:text-slate-600 focus:border-emerald-500"
+                    />
+
+                    <ErrorMessage
+                      name="description"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
+                    />
+                  </div>
+
+                  {/* ================= NOTES ================= */}
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="notes"
+                      className="block mb-2 text-sm font-medium text-slate-300"
+                    >
+                      ملاحظات
+                    </label>
+
+                    <Field
+                      as="textarea"
+                      name="notes"
+                      id="notes"
+                      rows={4}
+                      placeholder="أضف أي ملاحظات خاصة بالقضية..."
+                      className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none resize-none rounded-xl border-slate-700 bg-slate-800 placeholder:text-slate-600 focus:border-emerald-500"
+                    />
+
+                    <ErrorMessage
+                      name="notes"
+                      component="p"
+                      className="mt-1 text-xs text-red-400"
+                    />
+                  </div>
+
+                  {/* ================================================== */}
+                  {/* OLD DOCUMENTS */}
+                  {/* ================================================== */}
+
+                  <div className="md:col-span-2">
+
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-sm font-medium text-slate-300">
+                        المستندات الحالية
+                      </label>
+
+                      <span className="text-xs text-slate-500">
+                        {existingDocuments.length} مستند
+                      </span>
+                    </div>
+
+                    {existingDocuments.filter(
+                      (document) =>
+                        !values.deleteDocumentIds?.includes(
+                          document._id
+                        )
+                    ).length === 0 ? (
+                      <div className="flex items-center justify-center p-8 border border-dashed rounded-xl border-slate-700 bg-slate-800/50">
+                        <p className="text-sm text-slate-500">
+                          لا توجد مستندات حالية
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+
+                        {existingDocuments
+                          .filter(
+                            (document) =>
+                              !values.deleteDocumentIds?.includes(
+                                document._id
+                              )
+                          )
+                          .map(
+                            (document) => (
+                              <div
+                                key={
+                                  document._id
+                                }
+                                className="flex items-center gap-3 p-3 border rounded-xl border-slate-700 bg-slate-800"
+                              >
+
+                                <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0 bg-slate-700 text-emerald-400">
+                                  {getDocumentIcon(
+                                    document
+                                  )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+
+                                  <p className="text-sm font-medium text-white truncate">
+                                    {
+                                      document.name
+                                    }
+                                  </p>
+
+                                  <a
+                                    href={
+                                      document.url
+                                    }
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs text-emerald-400 hover:text-emerald-300"
+                                  >
+                                    فتح المستند
+                                  </a>
+
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>{
+handleDeleteDocumentOfCaseFun({caseId:selectCase._id,documentId:document._id})
+                                  }
+                                  }
+                                  className="flex items-center justify-center text-red-400 transition-colors rounded-lg w-9 h-9 hover:bg-red-500/10 hover:text-red-300"
+                                  title="حذف المستند"
+                                >
+                                  <FaTrash />
+                                </button>
+
+                              </div>
+                            )
+                          )}
+
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* ================================================== */}
+                  {/* NEW DOCUMENTS */}
+                  {/* ================================================== */}
+
+                  <div className="md:col-span-2">
+
+                    <div className="flex items-center justify-between mb-3">
+
+                      <label className="text-sm font-medium text-slate-300">
+                        إضافة مستندات جديدة
+                      </label>
+
+                      <label
+                        htmlFor="caseDocumentsUpdate"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-white transition-colors cursor-pointer rounded-xl bg-emerald-600 hover:bg-emerald-500"
+                      >
+                        <FaPlus />
+                        إضافة مستند
+                      </label>
+
+                      <input
+                        id="caseDocumentsUpdate"
+                        type="file"
+                        multiple
+                        hidden
+                        accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx"
+                        onChange={(event) =>
+                          handleDocumentsChange(
+                            event,
+                            setFieldValue,
+                            values
+                          )
+                        }
+                      />
+
+                    </div>
+
+                    {documents.length === 0 ? (
+                      <div className="flex items-center justify-center p-8 border border-dashed rounded-xl border-slate-700 bg-slate-800/50">
+                        <p className="text-sm text-slate-500">
+                          لا توجد مستندات جديدة
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+
+                        {documents.map(
+                          (
+                            document,
+                            index
+                          ) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-3 p-3 border rounded-xl border-slate-700 bg-slate-800"
+                            >
+
+                              <div className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0 bg-slate-700 text-emerald-400">
+                                {getDocumentIcon(
+                                  document
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+
+                                <input
+                                  type="text"
+                                  value={
+                                    document.name
+                                  }
+                                  onChange={(e) =>
+                                    handleDocumentNameChange(
+                                      index,
+                                      e.target.value,
+                                      setFieldValue
+                                    )
+                                  }
+                                  placeholder="اسم المستند"
+                                  className="w-full px-3 py-2 mb-1 text-sm text-white border rounded-lg outline-none border-slate-700 bg-slate-900 focus:border-emerald-500"
+                                />
+
+                                <p className="text-xs truncate text-slate-500">
+                                  {
+                                    document
+                                      .file
+                                      ?.name
+                                  }
+                                </p>
+
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeDocument(
+                                    index,
+                                    setFieldValue
+                                  )
+                                }
+                                className="flex items-center justify-center text-red-400 transition-colors rounded-lg w-9 h-9 hover:bg-red-500/10 hover:text-red-300"
+                              >
+                                <FaTrash />
+                              </button>
+
+                            </div>
+                          )
+                        )}
+
+                      </div>
+                    )}
+
+                  </div>
+
                 </div>
-              </section>
-
-              {/* الوصف */}
-              <section>
-                <label
-                  htmlFor="description"
-                  className={labelClass}
-                >
-                  وصف القضية
-                </label>
-
-                <Field
-                  as="textarea"
-                  name="description"
-                  id="description"
-                  rows={4}
-                  placeholder="اكتب وصف القضية..."
-                  className={`${inputClass} resize-none`}
-                />
-
-                <ErrorMessage
-                  name="description"
-                  component="div"
-                  className="mt-1.5 text-xs text-red-400"
-                />
-              </section>
-
-              {/* الملاحظات */}
-              <section>
-                <label
-                  htmlFor="notes"
-                  className={labelClass}
-                >
-                  الملاحظات
-                </label>
-
-                <Field
-                  as="textarea"
-                  name="notes"
-                  id="notes"
-                  rows={4}
-                  placeholder="أضف أي ملاحظات..."
-                  className={`${inputClass} resize-none`}
-                />
-
-                <ErrorMessage
-                  name="notes"
-                  component="div"
-                  className="mt-1.5 text-xs text-red-400"
-                />
-              </section>
-
-              {/* Footer */}
-              <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-700/60">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenUpdateCase(false)
-                  }
-                  className="rounded-xl border border-slate-700/70 px-5 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-                >
-                  إلغاء
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <FaSave />
-
-                  {isSubmitting
-                    ? "جاري الحفظ..."
-                    : "حفظ التعديلات"}
-                </button>
               </div>
+
+              {/* ================= FOOTER ================= */}
+
+              <div className="px-6 py-4 border-t shrink-0 border-slate-700 bg-slate-800/95">
+
+                <div className="flex items-center justify-end gap-3">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenUpdateCase(false)
+                    }
+                    className="rounded-xl border border-slate-700 px-5 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+                  >
+                    إلغاء
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      loadding 
+                      
+                    }
+                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <FaSave />
+
+                    {loadding 
+                    
+                      ? "جاري الحفظ..."
+                      : "حفظ التعديلات"}
+                  </button>
+
+                </div>
+
+              </div>
+
             </Form>
           )}
         </Formik>
@@ -480,4 +1022,3 @@ const UpdateCase = ({ selectCase }) => {
 };
 
 export default UpdateCase;
-

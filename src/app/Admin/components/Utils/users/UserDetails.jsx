@@ -38,7 +38,7 @@ const UserDetails = ({ user, setOpenDetails, openDetails }) => {
   return (
     <div
       className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/60 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
-      dir="rtl"
+      
       onClick={() => setOpenDetails(false)}
     >
       <div
@@ -46,7 +46,7 @@ const UserDetails = ({ user, setOpenDetails, openDetails }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative px-4 pt-5 overflow-hidden shrink-0 pb-14 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 sm:px-6 sm:pt-6 sm:pb-16">
+        <div className="relative px-4 pt-5 pb-6 overflow-hidden shrink-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 sm:px-6 sm:pt-6 sm:pb-16">
           <div className="absolute w-32 h-32 rounded-full -left-10 -top-10 bg-white/10 sm:w-40 sm:h-40" />
 
           <div className="absolute w-40 h-40 rounded-full -bottom-20 right-10 bg-white/10 sm:w-48 sm:h-48" />
@@ -76,7 +76,7 @@ const UserDetails = ({ user, setOpenDetails, openDetails }) => {
         <div className="overflow-y-auto">
           {/* Profile */}
           <div className="relative px-4 sm:px-6">
-            <div className="flex flex-col items-center -mt-10 sm:-mt-12 sm:flex-row sm:items-end sm:gap-4">
+            <div className="flex flex-col items-center -mt-4 sm:-mt-0 sm:flex-row sm:items-end sm:gap-4">
               <div className="relative w-20 h-20 overflow-hidden border-4 border-white shadow-xl shrink-0 rounded-2xl bg-slate-100 sm:w-24 sm:h-24">
                 {user?.profileImage?.url ? (
                   <img

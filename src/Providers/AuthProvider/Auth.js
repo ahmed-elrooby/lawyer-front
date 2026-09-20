@@ -42,6 +42,9 @@ const Auth = ({ children }) => {
       Cookies.set("token", data?.token, {
         path: "/",
       });
+      Cookies.set("role", data?.user?.role, {
+        path: "/",
+      });
 
       profileQuery.invalidateQueries(["profile"]);
 

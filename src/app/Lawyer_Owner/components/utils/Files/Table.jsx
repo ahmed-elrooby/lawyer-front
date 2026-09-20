@@ -17,8 +17,17 @@ import DeleteFile from "./DeleteFile.jsx";
 import UpdateFile from "./UpdateFile.jsx";
 
 const TemplatesLibrary = () => {
-  const { documents = [],openDeleteDocument, setOpenDeleteDocument,openUpdateDocument, setOpenUpdateDocument } = useContext(OwnerContext);
+const {
+  documents: contextDocuments,
+  openDeleteDocument,
+  setOpenDeleteDocument,
+  openUpdateDocument,
+  setOpenUpdateDocument,
+} = useContext(OwnerContext);
 
+const documents = Array.isArray(contextDocuments)
+  ? contextDocuments
+  : [];
   const [search, setSearch] = useState("");
   const [type, setType] = useState("الكل");
   const [sortBy, setSortBy] = useState("الأحدث");
@@ -186,10 +195,9 @@ const [document,setDocument]=useState(null)
 
     return result;
   }, [documents, search, type, sortBy]);
-
-  const totalPages = Math.ceil(
-    filteredDocuments.length / itemsPerPage
-  );
+const totalPages = Math.ceil(
+  filteredDocuments.length / itemsPerPage
+);
 
   const paginatedDocuments = filteredDocuments.slice(
     (currentPage - 1) * itemsPerPage,
@@ -301,9 +309,9 @@ const [document,setDocument]=useState(null)
         </div>
 
         {/* Cards */}
-        {paginatedDocuments.length > 0 && (
+        {paginatedDocuments?.length > 0 && (
           <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
-            {paginatedDocuments.map((document) => {
+            {paginatedDocuments?.map((document) => {
               const Icon = getFileIcon(document);
               const fileType = getFileType(document);
 
@@ -427,7 +435,7 @@ const [document,setDocument]=useState(null)
         )}
 
         {/* Empty */}
-        {paginatedDocuments.length === 0 && (
+        {paginatedDocuments?.length === 0 && (
           <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4F5F7]">
               <FileText
@@ -447,7 +455,7 @@ const [document,setDocument]=useState(null)
         )}
 
         {/* Pagination */}
-        {filteredDocuments.length > 0 && (
+        {filteredDocuments?.length > 0 && (
           <div className="flex flex-col gap-3 border-t border-[#EEF0F3] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[10px] text-[#8A8E96]">
               عرض{" "}
@@ -458,12 +466,12 @@ const [document,setDocument]=useState(null)
               <span className="font-bold text-[#59616D]">
                 {Math.min(
                   currentPage * itemsPerPage,
-                  filteredDocuments.length
+                  filteredDocuments?.length
                 )}
               </span>{" "}
               من{" "}
               <span className="font-bold text-[#59616D]">
-                {filteredDocuments.length}
+                {filteredDocuments?.length}
               </span>{" "}
               صيغة
             </p>

@@ -10,8 +10,12 @@ import {
 import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const StatsCards = () => {
-  const { documents = [] } = useContext(OwnerContext);
+const { documents: contextDocuments } = useContext(OwnerContext);
 
+const documents = Array.isArray(contextDocuments)
+  ? contextDocuments
+  : [];
+  
   const stats = useMemo(() => {
     const totalDocuments = documents?.length;
 

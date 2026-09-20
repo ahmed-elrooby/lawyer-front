@@ -30,7 +30,9 @@ const Aside = ({ collapsed, setCollapsed }) => {
 
   const [openMobile, setOpenMobile] = useState(false);
 const {profile,handleLogoutFun} = useContext(authContext);
+console.log(profile)
   const menu = [
+
     {
       title: "لوحة التحكم",
       icon: LayoutDashboard,

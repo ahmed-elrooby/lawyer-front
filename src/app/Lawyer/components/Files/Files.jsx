@@ -1,20 +1,37 @@
-import React from 'react'
-import SubHeader from '../utils/Files/SubHeader'
-import Cards from '../utils/Files/Cards'
-import FilesChart from '../utils/Files/FilesChart'
-import FileUpload from '../utils/Files/FileUpload'
-import Table from '../utils/Files/Table'
+"use client";
+
+import React, { useContext } from "react";
+
+import SubHeader from "../utils/Files/SubHeader";
+import Cards from "../utils/Files/Cards";
+import FilesChart from "../utils/Files/FilesChart";
+import FileUpload from "../utils/Files/FileUpload";
+import Table from "../utils/Files/Table";
+import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
+
 
 const Files = () => {
-  return <>
-  <SubHeader/>
-  <Cards/>
-  <div className='grid grid-cols-1 gap-4 mt-6 lg:grid-cols-3'>
-    <FilesChart/>
-    <FileUpload/>
-  </div>
-  <Table/>
-  </>
-}
+  const { isIndependentLawyer } =
+    useContext(authContext);
 
-export default Files
+  return (
+    <>
+      <SubHeader />
+
+      <Cards />
+
+<div
+  className={`grid grid-cols-1 gap-4 mt-6 ${
+    isIndependentLawyer ? "lg:grid-cols-3" : "lg:grid-cols-1"
+  }`}
+>        <FilesChart />
+
+        {isIndependentLawyer && <FileUpload />}
+      </div>
+
+      <Table />
+    </>
+  );
+};
+
+export default Files;

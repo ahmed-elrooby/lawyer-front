@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 
 import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import { authContext } from "../../../../../Providers/AuthProvider/Auth.js";
 import CaseDetails from "./CaseDetails.jsx";
 import UpdateCase from "./UpdateCase.jsx";
 import DeleteCase from "./DeleteCase.jsx";
@@ -33,6 +34,8 @@ const CasesList = () => {
     getTimeline,
     setOpenDeleteCase,
   } = useContext(LawyerContext);
+
+  const { isIndependentLawyer } = useContext(authContext);
 
   const [openDetails, setOpenDetails] = useState(false);
   const [selectCase, setSelectCase] = useState(null);
@@ -261,11 +264,11 @@ const CasesList = () => {
             />
           )}
 
-          {openUpdateCase && (
+          {openUpdateCase && isIndependentLawyer && (
             <UpdateCase selectCase={selectCase} />
           )}
 
-          {openDeleteCase && (
+          {openDeleteCase && isIndependentLawyer && (
             <DeleteCase selectCase={selectCase} />
           )}
 
@@ -517,30 +520,34 @@ const CasesList = () => {
                       </button>
 
                       {/* Edit */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectCase(caseItem);
-                          setOpenUpdateCase(true);
-                        }}
-                        className="flex items-center justify-center w-8 h-8 transition-colors rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
-                        title="تعديل"
-                      >
-                        <FaEdit className="text-xs" />
-                      </button>
+                      {isIndependentLawyer && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectCase(caseItem);
+                            setOpenUpdateCase(true);
+                          }}
+                          className="flex items-center justify-center w-8 h-8 transition-colors rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
+                          title="تعديل"
+                        >
+                          <FaEdit className="text-xs" />
+                        </button>
+                      )}
 
                       {/* Delete */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectCase(caseItem);
-                          setOpenDeleteCase(true);
-                        }}
-                        className="flex items-center justify-center w-8 h-8 text-red-400 transition-colors rounded-lg bg-red-500/10 hover:bg-red-500/20"
-                        title="حذف"
-                      >
-                        <FaTrash className="text-xs" />
-                      </button>
+                      {isIndependentLawyer && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectCase(caseItem);
+                            setOpenDeleteCase(true);
+                          }}
+                          className="flex items-center justify-center w-8 h-8 text-red-400 transition-colors rounded-lg bg-red-500/10 hover:bg-red-500/20"
+                          title="حذف"
+                        >
+                          <FaTrash className="text-xs" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

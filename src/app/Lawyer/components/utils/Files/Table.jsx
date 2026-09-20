@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { LawyerContext } from "../../../../../Providers/LawyerContext/lawyer.js";
+import { authContext } from "../../../../../Providers/AuthProvider/Auth.js";
 
 import Details from "./Details.jsx";
 import DeleteFile from "./DeleteFile.jsx";
@@ -226,6 +227,9 @@ const Table = () => {
     setOpenUpdateDocument,
   } = useContext(LawyerContext);
 
+  const { isIndependentLawyer } =
+    useContext(authContext);
+
   const [viewMode, setViewMode] = useState("table");
 
   const [search, setSearch] = useState("");
@@ -367,6 +371,8 @@ const Table = () => {
   ========================================================= */
 
   const handleOpenUpdate = (document) => {
+    if (!isIndependentLawyer) return;
+
     setSelectFile(document);
 
     setOpenUpdateDocument(true);
@@ -377,6 +383,8 @@ const Table = () => {
   ========================================================= */
 
   const handleOpenDelete = (document) => {
+    if (!isIndependentLawyer) return;
+
     setSelectFile(document);
 
     setOpenDeleteDocument(true);
@@ -394,14 +402,14 @@ const Table = () => {
       )}
 
       {/* Delete */}
-      {openDeleteDocument && (
+      {openDeleteDocument && isIndependentLawyer && (
         <DeleteFile
           selectFile={selectFile}
         />
       )}
 
       {/* Update */}
-      {openUpdateDocument && (
+      {openUpdateDocument && isIndependentLawyer && (
         <UpdateFile
           selectFile={selectFile}
         />
@@ -599,28 +607,30 @@ const Table = () => {
                   : "لم يتم رفع أي مستند حتى الآن"}
               </p>
 
-              {!search && setOpenAddDocument && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenAddDocument(true)
-                  }
-                  className="
-                    mt-5
-                    rounded-xl
-                    bg-blue-500
-                    px-5
-                    py-2.5
-                    text-sm
-                    font-bold
-                    text-white
-                    transition
-                    hover:bg-blue-400
-                  "
-                >
-                  رفع مستند جديد
-                </button>
-              )}
+              {!search &&
+                setOpenAddDocument &&
+                isIndependentLawyer && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenAddDocument(true)
+                    }
+                    className="
+                      mt-5
+                      rounded-xl
+                      bg-blue-500
+                      px-5
+                      py-2.5
+                      text-sm
+                      font-bold
+                      text-white
+                      transition
+                      hover:bg-blue-400
+                    "
+                  >
+                    رفع مستند جديد
+                  </button>
+                )}
             </div>
           )}
 
@@ -658,8 +668,6 @@ const Table = () => {
                       <th className="px-5 py-4 font-semibold text-slate-300">
                         رافع المستند
                       </th>
-
-                      
 
                       <th className="px-5 py-4 font-semibold text-slate-300">
                         تاريخ الرفع
@@ -831,9 +839,6 @@ const Table = () => {
                               </div>
                             </td>
 
-                            {/* Size */}
-                            
-
                             {/* Date */}
                             <td className="px-5 py-4 whitespace-nowrap text-slate-400">
                               {formatDate(
@@ -873,32 +878,36 @@ const Table = () => {
                                 </button>
 
                                 {/* Update */}
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleOpenUpdate(
-                                      document
-                                    )
-                                  }
-                                  className="p-2 transition rounded-lg text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400"
-                                  title="تعديل المستند"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </button>
+                                {isIndependentLawyer && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenUpdate(
+                                        document
+                                      )
+                                    }
+                                    className="p-2 transition rounded-lg text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+                                    title="تعديل المستند"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                )}
 
                                 {/* Delete */}
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleOpenDelete(
-                                      document
-                                    )
-                                  }
-                                  className="p-2 transition rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400"
-                                  title="حذف المستند"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {isIndependentLawyer && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenDelete(
+                                        document
+                                      )
+                                    }
+                                    className="p-2 transition rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400"
+                                    title="حذف المستند"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1106,32 +1115,36 @@ const Table = () => {
                             </button>
 
                             {/* Update */}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleOpenUpdate(
-                                  document
-                                )
-                              }
-                              className="p-2 transition rounded-lg text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400"
-                              title="تعديل المستند"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
+                            {isIndependentLawyer && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleOpenUpdate(
+                                    document
+                                  )
+                                }
+                                className="p-2 transition rounded-lg text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+                                title="تعديل المستند"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
 
                             {/* Delete */}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleOpenDelete(
-                                  document
-                                )
-                              }
-                              className="p-2 transition rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400"
-                              title="حذف المستند"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {isIndependentLawyer && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleOpenDelete(
+                                    document
+                                  )
+                                }
+                                className="p-2 transition rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400"
+                                title="حذف المستند"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

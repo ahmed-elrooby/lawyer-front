@@ -1149,10 +1149,10 @@ const getDocument = async () => {
     }
   };
 
-  const { data: documents } = useQuery({
-    queryKey: ["documents"],
-    queryFn: getDocument,
-  });
+const { data: documents = [] } = useQuery({
+  queryKey: ["documents"],
+  queryFn: getDocument,
+});
   // ==================== CREATE DOCUMENT CATEGORIES ================================
 const handleAddDocument = async (values) => {
   try {

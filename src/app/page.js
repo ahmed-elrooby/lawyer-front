@@ -1,11 +1,15 @@
-import Image from "next/image";
-import styles from "./page.module.css";
 import Login from "./components/Login/Login.jsx";
 
+export const metadata = {
+  title: "تسجيل الدخول",
+  description: "تسجيل الدخول إلى منصة قضاء لإدارة مكاتب المحاماة.",
+
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function Home() {
-  return (
-    <>
-      <Login />
-    </>
-  );
+  return <Login />;
 }

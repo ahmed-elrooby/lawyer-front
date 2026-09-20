@@ -12,6 +12,7 @@ import {
   FiCamera,
   FiCheck,
   FiUploadCloud,
+  FiHome,
 } from "react-icons/fi";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -20,8 +21,13 @@ import * as Yup from "yup";
 import { AdminContext } from "../../../../../Providers/AdminContext/Admin.js";
 
 const AddUser = () => {
-  const { openAddUser, setOpenAddUser, loadding, handleAddUserFun } =
-    useContext(AdminContext);
+  const {
+    openAddUser,
+    setOpenAddUser,
+    loadding,
+    handleAddUserFun,
+    offices,
+  } = useContext(AdminContext);
 
   const [preview, setPreview] = useState(null);
 
@@ -50,18 +56,37 @@ const AddUser = () => {
       .oneOf(["office_owner", "lawyer"], "اختر نوع الحساب الصحيح")
       .required("نوع الحساب مطلوب"),
 
+    officeId: Yup.string().when("role", {
+      is: "office_owner",
+      then: (schema) =>
+        schema.required("يجب اختيار المكتب لصاحب المكتب"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
     profileImage: Yup.mixed()
       .nullable()
-      .test("fileType", "الصورة يجب أن تكون PNG أو JPG أو WEBP", (file) => {
-        if (!file) return true;
+      .test(
+        "fileType",
+        "الصورة يجب أن تكون PNG أو JPG أو WEBP",
+        (file) => {
+          if (!file) return true;
 
-        return ["image/png", "image/jpeg", "image/webp"].includes(file.type);
-      })
-      .test("fileSize", "حجم الصورة يجب ألا يتجاوز 5MB", (file) => {
-        if (!file) return true;
+          return [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+          ].includes(file.type);
+        },
+      )
+      .test(
+        "fileSize",
+        "حجم الصورة يجب ألا يتجاوز 5MB",
+        (file) => {
+          if (!file) return true;
 
-        return file.size <= 5 * 1024 * 1024;
-      }),
+          return file.size <= 5 * 1024 * 1024;
+        },
+      ),
   });
 
   // =========================
@@ -96,14 +121,14 @@ const AddUser = () => {
       dir="rtl"
       className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
     >
-      <div className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white custom-scrollbar shadow-2xl">
+      <div className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-2xl">
         {/* =====================================================
             HEADER
         ====================================================== */}
         <div className="relative px-6 py-5 overflow-hidden bg-white border-b shrink-0 border-slate-100 sm:px-8">
           <div className="absolute w-48 h-48 rounded-full -right-20 -top-24 bg-blue-100/50 blur-3xl" />
 
-          <div className="absolute w-48 h-48 rounded-full -left-20 -bottom-24 bg-indigo-100/40 blur-3xl" />
+          <div className="absolute w-48 h-48 rounded-full -bottom-24 -left-20 bg-indigo-100/40 blur-3xl" />
 
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -149,47 +174,29 @@ const AddUser = () => {
             password: "",
             phone: "",
             role: "lawyer",
+            officeId: "",
             profileImage: null,
           }}
           validationSchema={validationSchema}
-          onSubmit={async (values, { resetForm }) => {
-            try {
-              const formData = new FormData();
-
-              formData.append("name", values.name);
-              formData.append("email", values.email);
-              formData.append("password", values.password);
-              formData.append("phone", values.phone);
-              formData.append("role", values.role);
-
-              if (values.profileImage) {
-                formData.append("profileImage", values.profileImage);
-              }
-
-              await handleAddUserFun(formData);
-
-              resetForm();
-
-              if (preview) {
-                URL.revokeObjectURL(preview);
-                setPreview(null);
-              }
-            } catch (error) {
-              console.error(error);
-            }
-          }}
+          onSubmit={handleAddUserFun}
         >
-          {({ values, setFieldValue, isSubmitting }) => (
+          {({
+            values,
+            setFieldValue,
+            isSubmitting,
+          }) => (
             <Form className="flex flex-col flex-1 min-h-0">
               {/* =================================================
                   BODY
               ================================================== */}
               <div className="flex-1 overflow-y-auto">
                 <div className="p-5 sm:p-8">
+
                   {/* =================================================
                       PROFILE SECTION
                   ================================================== */}
                   <div className="flex flex-col items-center p-5 mb-8 border rounded-3xl border-slate-100 bg-slate-50/70 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+
                     {/* Image */}
                     <div className="relative shrink-0">
                       <label
@@ -204,11 +211,17 @@ const AddUser = () => {
                               className="object-cover w-full h-full"
                             />
                           ) : (
-                            <FiUser size={43} className="text-slate-300" />
+                            <FiUser
+                              size={43}
+                              className="text-slate-300"
+                            />
                           )}
 
                           <div className="absolute inset-0 flex items-center justify-center transition opacity-0 bg-slate-950/50 group-hover:opacity-100">
-                            <FiCamera size={24} className="text-white" />
+                            <FiCamera
+                              size={24}
+                              className="text-white"
+                            />
                           </div>
                         </div>
 
@@ -224,23 +237,32 @@ const AddUser = () => {
                         accept="image/png,image/jpeg,image/webp"
                         className="hidden"
                         onChange={(event) => {
-                          const file = event.currentTarget.files?.[0];
+                          const file =
+                            event.currentTarget.files?.[0];
 
                           if (!file) {
-                            setFieldValue("profileImage", null);
+                            setFieldValue(
+                              "profileImage",
+                              null,
+                            );
 
                             setPreview(null);
 
                             return;
                           }
 
-                          setFieldValue("profileImage", file);
+                          setFieldValue(
+                            "profileImage",
+                            file,
+                          );
 
                           if (preview) {
                             URL.revokeObjectURL(preview);
                           }
 
-                          setPreview(URL.createObjectURL(file));
+                          setPreview(
+                            URL.createObjectURL(file),
+                          );
                         }}
                       />
                     </div>
@@ -263,7 +285,11 @@ const AddUser = () => {
 
                       <div className="flex items-center justify-center gap-2 mt-3 sm:justify-start">
                         <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-500 ring-1 ring-slate-100">
-                          <FiUploadCloud size={13} className="text-blue-600" />
+                          <FiUploadCloud
+                            size={13}
+                            className="text-blue-600"
+                          />
+
                           PNG / JPG / WEBP
                         </div>
 
@@ -301,11 +327,14 @@ const AddUser = () => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
                       {/* ================= NAME ================= */}
                       <div>
                         <label className="block mb-2 text-xs font-bold text-slate-700">
                           الاسم الكامل
-                          <span className="mr-1 text-red-500">*</span>
+                          <span className="mr-1 text-red-500">
+                            *
+                          </span>
                         </label>
 
                         <div className="relative">
@@ -318,7 +347,7 @@ const AddUser = () => {
                             name="name"
                             type="text"
                             placeholder="مثال: أحمد محمد العتيبي"
-                            className="w-full h-12 pl-4 text-sm transition border outline-none rounded-2xl border-slate-200 bg-slate-50/50 pr-11 text-slate-800 placeholder:text-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                            className="w-full h-12 px-4 text-sm transition border outline-none rounded-2xl border-slate-200 bg-slate-50/50 pr-11 text-slate-800 placeholder:text-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
                           />
                         </div>
 
@@ -333,7 +362,9 @@ const AddUser = () => {
                       <div>
                         <label className="block mb-2 text-xs font-bold text-slate-700">
                           رقم الهاتف
-                          <span className="mr-1 text-red-500">*</span>
+                          <span className="mr-1 text-red-500">
+                            *
+                          </span>
                         </label>
 
                         <div className="relative">
@@ -362,7 +393,9 @@ const AddUser = () => {
                       <div className="md:col-span-2">
                         <label className="block mb-2 text-xs font-bold text-slate-700">
                           البريد الإلكتروني
-                          <span className="mr-1 text-red-500">*</span>
+                          <span className="mr-1 text-red-500">
+                            *
+                          </span>
                         </label>
 
                         <div className="relative">
@@ -382,6 +415,62 @@ const AddUser = () => {
 
                         <ErrorMessage
                           name="email"
+                          component="p"
+                          className="mt-1.5 text-xs font-medium text-red-500"
+                        />
+                      </div>
+
+                      {/* =================================================
+                          OFFICE
+                      ================================================== */}
+                      <div className="md:col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-xs font-bold text-slate-700">
+                            المكتب
+                            {values.role === "office_owner" && (
+                              <span className="mr-1 text-red-500">
+                                *
+                              </span>
+                            )}
+                          </label>
+
+                          {values.role === "lawyer" && (
+                            <span className="text-[10px] font-medium text-slate-400">
+                              اختياري للمحامي المستقل
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="relative">
+                          <FiHome
+                            size={17}
+                            className="absolute z-10 -translate-y-1/2 pointer-events-none right-4 top-1/2 text-slate-400"
+                          />
+
+                          <Field
+                            as="select"
+                            name="officeId"
+                            className="w-full h-12 px-4 text-sm transition border outline-none appearance-none cursor-pointer rounded-2xl border-slate-200 bg-slate-50/50 pr-11 text-slate-800 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                          >
+                            <option value="">
+                              {values.role === "office_owner"
+                                ? "اختر المكتب"
+                                : "بدون مكتب - محامي مستقل"}
+                            </option>
+
+                            {offices?.map((office) => (
+                              <option
+                                key={office._id}
+                                value={office._id}
+                              >
+                                {office.name}
+                              </option>
+                            ))}
+                          </Field>
+                        </div>
+
+                        <ErrorMessage
+                          name="officeId"
                           component="p"
                           className="mt-1.5 text-xs font-medium text-red-500"
                         />
@@ -417,7 +506,9 @@ const AddUser = () => {
                     <div>
                       <label className="block mb-2 text-xs font-bold text-slate-700">
                         كلمة المرور
-                        <span className="mr-1 text-red-500">*</span>
+                        <span className="mr-1 text-red-500">
+                          *
+                        </span>
                       </label>
 
                       <div className="relative">
@@ -477,10 +568,13 @@ const AddUser = () => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
                       {/* ================= LAWYER ================= */}
                       <button
                         type="button"
-                        onClick={() => setFieldValue("role", "lawyer")}
+                        onClick={() => {
+                          setFieldValue("role", "lawyer");
+                        }}
                         className={`group relative overflow-hidden rounded-2xl border p-5 text-right transition-all duration-200 ${
                           values.role === "lawyer"
                             ? "border-blue-500 bg-blue-50/60 shadow-md shadow-blue-500/10"
@@ -519,7 +613,12 @@ const AddUser = () => {
                       {/* ================= OFFICE OWNER ================= */}
                       <button
                         type="button"
-                        onClick={() => setFieldValue("role", "office_owner")}
+                        onClick={() => {
+                          setFieldValue(
+                            "role",
+                            "office_owner",
+                          );
+                        }}
                         className={`group relative overflow-hidden rounded-2xl border p-5 text-right transition-all duration-200 ${
                           values.role === "office_owner"
                             ? "border-indigo-500 bg-indigo-50/60 shadow-md shadow-indigo-500/10"
@@ -570,9 +669,12 @@ const AddUser = () => {
               ================================================== */}
               <div className="px-5 py-4 bg-white border-t shrink-0 border-slate-100 sm:px-8">
                 <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+
                   <div className="hidden items-center gap-2 text-[10px] text-slate-400 sm:flex">
                     <FiShield size={13} />
-                    <span>بيانات المستخدم محمية وآمنة</span>
+                    <span>
+                      بيانات المستخدم محمية وآمنة
+                    </span>
                   </div>
 
                   <div className="flex w-full gap-3 sm:w-auto">

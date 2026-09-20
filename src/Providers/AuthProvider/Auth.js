@@ -21,6 +21,7 @@ const Auth = ({ children }) => {
       const { data } = await axios.post(`${baseUrl}/login`, values);
       return data;
     } catch (error) {
+       
       throw error;
     } finally {
       setLoadding(false);
@@ -30,16 +31,29 @@ const Auth = ({ children }) => {
   const handleLoginMutation = useMutation({
     mutationKey: ["login"],
     mutationFn: handleLogin,
-    onSuccess: (data) => {
-      toast.success("تم تسجيل الدخول بنجاح" || data?.message);
-      profileQuery.invalidateQueries(["profile"]);
-      Cookies.set("token", data?.token);
-      if (data?.user?.role === "admin") {
-        router.push("/Admin");
-      } else if (data?.user?.role === "lawyer") {
-        router.push("/Lawyer");
-      }
-    },onError:(err)=>{
+  onSuccess: (data) => {
+  toast.success(data?.message || "تم تسجيل الدخول بنجاح");
+
+  Cookies.set("token", data?.token, {
+    path: "/",
+  });
+
+  Cookies.set("role", data?.user?.role, {
+    path: "/",
+  });
+
+  profileQuery.invalidateQueries(["profile"]);
+
+ if (data?.user?.role === "admin") {
+  router.replace("/Admin");
+} else if (data?.user?.role === "lawyer") {
+  router.replace("/Lawyer");
+} else if (data?.user?.role === "office_owner") {
+  router.replace("/Lawyer_Owner");
+} else {
+  router.replace("/");
+}
+},onError:(err)=>{
       toast.error(err?.response?.data?.message)
     }
   });
@@ -56,7 +70,7 @@ const Auth = ({ children }) => {
       });
       return data;
     } catch (error) {
-      console.log(error);
+       ;
       throw error;
     } 
   }
@@ -140,13 +154,19 @@ const handleLogoutMutation = useMutation({
   mutationKey: ["logout"],
   mutationFn: handleLogout,
 
-  onSuccess: (data) => {
-    toast.success(data?.message || "تم تسجيل الخروج بنجاح");
+ onSuccess: (data) => {
+  toast.success(data?.message || "تم تسجيل الخروج بنجاح");
 
-    Cookies.remove("token");
+  Cookies.remove("token", {
+    path: "/",
+  });
 
-    router.push("/");
-  },
+  Cookies.remove("role", {
+    path: "/",
+  });
+
+  router.replace("/");
+},
 
   onError: (error) => {
     toast.error(
@@ -170,7 +190,7 @@ Authorization: `Bearer ${Cookies.get("token")}`,
     });
     return data;
   } catch (error) {
-    console.log(error);
+     ;
     throw error;
   } finally {
     setLoadding(false);

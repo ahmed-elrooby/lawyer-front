@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
 import {
   FaBriefcase,
   FaUsers,
@@ -8,64 +8,144 @@ import {
   FaCalendarAlt,
   FaCheckCircle,
 } from "react-icons/fa";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const Cards = () => {
+  const { dashboardStatisics, sessions } = useContext(OwnerContext);
+
+  // =========================
+  // Dashboard Statistics
+  // =========================
+
+  const cases = dashboardStatisics?.cases || {};
+  const clients = dashboardStatisics?.clients || {};
+  const lawyers = dashboardStatisics?.lawyers || {};
+  const sessionStats = dashboardStatisics?.sessions || {};
+
+  // =========================
+  // Sessions This Week
+  // =========================
+
+  const weeklySessions = useMemo(() => {
+    if (!Array.isArray(sessions)) return 0;
+
+    const now = new Date();
+
+    // بداية الأسبوع - الأحد
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+
+    // نهاية الأسبوع
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    return sessions.filter((session) => {
+      if (!session?.sessionDate) return false;
+
+      const sessionDate = new Date(session.sessionDate);
+
+      return sessionDate >= startOfWeek && sessionDate < endOfWeek;
+    }).length;
+  }, [sessions]);
+
+  // =========================
+  // Calculated Rates
+  // =========================
+
+  const activeCasesRate =
+    cases.total > 0
+      ? Math.round((cases.active / cases.total) * 100)
+      : 0;
+
+  const closedCasesRate =
+    cases.total > 0
+      ? Math.round(
+          ((cases.judged + cases.reservedForJudgment) / cases.total) * 100
+        )
+      : 0;
+
+  const scheduledSessionsRate =
+    sessionStats.total > 0
+      ? Math.round(
+          (sessionStats.scheduled / sessionStats.total) * 100
+        )
+      : 0;
+
+  const activeLawyers = lawyers.total || 0;
+
+  const attendedSessionsRate =
+    sessionStats.total > 0
+      ? Math.round(
+          (sessionStats.attended / sessionStats.total) * 100
+        )
+      : 0;
+
+  // =========================
+  // Cards
+  // =========================
+
   const cards = [
     {
       title: "إجمالي القضايا",
-      value: "128",
-      change: "+8.2%",
-      description: "منذ بداية العام",
+      value: cases.total || 0,
+      change: `${cases.active || 0} نشطة`,
+      description: `${cases.judged || 0} محكوم عليها`,
       icon: FaBriefcase,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
       changeColor: "text-blue-600",
     },
+
     {
       title: "القضايا النشطة",
-      value: "76",
-      change: "+5.4%",
-      description: "18 قضية هذا الشهر",
+      value: cases.active || 0,
+      change: `${activeCasesRate}%`,
+      description: "من إجمالي القضايا",
       icon: FaBriefcase,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
       changeColor: "text-blue-600",
     },
+
     {
       title: "العملاء",
-      value: "342",
-      change: "+12.1%",
-      description: "+37 هذا الشهر",
+      value: clients.total || 0,
+      change: `${clients.total || 0} إجمالي`,
+      description: "إجمالي عملاء المكتب",
       icon: FaUsers,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
       changeColor: "text-blue-600",
     },
+
     {
       title: "فريق المحامين",
-      value: "12",
+      value: activeLawyers,
       change: "100%",
-      description: "10 نشطون الآن",
+      description: "إجمالي محامي المكتب",
       icon: FaUserTie,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
       changeColor: "text-blue-600",
     },
+
     {
       title: "جلسات هذا الأسبوع",
-      value: "47",
-      change: "8 اليوم",
-      description: "2 تحتاج مراجعة",
+      value: weeklySessions,
+      change: `${sessionStats.scheduled || 0} مجدولة`,
+      description: `${scheduledSessionsRate}% من إجمالي الجلسات`,
       icon: FaCalendarAlt,
       iconBg: "bg-amber-50",
       iconColor: "text-amber-600",
       changeColor: "text-amber-600",
     },
+
     {
       title: "القضايا المغلقة",
-      value: "52",
-      change: "+15.8%",
-      description: "هذا العام",
+      value: (cases.judged || 0) + (cases.reservedForJudgment || 0),
+      change: `${closedCasesRate}%`,
+      description: "من إجمالي القضايا",
       icon: FaCheckCircle,
       iconBg: "bg-emerald-50",
       iconColor: "text-emerald-600",

@@ -1,9 +1,17 @@
-import React from "react";
+"use client";
+import React, { useContext } from "react";
 import { FaDownload, FaUserPlus } from "react-icons/fa";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+import AddLawyer from "./AddLawyer.jsx";
 
 const Header = () => {
-  return (
-    <header dir="rtl" className="w-full mb-7">
+  const {setOpenAddLawyer,openAddLawyer}=useContext(OwnerContext)
+  return <>
+{
+  openAddLawyer && <AddLawyer/>
+}
+ 
+    <header  className="w-full mb-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         
         {/* Right Side - Title & Description */}
@@ -50,6 +58,9 @@ const Header = () => {
 
           {/* Add Lawyer */}
           <button
+          onClick={()=>{
+            setOpenAddLawyer(true)
+          }}
             type="button"
             className="
               flex items-center justify-center gap-2
@@ -71,7 +82,8 @@ const Header = () => {
         </div>
       </div>
     </header>
-  );
+
+  </>;
 };
 
 export default Header;

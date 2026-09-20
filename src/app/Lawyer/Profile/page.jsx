@@ -1,10 +1,11 @@
-import React from 'react'
-import Profile from '../components/Profile/Profile.jsx'
+import Profile from "../components/Profile/Profile.jsx";
 
-const page = () => {
-  return <>
-  <Profile/>
-  </>
-}
+export const metadata = {
+  title: "الملف الشخصي",
+};
 
-export default page
+const Page = () => {
+  return <Profile />;
+};
+
+export default Page;

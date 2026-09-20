@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useContext, useMemo } from "react";
 import {
   BriefcaseBusiness,
   FileCheck2,
@@ -6,57 +8,73 @@ import {
   CalendarCheck2,
   ArrowUpRight,
 } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const StatsCards = () => {
-  const stats = [
-    {
-      title: "إجمالي القضايا",
-      value: "100",
-      description: "إجمالي القضايا المسجلة",
-      change: "+12.5%",
-      icon: BriefcaseBusiness,
-      iconBg: "bg-[#EAF0FF]",
-      iconColor: "text-[#4868B4]",
-      valueColor: "text-[#0B1C30]",
-      changeColor: "text-[#258A5A]",
-    },
-    {
-      title: "القضايا المغلقة",
-      value: "68",
-      description: "قضية تم الانتهاء منها",
-      change: "+9.8%",
-      icon: FileCheck2,
-      iconBg: "bg-[#E8F6EF]",
-      iconColor: "text-[#258A5A]",
-      valueColor: "text-[#258A5A]",
-      changeColor: "text-[#258A5A]",
-    },
-    {
-      title: "معدل إغلاق القضايا",
-      value: "68%",
-      description: "من إجمالي القضايا",
-      change: "+4.2%",
-      icon: TrendingUp,
-      iconBg: "bg-[#FFF7DF]",
-      iconColor: "text-[#9A7A00]",
-      valueColor: "text-[#9A7A00]",
-      changeColor: "text-[#258A5A]",
-    },
-    {
-      title: "إجمالي الجلسات",
-      value: "86",
-      description: "جلسة خلال الفترة المحددة",
-      change: "+11.4%",
-      icon: CalendarCheck2,
-      iconBg: "bg-[#F3ECFF]",
-      iconColor: "text-[#7950B5]",
-      valueColor: "text-[#7950B5]",
-      changeColor: "text-[#258A5A]",
-    },
-  ];
+  const { cases = [], sessions = [] } = useContext(OwnerContext);
+
+  const stats = useMemo(() => {
+    const totalCases = cases.length;
+
+    const closedCases = cases.filter((item) => {
+      const status = item?.status?.toLowerCase();
+
+      return (
+        status === "closed" ||
+        status === "مغلقة" ||
+        status === "مغلق" ||
+        status === "completed" ||
+        status === "completed"
+      );
+    }).length;
+
+    const closingRate =
+      totalCases > 0
+        ? Math.round((closedCases / totalCases) * 100)
+        : 0;
+
+    return [
+      {
+        title: "إجمالي القضايا",
+        value: totalCases,
+        description: "إجمالي القضايا المسجلة",
+        icon: BriefcaseBusiness,
+        iconBg: "bg-[#EAF0FF]",
+        iconColor: "text-[#4868B4]",
+        valueColor: "text-[#0B1C30]",
+      },
+      {
+        title: "القضايا المغلقة",
+        value: closedCases,
+        description: "قضية تم الانتهاء منها",
+        icon: FileCheck2,
+        iconBg: "bg-[#E8F6EF]",
+        iconColor: "text-[#258A5A]",
+        valueColor: "text-[#258A5A]",
+      },
+      {
+        title: "معدل إغلاق القضايا",
+        value: `${closingRate}%`,
+        description: "من إجمالي القضايا",
+        icon: TrendingUp,
+        iconBg: "bg-[#FFF7DF]",
+        iconColor: "text-[#9A7A00]",
+        valueColor: "text-[#9A7A00]",
+      },
+      {
+        title: "إجمالي الجلسات",
+        value: sessions.length,
+        description: "جلسة خلال الفترة المحددة",
+        icon: CalendarCheck2,
+        iconBg: "bg-[#F3ECFF]",
+        iconColor: "text-[#7950B5]",
+        valueColor: "text-[#7950B5]",
+      },
+    ];
+  }, [cases, sessions]);
 
   return (
-    <section dir="rtl" className="mb-7 w-full">
+    <section dir="rtl" className="w-full mb-7">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
@@ -73,18 +91,11 @@ const StatsCards = () => {
                     {stat.title}
                   </p>
 
-                  <div className="mt-2 flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 mt-2">
                     <span
                       className={`text-[26px] font-bold leading-none ${stat.valueColor}`}
                     >
                       {stat.value}
-                    </span>
-
-                    <span
-                      className={`flex items-center gap-0.5 text-[9px] font-bold ${stat.changeColor}`}
-                    >
-                      <ArrowUpRight size={11} />
-                      {stat.change}
                     </span>
                   </div>
                 </div>

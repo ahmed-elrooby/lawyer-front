@@ -1,10 +1,11 @@
-import React from 'react'
-import Sessions from '../components/Sessions/Sessions.jsx'
+import Sessions from "../components/Sessions/Sessions.jsx";
 
-const page = () => {
-  return <>
-  <Sessions/>
-  </>
-}
+export const metadata = {
+  title: "الجلسات",
+};
 
-export default page
+const Page = () => {
+  return <Sessions />;
+};
+
+export default Page;

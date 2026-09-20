@@ -1,8 +1,11 @@
-import React from 'react'
-import Notifications from '../components/Notifications/Notifications.jsx'
+import Notifications from "../components/Notifications/Notifications.jsx";
 
-const page = () => {
-  return <Notifications/>
-}
+export const metadata = {
+  title: "الإشعارات",
+};
 
-export default page
+const Page = () => {
+  return <Notifications />;
+};
+
+export default Page;

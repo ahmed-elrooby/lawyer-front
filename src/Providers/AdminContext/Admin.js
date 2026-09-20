@@ -19,10 +19,8 @@ const Admin = ({ children }) => {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
       return data?.statistics;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   };
@@ -60,10 +58,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+     
       return data?.lawyers;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -93,11 +91,11 @@ const {
         },
       });
 
-      console.log(data);
+      
 
       return data;
     } catch (err) {
-      console.log(err);
+       (err);
       throw err;
     } finally {
       setLoadding(false);
@@ -132,11 +130,11 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
 
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     } finally {
       setLoadding(false);
@@ -214,10 +212,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data?.users;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -226,42 +224,64 @@ const {
     queryFn: getUsers,
   });
   // =============================== CREATE USER =================
-  const createUser = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/users`, values, {
+
+const createUser = async (values) => {
+  try {
+    setLoadding(true);
+
+    const { data } = await axios.post(
+      `${baseUrl}/users`,
+      values,
+      {
         headers: {
-          "Content-Type": "mutipart/form-data",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openAddUser, setOpenAddUser] = useState(false);
-  const userQuery = useQueryClient();
-  const handleAddUserMutation = useMutation({
-    mutationKey: ["addUser"],
-    mutationFn: createUser,
-    onSuccess: (data) => {
-      toast.success("تم اضافة المستخدم بنجاح" || data?.message);
-      userQuery.invalidateQueries(["users"]);
-      setOpenAddUser(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleAddUserFun = (values) => {
-    handleAddUserMutation.mutate(values);
-  };
+      }
+    );
+
+    return data;
+  } catch (err) {
+     (err);
+    throw err;
+  } finally {
+    setLoadding(false);
+  }
+};
+
+const [openAddUser, setOpenAddUser] = useState(false);
+
+const userQuery = useQueryClient();
+
+const handleAddUserMutation = useMutation({
+  mutationKey: ["addUser"],
+
+  mutationFn: createUser,
+
+  onSuccess: (data) => {
+    toast.success(data?.message || "تم إضافة المستخدم بنجاح");
+
+    userQuery.invalidateQueries({
+      queryKey: ["users"],
+    });
+
+    setOpenAddUser(false);
+  },
+
+  onError: (error) => {
+    
+
+    toast.error(
+      error?.response?.data?.message ||
+      "حدث خطأ أثناء إضافة المستخدم"
+    );
+  },
+});
+
+const handleAddUserFun = (values) => {
+  handleAddUserMutation.mutate(values);
+};
+
+
   // ================================= DELETE USER ================================
   const handleDeleteUser = async (id) => {
     try {
@@ -271,10 +291,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -288,7 +308,7 @@ const {
       setOpenDeleteUser(false);
     },
     onError: (error) => {
-      console.log(error);
+      
       toast.error(error?.response?.data?.message);
     },
   });
@@ -334,7 +354,7 @@ const {
       setOpenUpdateUser(false);
     },
     onError: (error) => {
-      console.log(error);
+      
       toast.error(error?.response?.data?.message);
     },
   });
@@ -351,10 +371,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data?.office;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -372,10 +392,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data;
     } catch (err) {
-      console.log(err);
+       (err);
       throw err;
     } finally {
       setLoadding(false);
@@ -392,7 +412,7 @@ const {
       setOpenAddOffice(false);
     },
     onError: (error) => {
-      console.log(error);
+      
       toast.error(error?.response?.data?.message);
     },
   });
@@ -409,10 +429,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data;
     } catch (err) {
-      console.log(err);
+       (err);
       throw err;
     } finally {
       setLoadding(false);
@@ -428,7 +448,7 @@ const {
       setOpenDeleteOffice(false);
     },
     onError: (error) => {
-      console.log(error);
+      
       toast.error(error?.response?.data?.message);
     },
   });
@@ -445,10 +465,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data;
     } catch (err) {
-      console.log(err);
+       (err);
       throw err;
     } finally {
       setLoadding(false);
@@ -464,7 +484,7 @@ const {
       setOpenUpdateOffice(false);
     },
     onError: (error) => {
-      console.log(error);
+      
       toast.error(error?.response?.data?.message);
     },
   });
@@ -473,272 +493,7 @@ const {
   };
   // ===================================== CASES TYPES ================================
   // =============================== ADD CASES TYPES ================================
-  const handleAddCaseType = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/caseType`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openAddCaseType, setOpenAddCaseType] = useState(false);
-  const caseTypeQuery = useQueryClient();
-  const handleAddCaseTypeMutation = useMutation({
-    mutationKey: ["addCaseType"],
-    mutationFn: handleAddCaseType,
-    onSuccess: (data) => {
-      toast.success("تم اضافة نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenAddCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleAddCaseTypeFun = (values) => {
-    handleAddCaseTypeMutation.mutate(values);
-  };
-  // ===================================== GET CASES TYPES ================
-  const getCaseTypes = async () => {
-    try {
-      const { data } = await axios.get(`${baseUrl}/caseType`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data?.caseType;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
-  const { data: caseTypes } = useQuery({
-    queryKey: ["caseTypes"],
-    queryFn: getCaseTypes,
-  });
-  // ===================================== DELETE CASES TYPES ================================
-  const handleDeleteCaseType = async (id) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.delete(`${baseUrl}/caseType/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openDeleteCaseType, setOpenDeleteCaseType] = useState(false);
-
-  const handleDeleteCaseTypeMutation = useMutation({
-    mutationKey: ["deleteCaseType"],
-    mutationFn: handleDeleteCaseType,
-    onSuccess: (data) => {
-      toast.success("تم حذف نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenDeleteCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleDeleteCaseTypeFun = (id) => {
-    handleDeleteCaseTypeMutation.mutate(id);
-  };
-  // ===================================== UPDATE CASES TYPES ================================
-  const handleUpdateCaseType = async ({ id, values }) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.put(`${baseUrl}/caseType/${id}`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openUpdateCaseType, setOpenUpdateCaseType] = useState(false);
-
-  const handleUpdateCaseTypeMutation = useMutation({
-    mutationKey: ["updateCaseType"],
-    mutationFn: handleUpdateCaseType,
-    onSuccess: (data) => {
-      toast.success("تم تعديل نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenUpdateCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleUpdateCaseTypeFun = ({ id, values }) => {
-    handleUpdateCaseTypeMutation.mutate({ id, values });
-  };
-  // ==================================== DOCUMENT CATEGORIES ====================
-  // ===================================== ADD DOCUMENT CATEGORIES ================================
-  const handleAddDocumentCategory = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/category`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openAddCategory, setOpenAddCategory] = useState(false);
-  const categoryQuery = useQueryClient();
-
-  const handleAddCategoryMutation = useMutation({
-    mutationKey: ["addCategory"],
-    mutationFn: handleAddDocumentCategory,
-    onSuccess: (data) => {
-      toast.success("تم اضافة فئة المستند بنجاح" || data?.message);
-      categoryQuery.invalidateQueries(["category"]);
-      setOpenAddCategory(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleAddCategoryFun = (values) => {
-    handleAddCategoryMutation.mutate(values);
-  };
-  // ===================================== GET DOCUMENT CATEGORIES ================================
-  const getCategories = async () => {
-    try {
-      const { data } = await axios.get(`${baseUrl}/category`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data?.categories;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
-  const { data: categories } = useQuery({
-    queryKey: ["category"],
-    queryFn: getCategories,
-  });
-  // ===================================== DELETE DOCUMENT CATEGORIES ================================
-  const handleDeleteCategory = async (id) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.delete(`${baseUrl}/category/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-
-  const [openDeleteCategory, setOpenDeleteCategory] = useState(false);
-
-  const handleDeleteCategoryMutation = useMutation({
-    mutationKey: ["deleteCategory"],
-    mutationFn: handleDeleteCategory,
-    onSuccess: (data) => {
-      toast.success("تم حذف فئة المستند بنجاح" || data?.message);
-      categoryQuery.invalidateQueries(["category"]);
-      setOpenDeleteCategory(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-
-  const handleDeleteCategoryFun = (id) => {
-    handleDeleteCategoryMutation.mutate(id);
-  };
-  // ===================================== UPDATE DOCUMENT CATEGORIES ================================
-  const handleUpdateCategory = async ({ id, values }) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.put(`${baseUrl}/category/${id}`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-
-  const [openUpdateCategory, setOpenUpdateCategory] = useState(false);
-
-  const handleUpdateCategoryMutation = useMutation({
-    mutationKey: ["updateCategory"],
-    mutationFn: handleUpdateCategory,
-    onSuccess: (data) => {
-      toast.success("تم تعديل فئة المستند بنجاح" || data?.message);
-      categoryQuery.invalidateQueries(["category"]);
-      setOpenUpdateCategory(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-
-  const handleUpdateCategoryFun = ({ id, values }) => {
-    handleUpdateCategoryMutation.mutate({ id, values });
-  };
+  
   // ==================================== timeline ================================
   const getTimeline = async () => {
     try {
@@ -748,10 +503,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data?.timeLine;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -768,10 +523,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data?.notifications;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -788,10 +543,10 @@ const {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+      
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   }
@@ -809,10 +564,10 @@ const handleMarkAsRead = async (id) => {
         Authorization: `Bearer ${Cookies.get("token")}`,
       },
     });
-    console.log(data);
+    
     return data;
   } catch (error) {
-    console.log(error);
+    
     throw error;
   }finally{
     setLoadding(false);
@@ -827,7 +582,7 @@ const handleMarkAsReadFunMutation = useMutation({
     toast.success("تم قراءة الاشعار بنجاح" || data?.message);
   },
   onError: (error) => {
-    console.log(error);
+    
     toast.error(error?.response?.data?.message);
   },
 })
@@ -844,10 +599,10 @@ const handleReadAllNotifications = async () => {
         Authorization: `Bearer ${Cookies.get("token")}`,
       },
     });
-    console.log(data);
+    
     return data?.notifications;
   } catch (error) {
-    console.log(error);
+    
     throw error;
   }finally{
     setLoadding(false);
@@ -861,7 +616,7 @@ const handleReadAllNotificationsFunMutation = useMutation({
     toast.success("تم قراءة جميع الاشعارات بنجاح" || data?.message);
   },
   onError: (error) => {
-    console.log(error);
+    
     toast.error(error?.response?.data?.message);
   },
 })
@@ -878,10 +633,10 @@ const handleDeleteNotification = async (id) => {
         Authorization: `Bearer ${Cookies.get("token")}`,
       },
     });
-    console.log(data);
+    
     return data?.notifications;
   } catch (error) {
-    console.log(error);
+    
     throw error;
   }finally{
     setLoadding(false);
@@ -897,7 +652,7 @@ const handleDeleteNotificationFunMutation = useMutation({
     setOpenDeleteNotification(false);
   },
   onError: (error) => {
-    console.log(error);
+    
     toast.error(error?.response?.data?.message);
   },
 })
@@ -947,27 +702,6 @@ isExportingDashboardStatisics,
         timeLine,
         // cases type
 
-        handleUpdateCaseTypeFun,
-        openUpdateCaseType,
-        setOpenUpdateCaseType,
-        caseTypes,
-        openDeleteCaseType,
-        setOpenDeleteCaseType,
-        handleDeleteCaseTypeFun,
-        openAddCaseType,
-        setOpenAddCaseType,
-        handleAddCaseTypeFun,
-        // categorie
-        openAddCategory,
-        setOpenAddCategory,
-        handleAddCategoryFun,
-        categories,
-        openDeleteCategory,
-        setOpenDeleteCategory,
-        handleDeleteCategoryFun,
-        openUpdateCategory,
-        setOpenUpdateCategory,
-        handleUpdateCategoryFun,
         // notifications
         notifications,unreadNotifications,
         handleMarkAsReadFun,handleReadAllNotificationsFun,handleDeleteNotificationFun,openDeleteNotification, setOpenDeleteNotification

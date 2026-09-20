@@ -1,50 +1,77 @@
-import React from "react";
+"use client";
+
+import React, { useContext, useMemo } from "react";
 import {
   Files,
   FileCheck2,
   TrendingUp,
   Sparkles,
 } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const StatsCards = () => {
-  const stats = [
-    {
-      title: "إجمالي الصيغ",
-      value: "128",
-      description: "صيغة قانونية محفوظة",
-      icon: Files,
-      iconBg: "bg-[#EAF0FF]",
-      iconColor: "text-[#4868B4]",
-      valueColor: "text-[#0B1C30]",
-    },
-    {
-      title: "الصيغ النشطة",
-      value: "116",
-      description: "متاحة للاستخدام حالياً",
-      icon: FileCheck2,
-      iconBg: "bg-[#E8F6EF]",
-      iconColor: "text-[#258A5A]",
-      valueColor: "text-[#258A5A]",
-    },
-    {
-      title: "الأكثر استخداماً",
-      value: "42",
-      description: "استخدام خلال هذا الشهر",
-      icon: TrendingUp,
-      iconBg: "bg-[#FFF7DF]",
-      iconColor: "text-[#9A7A00]",
-      valueColor: "text-[#9A7A00]",
-    },
-    {
-      title: "مضافة حديثاً",
-      value: "9",
-      description: "خلال آخر 30 يوماً",
-      icon: Sparkles,
-      iconBg: "bg-[#F3ECFF]",
-      iconColor: "text-[#7950B5]",
-      valueColor: "text-[#7950B5]",
-    },
-  ];
+  const { documents = [] } = useContext(OwnerContext);
+
+  const stats = useMemo(() => {
+    const totalDocuments = documents.length;
+
+    // مفيش isActive في الـ document schema حاليًا
+    const activeDocuments = documents.length;
+
+    // مفيش usageCount في الـ document schema حاليًا
+    const mostUsed = 0;
+
+    // آخر 30 يوم
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentlyAdded = documents.filter((document) => {
+      if (!document?.createdAt) return false;
+
+      const createdAt = new Date(document.createdAt);
+
+      return createdAt >= thirtyDaysAgo;
+    }).length;
+
+    return [
+      {
+        title: "إجمالي الصيغ",
+        value: totalDocuments,
+        description: "صيغة قانونية محفوظة",
+        icon: Files,
+        iconBg: "bg-[#EAF0FF]",
+        iconColor: "text-[#4868B4]",
+        valueColor: "text-[#0B1C30]",
+      },
+      {
+        title: "الصيغ النشطة",
+        value: activeDocuments,
+        description: "متاحة للاستخدام حالياً",
+        icon: FileCheck2,
+        iconBg: "bg-[#E8F6EF]",
+        iconColor: "text-[#258A5A]",
+        valueColor: "text-[#258A5A]",
+      },
+      {
+        title: "الأكثر استخداماً",
+        value: mostUsed,
+        description: "استخدام خلال هذا الشهر",
+        icon: TrendingUp,
+        iconBg: "bg-[#FFF7DF]",
+        iconColor: "text-[#9A7A00]",
+        valueColor: "text-[#9A7A00]",
+      },
+      {
+        title: "مضافة حديثاً",
+        value: recentlyAdded,
+        description: "خلال آخر 30 يوماً",
+        icon: Sparkles,
+        iconBg: "bg-[#F3ECFF]",
+        iconColor: "text-[#7950B5]",
+        valueColor: "text-[#7950B5]",
+      },
+    ];
+  }, [documents]);
 
   return (
     <section dir="rtl" className="w-full mb-7">

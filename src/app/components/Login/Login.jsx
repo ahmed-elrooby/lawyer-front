@@ -166,7 +166,6 @@ const Login = () => {
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={loadding || isSubmitting}
                   className="w-full py-3 font-semibold text-white transition-all duration-300 bg-blue-600 shadow-lg rounded-xl hover:bg-blue-500 hover:shadow-blue-600/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loadding

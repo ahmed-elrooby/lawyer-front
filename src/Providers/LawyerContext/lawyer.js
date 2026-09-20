@@ -21,7 +21,7 @@ const LawyerProvider = ({ children }) => {
 
       return data?.statistics;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -440,137 +440,7 @@ const handleUpdateCaseFun = ({ values, id }) => {
   };
   // ===================== CASE TYPE ============
   // ===================================== GET CASES TYPES ================
-  const getCaseTypes = async () => {
-    try {
-      const { data } = await axios.get(`${baseUrl}/caseType`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data?.caseType;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
-  const { data: caseTypes } = useQuery({
-    queryKey: ["caseTypes"],
-    queryFn: getCaseTypes,
-  });
-  // ===================================== ADD CASES TYPES ================================
-    // =============================== ADD CASES TYPES ================================
-  const handleAddCaseType = async (values) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.post(`${baseUrl}/caseType`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openAddCaseType, setOpenAddCaseType] = useState(false);
-  const caseTypeQuery = useQueryClient();
-  const handleAddCaseTypeMutation = useMutation({
-    mutationKey: ["addCaseType"],
-    mutationFn: handleAddCaseType,
-    onSuccess: (data) => {
-      toast.success("تم اضافة نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenAddCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleAddCaseTypeFun = (values) => {
-    handleAddCaseTypeMutation.mutate(values);
-  };
-  // ===================================== DELETE CASES TYPES ================================
   
-  const handleDeleteCaseType = async (id) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.delete(`${baseUrl}/caseType/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openDeleteCaseType, setOpenDeleteCaseType] = useState(false);
-
-  const handleDeleteCaseTypeMutation = useMutation({
-    mutationKey: ["deleteCaseType"],
-    mutationFn: handleDeleteCaseType,
-    onSuccess: (data) => {
-      toast.success("تم حذف نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenDeleteCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleDeleteCaseTypeFun = (id) => {
-    handleDeleteCaseTypeMutation.mutate(id);
-  };
-  // ===================================== UPDATE CASES TYPES ================================
-  const handleUpdateCaseType = async ({ id, values }) => {
-    try {
-      setLoadding(true);
-      const { data } = await axios.put(`${baseUrl}/caseType/${id}`, values, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      console.log(data);
-      return data;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    } finally {
-      setLoadding(false);
-    }
-  };
-  const [openUpdateCaseType, setOpenUpdateCaseType] = useState(false);
-
-  const handleUpdateCaseTypeMutation = useMutation({
-    mutationKey: ["updateCaseType"],
-    mutationFn: handleUpdateCaseType,
-    onSuccess: (data) => {
-      toast.success("تم تعديل نوع الحالة بنجاح" || data?.message);
-      caseTypeQuery.invalidateQueries(["caseType"]);
-      setOpenUpdateCaseType(false);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    },
-  });
-  const handleUpdateCaseTypeFun = ({ id, values }) => {
-    handleUpdateCaseTypeMutation.mutate({ id, values });
-  };
   // =======================  CLIENTS ====================
   // ===================== GET CLIENTS =================
   const getClients = async () => {
@@ -581,10 +451,10 @@ const handleUpdateCaseFun = ({ values, id }) => {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+    
       return data?.clients;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -899,10 +769,10 @@ const handleDeleteClientDocumentFun = ({
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+    
       return data?.attachments;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -1207,10 +1077,10 @@ const getTimeline = async (caseId = null) => {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      console.log(data);
+    
       return data?.notifications;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -1232,10 +1102,10 @@ const getTimeline = async (caseId = null) => {
           },
         },
       );
-      console.log(data);
+    
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -1258,10 +1128,10 @@ const getTimeline = async (caseId = null) => {
           },
         },
       );
-      console.log(data);
+    
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -1296,10 +1166,10 @@ const getTimeline = async (caseId = null) => {
           },
         },
       );
-      console.log(data);
+    
       return data;
     } catch (error) {
-      console.log(error);
+      
       throw error;
     }
   };
@@ -1336,7 +1206,6 @@ const handleReadNoteFun = () => {
         setOpenDeleteCase,
         loadding,handleDeleteDocumentOfCaseFun,
         // casetype
-        handleUpdateCaseTypeFun,openUpdateCaseType, setOpenUpdateCaseType,handleDeleteCaseTypeFun,openDeleteCaseType, setOpenDeleteCaseType,caseTypes,handleAddCaseTypeFun,openAddCaseType, setOpenAddCaseType,
         // sessions
         sessions,
         handleAddSessionFun,

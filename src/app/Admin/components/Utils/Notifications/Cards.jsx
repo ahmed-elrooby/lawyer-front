@@ -13,7 +13,6 @@ import { AdminContext } from "../../../../../Providers/AdminContext/Admin.js";
 
 const Cards = () => {
   const { notifications } = useContext(AdminContext);
-  console.log(notifications)
 
   const notificationList = Array.isArray(notifications)
     ? notifications

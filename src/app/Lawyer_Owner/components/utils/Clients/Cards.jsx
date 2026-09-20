@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useContext, useMemo } from "react";
 import {
   Users,
   BriefcaseBusiness,
@@ -6,22 +8,84 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+
 const Cards = () => {
+  const {
+    clients = [],
+    cases = [],
+    sessions = [],
+  } = useContext(OwnerContext);
+
+const statistics = useMemo(() => {
+  const now = new Date();
+
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const totalClients = clients.length;
+
+  const clientsThisMonth = clients.filter((client) => {
+    if (!client?.createdAt) return false;
+
+    const createdDate = new Date(client.createdAt);
+
+    return (
+      createdDate.getMonth() === currentMonth &&
+      createdDate.getFullYear() === currentYear
+    );
+  }).length;
+
+  const activeCases = cases.filter(
+    (item) =>
+      item.status === "active" &&
+      !item.isArchived
+  ).length;
+
+  const closedCases = cases.filter(
+    (item) =>
+      item.status === "judged" ||
+      item.isArchived
+  ).length;
+
+  const thisMonthSessions = sessions.filter((session) => {
+    if (!session?.date && !session?.sessionDate) {
+      return false;
+    }
+
+    const sessionDate = new Date(
+      session.date || session.sessionDate
+    );
+
+    return (
+      sessionDate.getMonth() === currentMonth &&
+      sessionDate.getFullYear() === currentYear
+    );
+  }).length;
+
+  return {
+    totalClients,
+    clientsThisMonth,
+    activeCases,
+    closedCases,
+    thisMonthSessions,
+  };
+}, [clients, cases, sessions]);
   const cards = [
-    {
-      title: "إجمالي العملاء",
-      value: "342",
-      badge: "+12 هذا الشهر",
-      icon: Users,
-      iconBg: "bg-[#edf3ff]",
-      iconColor: "text-[#4f7cff]",
-      badgeBg: "bg-[#fff4c9]",
-      badgeColor: "text-[#9b7b13]",
-      circleBg: "bg-[#edf3ff]",
-    },
+ {
+  title: "إجمالي العملاء",
+  value: statistics.totalClients,
+  badge: `+${statistics.clientsThisMonth} هذا الشهر`,
+  icon: Users,
+  iconBg: "bg-[#edf3ff]",
+  iconColor: "text-[#4f7cff]",
+  badgeBg: "bg-[#fff4c9]",
+  badgeColor: "text-[#9b7b13]",
+  circleBg: "bg-[#edf3ff]",
+},
     {
       title: "القضايا النشطة",
-      value: "224",
+      value: statistics.activeCases,
       badge: "قيد المتابعة",
       icon: BriefcaseBusiness,
       iconBg: "bg-[#fff8dd]",
@@ -32,7 +96,7 @@ const Cards = () => {
     },
     {
       title: "القضايا المغلقة",
-      value: "118",
+      value: statistics.closedCases,
       badge: "تم الانتهاء منها",
       icon: CircleCheck,
       iconBg: "bg-[#edf3ff]",
@@ -43,8 +107,8 @@ const Cards = () => {
     },
     {
       title: "جلسات هذا الشهر",
-      value: "48",
-      badge: "مواعيد قادمة",
+      value: statistics.thisMonthSessions,
+      badge: "مواعيد هذا الشهر",
       icon: CalendarDays,
       iconBg: "bg-[#edf3ff]",
       iconColor: "text-[#4f7cff]",
@@ -67,10 +131,7 @@ const Cards = () => {
             key={index}
             className="group relative overflow-hidden rounded-xl border border-[#e9edf4] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           >
-            {/* Content */}
             <div className="relative z-10 flex items-start justify-between">
-              
-              {/* Text */}
               <div className="text-right">
                 <p className="text-[11px] font-medium text-[#8993a5]">
                   {card.title}
@@ -87,15 +148,16 @@ const Cards = () => {
                 </span>
               </div>
 
-              {/* Icon */}
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${card.iconBg} ${card.iconColor} transition-transform duration-300 group-hover:scale-110`}
               >
-                <Icon size={18} strokeWidth={2} />
+                <Icon
+                  size={18}
+                  strokeWidth={2}
+                />
               </div>
             </div>
 
-            {/* Decorative Circle */}
             <div
               className={`absolute -bottom-10 -left-7 h-24 w-24 rounded-full ${card.circleBg} opacity-80 transition-transform duration-500 group-hover:scale-125`}
             />

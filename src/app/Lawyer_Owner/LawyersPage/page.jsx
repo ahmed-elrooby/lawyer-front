@@ -1,10 +1,11 @@
-import React from 'react'
-import Lawyers from '../components/Lawyers/Lawyers.jsx'
+import Lawyers from "../components/Lawyers/Lawyers.jsx";
 
-const page = () => {
-  return <>
-  <Lawyers/>
-  </>
-}
+export const metadata = {
+  title: "المحامون",
+};
 
-export default page
+const Page = () => {
+  return <Lawyers />;
+};
+
+export default Page;

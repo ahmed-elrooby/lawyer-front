@@ -1,10 +1,11 @@
-import React from 'react'
-import Cases from '../components/Cases/Cases.jsx'
+import Cases from "../components/Cases/Cases.jsx";
 
-const page = () => {
-  return <>
-  <Cases/>
-  </>
-}
+export const metadata = {
+  title: "القضايا",
+};
 
-export default page
+const Page = () => {
+  return <Cases />;
+};
+
+export default Page;

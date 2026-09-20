@@ -1,9 +1,12 @@
-import React from "react";
+"use client";
+import React, { useContext } from "react";
 import { Bell, CheckCheck, Settings } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const Header = () => {
+  const { handleReadNoteFun,unreadNotifications}=useContext(OwnerContext);
   return (
-    <header dir="rtl" className="w-full mb-7">
+    <header  className="w-full mb-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         
         {/* Right Side */}
@@ -15,7 +18,7 @@ const Header = () => {
 
             <span className="flex items-center gap-1.5 rounded-full bg-[#EAF0FF] px-2.5 py-1 text-[10px] font-bold text-[#4868B4]">
               <Bell size={11} />
-              7 إشعارات غير مقروءة
+             {unreadNotifications?.count || 0} إشعارات غير مقروءة
             </span>
           </div>
 
@@ -31,6 +34,7 @@ const Header = () => {
          
 
           <button
+          onClick={handleReadNoteFun}
             className="
               flex h-10 items-center gap-2 rounded-lg
               bg-[#0B1C30] px-4

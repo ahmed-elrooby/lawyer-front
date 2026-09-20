@@ -1,149 +1,214 @@
-import React from 'react';
-import { MdOutlineCalendarMonth } from 'react-icons/md';
+"use client";
+
+import React, { useContext, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { MdOutlineCalendarMonth } from "react-icons/md";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const UpcomingSessions = () => {
-  // بيانات تجريبية مطابقة للصورة
-  const sessions = [
-    {
-      id: 1,
-      date: '18 سبتمبر',
-      time: '10:30 ص',
-      urgent: true,
-      caseName: 'قضية أحمد محمد',
-      caseNumber: '#1089',
-      court: 'محكمة بني سويف',
-      lawyerName: 'أحمد علي',
-      lawyerInitials: 'أ.ع',
-      avatarColor: '#111827',
-      status: 'مجدولة',
-    },
-    {
-      id: 2,
-      date: '19 سبتمبر',
-      time: '11:00 ص',
-      caseName: 'قضية سارة محمود',
-      caseNumber: '#1038',
-      court: 'محكمة القاهرة',
-      lawyerName: 'سارة محمود',
-      lawyerInitials: 'س.م',
-      avatarColor: '#1E3A5F',
-      status: 'مجدولة',
-    },
-    {
-      id: 3,
-      date: '20 سبتمبر',
-      time: '12:30 م',
-      caseName: 'قضية محمد حسن',
-      caseNumber: '#1021',
-      court: 'محكمة الجيزة',
-      lawyerName: 'محمد حسن',
-      lawyerInitials: 'م.ح',
-      avatarColor: '#134E4A',
-      status: 'مؤكدة',
-    },
-    {
-      id: 4,
-      date: '22 سبتمبر',
-      time: '09:30 ص',
-      caseName: 'نزاع عقاري وتوريد',
-      caseNumber: '#984',
-      court: 'محكمة شمال القاهرة',
-      lawyerName: 'يوسف أحمد',
-      lawyerInitials: 'ي.ا',
-      avatarColor: '#0F766E',
-      status: 'مجدولة',
-    },
-  ];
+  const router = useRouter();
+
+  const { sessions = [], cases = [] } = useContext(OwnerContext);
+
+  const getSessionCase = (session) => {
+    // لو القضية populated داخل الـ session
+    if (session?.caseId && typeof session.caseId === "object") {
+      return session.caseId;
+    }
+
+    if (session?.case && typeof session.case === "object") {
+      return session.case;
+    }
+
+    // لو caseId مجرد ID
+    const caseId =
+      typeof session?.caseId === "object"
+        ? session.caseId?._id
+        : session?.caseId;
+
+    if (caseId) {
+      return cases.find(
+        (item) => String(item?._id) === String(caseId)
+      );
+    }
+
+    return null;
+  };
+
+  const upcomingSessions = useMemo(() => {
+    return [...sessions]
+      .sort((a, b) => {
+        const dateA = new Date(
+          `${a?.sessionDate || ""}T${a?.sessionTime || "00:00"}`
+        ).getTime();
+
+        const dateB = new Date(
+          `${b?.sessionDate || ""}T${b?.sessionTime || "00:00"}`
+        ).getTime();
+
+        if (Number.isNaN(dateA)) return 1;
+        if (Number.isNaN(dateB)) return -1;
+
+        return dateA - dateB;
+      })
+      .slice(0, 5)
+      .map((session) => {
+        const caseData = getSessionCase(session);
+
+        // المحامي من القضية
+        const lawyerData = Array.isArray(caseData?.lawyers)
+          ? caseData.lawyers[0]
+          : null;
+
+        return {
+          ...session,
+          caseData,
+          lawyerData,
+        };
+      });
+  }, [sessions, cases]);
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString("ar-EG", {
+      day: "numeric",
+      month: "long",
+    });
+  };
+
+  const formatTime = (time) => {
+    if (!time) return "-";
+
+    const [hours, minutes] = String(time).split(":");
+
+    if (hours === undefined || minutes === undefined) {
+      return time;
+    }
+
+    const date = new Date();
+    date.setHours(Number(hours), Number(minutes), 0, 0);
+
+    return date.toLocaleTimeString("ar-EG", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const getAvatar = (image, name) => {
+    if (image) {
+      return (
+        <img
+          src={image}
+          alt={name || "المحامي"}
+          className="w-10 h-10 rounded-full object-cover border border-[#E8EAF0]"
+        />
+      );
+    }
+
+    return (
+      <div className="w-10 h-10 rounded-full bg-[#EAF0FF] text-[#4868B4] flex items-center justify-center text-sm font-bold border border-[#E8EAF0]">
+        {name?.charAt(0) || "م"}
+      </div>
+    );
+  };
 
   return (
-    // الحاوية الرئيسية مع اتجاه RTL
-    <div  className="p-6 font-sans bg-white border border-blue-100 rounded-xl shadow-sm-xl">
-
-      {/* رأس المكون (Header) */}
-      <div className="flex items-center justify-between pb-4 mb-4 ">
+    <div className="bg-white border border-[#E8EAF0] rounded-2xl p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 bg-[#E5EEFF] rounded-xl shrink-0">
-            <MdOutlineCalendarMonth className="text-[#2E63F0]" size={18} />
+          <div className="w-10 h-10 rounded-xl bg-[#EAF0FF] text-[#4868B4] flex items-center justify-center">
+            <MdOutlineCalendarMonth size={22} />
           </div>
+
           <div>
-            <h2 className="text-[#0B1C30] font-bold text-base leading-tight">الجلسات القادمة</h2>
-            <p className="text-[#8A8C94] text-xs mt-0.5">المواعيد القضائية الملزمة للأيام المقبلة</p>
+            <h3 className="text-sm font-bold text-[#0B1C30]">
+              الجلسات القادمة
+            </h3>
+
+            <p className="text-[11px] text-[#8A93A3] mt-1">
+              أقرب الجلسات المجدولة
+            </p>
           </div>
         </div>
-        <span className="text-[#8A8C94] text-xs">أجندة المحاكم</span>
+
+        <button
+          type="button"
+          onClick={() => router.push("/Lawyer_Owner/Sessions")}
+          className="text-[11px] font-semibold text-[#4868B4] hover:text-[#315DAA] transition"
+        >
+          عرض الكل
+        </button>
       </div>
 
-      {/* الجدول (Table) */}
-      <div className="">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-[#EFF4FF]">
-              <th className="px-1 py-2 font-bold text-[10px] text-[#0B1C30]">التاريخ والوقت</th>
-              <th className="px-1 py-2 font-bold text-[10px] text-[#0B1C30]">القضية</th>
-              <th className="px-1 py-2 font-bold text-[10px] text-[#0B1C30]">المحكمة</th>
-              <th className="px-1 py-2 font-bold text-[10px] text-[#0B1C30]">المحامي</th>
-              <th className="px-1 py-2 font-bold text-[10px] text-[#0B1C30]">الحالة</th>
-            </tr>
-          </thead>
-          <tbody className="">
-            {sessions.map((session) => (
-              <tr key={session.id} className="transition-colors hover:bg-gray-50">
-                {/* التاريخ والوقت */}
-                <td className="px-2.5 py-2">
-                  <div className="text-[10px] font-bold text-gray-900">{session.date}</div>
-                  <div className={`text-[10px] ${session.urgent ? 'text-red-500 ' : 'text-gray-500'}`}>
-                    {session.time}
+      {/* Sessions */}
+      <div className="space-y-3">
+        {upcomingSessions.length > 0 ? (
+          upcomingSessions.map((session) => {
+            const lawyer = session.lawyerData;
+            const caseData = session.caseData;
+
+            return (
+              <div
+                key={session._id}
+                className="flex items-center justify-between gap-4 p-3 rounded-xl bg-[#FAFBFC] border border-[#EEF0F3] hover:border-[#DCE3EF] transition"
+              >
+                {/* Lawyer */}
+                <div className="flex items-center min-w-0 gap-3">
+                  {getAvatar(
+                    lawyer?.profileImage?.url,
+                    lawyer?.name
+                  )}
+
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-[#45464D] truncate">
+                      {lawyer?.name || "غير محدد"}
+                    </p>
+
+                    <p className="text-[10px] text-[#8A93A3] mt-1 truncate">
+                      {caseData?.caseNumber
+                        ? `قضية ${caseData.caseNumber}`
+                        : "جلسة قضية"}
+                    </p>
                   </div>
-                </td>
+                </div>
 
-                {/* القضية */}
-                <td className="px-2.5 py-2">
-                  <div className="text-[10px] text-gray-900">{session.caseName}</div>
-                  <div className="text-[10px] text-gray-400">{session.caseNumber}</div>
-                </td>
+                {/* Date */}
+                <div className="flex-shrink-0 text-left">
+                  <p className="text-xs font-semibold text-[#0B1C30]">
+                    {formatDate(session.sessionDate)}
+                  </p>
 
-                {/* المحكمة */}
-                <td className="px-2.5 py-2 text-[10px] text-gray-700">{session.court}</td>
+                  <p className="text-[10px] text-[#4868B4] mt-1 font-medium">
+                    {formatTime(session.sessionTime)}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-8 text-center">
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#F3F5F8] flex items-center justify-center text-[#8A93A3] mb-3">
+              <MdOutlineCalendarMonth size={22} />
+            </div>
 
-                {/* المحامي */}
-                <td className="px-2.5 py-2">
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      className="flex items-center justify-center w-6 h-6 text-[10px]  text-white rounded-full "
-                      style={{ backgroundColor: session.avatarColor }}
-                    >
-                      {session.lawyerInitials}
-                    </div>
-                    <span className="text-[10px] text-gray-700">{session.lawyerName}</span>
-                  </div>
-                </td>
+            <p className="text-xs font-semibold text-[#586377]">
+              لا توجد جلسات قادمة
+            </p>
 
-                {/* الحالة */}
-                <td className="px-2.5 py-2">
-                  <span
-                    className={`inline-block px-2.5 py-1 rounded-full text-[10px] ${
-                      session.status === 'مؤكدة'
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-indigo-50 text-indigo-500'
-                    }`}
-                  >
-                    {session.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* تذييل المكون (Footer) */}
-      <div className="flex items-center justify-between pt-4 mt-2 text-sm border-t border-gray-100">
-        <a href="#" className="font-medium text-blue-600 hover:underline">
-          عرض كل الجلسات
-        </a>
-        <div className="text-gray-500">
-          إجمالي الجلسات المبرمجة هذا الأسبوع: <span className="font-bold text-gray-800">12</span> جلسة
-        </div>
+            <p className="text-[10px] text-[#9AA2B1] mt-1">
+              لا توجد جلسات مجدولة حالياً
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

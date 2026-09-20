@@ -1,9 +1,17 @@
-import React from "react";
+"use client";
+import React, { useContext } from "react";
 import { UserRound, Pencil } from "lucide-react";
+import { authContext } from "../../../../../Providers/AuthProvider/Auth.js";
+import UpdateProfile from "./UpdateProfile.jsx";
 
 const Header = () => {
-  return (
-    <header dir="rtl" className="w-full mb-7">
+  const {setOpenUpdateProfile,openUpdateProfile}=useContext(authContext)
+  return <>
+{
+  openUpdateProfile && <UpdateProfile/>
+}
+ 
+    <header  className="w-full mb-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
 
         {/* Right Side */}
@@ -28,6 +36,9 @@ const Header = () => {
         {/* Left Side */}
         <div className="flex flex-wrap items-center gap-2">
           <button
+          onClick={()=>{
+            setOpenUpdateProfile(true)
+          }}
             className="
               flex h-10 items-center gap-2
               rounded-lg
@@ -46,7 +57,7 @@ const Header = () => {
 
       </div>
     </header>
-  );
+  </>
 };
 
 export default Header;

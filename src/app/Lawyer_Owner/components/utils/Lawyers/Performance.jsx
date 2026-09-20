@@ -1,12 +1,15 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useContext, useMemo, useState } from "react";
 import {
   BarChart3,
   TrendingUp,
   BriefcaseBusiness,
   CheckCircle2,
-  Award,
+  Users,
+  FileCheck2,
 } from "lucide-react";
+
 import {
   BarChart,
   Bar,
@@ -17,127 +20,137 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+
 
 const PerformanceSection = () => {
+  const { lawyers, clients } = useContext(OwnerContext);
+
   const [period, setPeriod] = useState("month");
 
-  const monthlyData = [
-    {
-      name: "أحمد",
-      cases: 22,
-      completed: 14,
-      success: 92,
-    },
-    {
-      name: "محمد",
-      cases: 38,
-      completed: 24,
-      success: 88,
-    },
-    {
-      name: "خالد",
-      cases: 24,
-      completed: 18,
-      success: 95,
-    },
-    {
-      name: "سامي",
-      cases: 14,
-      completed: 11,
-      success: 91,
-    },
-    {
-      name: "ياسر",
-      cases: 31,
-      completed: 21,
-      success: 87,
-    },
-    {
-      name: "عمر",
-      cases: 19,
-      completed: 15,
-      success: 94,
-    },
-  ];
+  /* =========================
+     Real Data
+  ========================= */
 
-  const yearlyData = [
-    {
-      name: "أحمد",
-      cases: 86,
-      completed: 61,
-      success: 91,
-    },
-    {
-      name: "محمد",
-      cases: 112,
-      completed: 82,
-      success: 89,
-    },
-    {
-      name: "خالد",
-      cases: 94,
-      completed: 73,
-      success: 94,
-    },
-    {
-      name: "سامي",
-      cases: 67,
-      completed: 51,
-      success: 90,
-    },
-    {
-      name: "ياسر",
-      cases: 103,
-      completed: 76,
-      success: 87,
-    },
-    {
-      name: "عمر",
-      cases: 79,
-      completed: 61,
-      success: 93,
-    },
-  ];
+  const performanceData = useMemo(() => {
+    const allLawyers = Array.isArray(lawyers) ? lawyers : [];
+    const allClients = Array.isArray(clients) ? clients : [];
 
-  const data = period === "month" ? monthlyData : yearlyData;
+    const allCases = allClients.flatMap((client) =>
+      Array.isArray(client?.cases)
+        ? client.cases.map((caseItem) => ({
+            ...caseItem,
+            clientName: client?.name,
+          }))
+        : []
+    );
 
-  const totalCases = data.reduce(
-    (total, lawyer) => total + lawyer.cases,
-    0
-  );
+    const now = new Date();
 
-  const totalCompleted = data.reduce(
-    (total, lawyer) => total + lawyer.completed,
-    0
-  );
+    const filteredCases = allCases.filter((caseItem) => {
+      if (!caseItem?.filingDate) return true;
 
-  const averageSuccess = (
-    data.reduce((total, lawyer) => total + lawyer.success, 0) /
-    data.length
-  ).toFixed(1);
+      const filingDate = new Date(caseItem.filingDate);
 
-  const averageEfficiency = (
-    (totalCompleted / totalCases) *
-    100
-  ).toFixed(1);
+      if (Number.isNaN(filingDate.getTime())) return true;
+
+      if (period === "month") {
+        return (
+          filingDate.getMonth() === now.getMonth() &&
+          filingDate.getFullYear() === now.getFullYear()
+        );
+      }
+
+      return filingDate.getFullYear() === now.getFullYear();
+    });
+
+    const lawyerStats = allLawyers.map((lawyer) => {
+      const lawyerId = String(lawyer?._id || "");
+
+      const lawyerCases = filteredCases.filter((caseItem) => {
+        if (!Array.isArray(caseItem?.lawyers)) return false;
+
+        return caseItem.lawyers.some((caseLawyer) => {
+          const id =
+            typeof caseLawyer === "object"
+              ? caseLawyer?._id
+              : caseLawyer;
+
+          return String(id || "") === lawyerId;
+        });
+      });
+
+      const completedCases = lawyerCases.filter(
+        (caseItem) => caseItem?.status === "judged"
+      ).length;
+
+      const activeCases = lawyerCases.filter(
+        (caseItem) => caseItem?.status === "active"
+      ).length;
+
+      return {
+        id: lawyerId,
+        name: lawyer?.name || "بدون اسم",
+        cases: lawyerCases.length,
+        completed: completedCases,
+        active: activeCases,
+      };
+    });
+
+    const totalCases = filteredCases.length;
+
+    const totalCompleted = filteredCases.filter(
+      (caseItem) => caseItem?.status === "judged"
+    ).length;
+
+    const lawyersWithCases = lawyerStats.filter(
+      (lawyer) => lawyer.cases > 0
+    ).length;
+
+    const averageCases =
+      allLawyers.length > 0
+        ? (totalCases / allLawyers.length).toFixed(1)
+        : "0";
+
+    const completionRate =
+      totalCases > 0
+        ? ((totalCompleted / totalCases) * 100).toFixed(1)
+        : "0.0";
+
+    return {
+      lawyers: lawyerStats,
+      totalCases,
+      totalCompleted,
+      lawyersWithCases,
+      averageCases,
+      completionRate,
+    };
+  }, [lawyers, clients, period]);
+
+  const chartData = useMemo(() => {
+    return performanceData.lawyers
+      .filter((lawyer) => lawyer.cases > 0)
+      .sort((a, b) => b.cases - a.cases);
+  }, [performanceData.lawyers]);
+
+  const topLawyers = useMemo(() => {
+    return [...performanceData.lawyers]
+      .filter((lawyer) => lawyer.cases > 0)
+      .sort((a, b) => b.cases - a.cases)
+      .slice(0, 6);
+  }, [performanceData.lawyers]);
 
   return (
-    <section
-      
-      className="w-full mt-10 rounded-2xl border border-[#E7EBF2] bg-white p-4 md:p-5"
-    >
+    <section className="mt-10 w-full rounded-2xl border border-[#E7EBF2] bg-white p-4 md:p-5">
       {/* =========================
           Header
       ========================= */}
-      <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
 
+      <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EEF5FF]">
-              <BarChart3
-                size={18}
-                className="text-[#3E67A5]"
-              />
+              <BarChart3 size={18} className="text-[#3E67A5]" />
             </div>
 
             <div>
@@ -146,15 +159,15 @@ const PerformanceSection = () => {
               </h2>
 
               <p className="mt-1 text-[11px] text-[#8993A5]">
-                متابعة كفاءة المحامين ومؤشرات الأداء
+                متابعة حجم القضايا ومؤشرات أداء فريق المحامين
               </p>
             </div>
           </div>
         </div>
 
         {/* Period */}
-        <div className="flex w-fit items-center rounded-xl border border-[#E7EBF2] bg-[#FAFBFC] p-1">
 
+        <div className="flex w-fit items-center rounded-xl border border-[#E7EBF2] bg-[#FAFBFC] p-1">
           <button
             onClick={() => setPeriod("month")}
             className={`rounded-lg px-4 py-1.5 text-[10px] font-bold transition ${
@@ -182,11 +195,11 @@ const PerformanceSection = () => {
       {/* =========================
           Statistics
       ========================= */}
+
       <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-2 xl:grid-cols-4">
-
         {/* Total Cases */}
-        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
 
+        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] text-[#8993A5]">
@@ -194,7 +207,7 @@ const PerformanceSection = () => {
               </p>
 
               <p className="mt-2 text-xl font-bold text-[#111827]">
-                {totalCases}
+                {performanceData.totalCases}
               </p>
             </div>
 
@@ -208,21 +221,24 @@ const PerformanceSection = () => {
 
           <div className="mt-3 flex items-center gap-1 text-[10px] text-[#3D9561]">
             <TrendingUp size={12} />
-            <span>نشاط القضايا</span>
+
+            <span>
+              {period === "month" ? "خلال هذا الشهر" : "خلال هذا العام"}
+            </span>
           </div>
         </div>
 
         {/* Completed */}
-        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
 
+        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] text-[#8993A5]">
-                القضايا المكتملة
+                القضايا المحكوم فيها
               </p>
 
               <p className="mt-2 text-xl font-bold text-[#111827]">
-                {totalCompleted}
+                {performanceData.totalCompleted}
               </p>
             </div>
 
@@ -235,53 +251,50 @@ const PerformanceSection = () => {
           </div>
 
           <div className="mt-3 text-[10px] text-[#8993A5]">
-            من إجمالي القضايا
+            حالة القضية: صدر فيها حكم
           </div>
         </div>
 
-        {/* Success */}
-        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
+        {/* Lawyers With Cases */}
 
+        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] text-[#8993A5]">
-                متوسط نسبة النجاح
+                محامون لديهم قضايا
               </p>
 
               <p className="mt-2 text-xl font-bold text-[#111827]">
-                {averageSuccess}%
+                {performanceData.lawyersWithCases}
               </p>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF8E8]">
-              <Award
-                size={18}
-                className="text-[#B18A2E]"
-              />
+              <Users size={18} className="text-[#B18A2E]" />
             </div>
           </div>
 
-          <div className="mt-3 text-[10px] text-[#3D9561]">
-            نتائج إيجابية
+          <div className="mt-3 text-[10px] text-[#8993A5]">
+            من إجمالي المحامين
           </div>
         </div>
 
-        {/* Efficiency */}
-        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
+        {/* Completion Rate */}
 
+        <div className="rounded-2xl border border-[#EEF1F5] bg-[#FAFBFC] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] text-[#8993A5]">
-                معدل الكفاءة
+                معدل إغلاق القضايا
               </p>
 
               <p className="mt-2 text-xl font-bold text-[#111827]">
-                {averageEfficiency}%
+                {performanceData.completionRate}%
               </p>
             </div>
 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F3F0FF]">
-              <TrendingUp
+              <FileCheck2
                 size={18}
                 className="text-[#7357B8]"
               />
@@ -289,162 +302,211 @@ const PerformanceSection = () => {
           </div>
 
           <div className="mt-3 text-[10px] text-[#8993A5]">
-            نسبة القضايا المكتملة
+            المحكوم فيها من إجمالي القضايا
           </div>
         </div>
       </div>
 
       {/* =========================
-          Chart + Top Performance
+          Chart + Lawyers
       ========================= */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_300px]">
 
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Chart */}
-        <div className="rounded-2xl border border-[#EEF1F5] p-4">
 
+        <div className="col-span-2 rounded-2xl border border-[#EEF1F5] p-4">
           <div className="mb-5">
             <h3 className="text-sm font-bold text-[#111827]">
               مقارنة أداء المحامين
             </h3>
 
             <p className="mt-1 text-[10px] text-[#8993A5]">
-              مقارنة عدد القضايا بالقضايا المكتملة
+              مقارنة إجمالي القضايا بالقضايا التي صدر فيها حكم
             </p>
           </div>
 
-          <div className="h-[330px] w-full">
-
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
-              <BarChart
-                data={data}
-                margin={{
-                  top: 10,
-                  right: 10,
-                  left: -15,
-                  bottom: 5,
-                }}
-                barGap={5}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#EEF1F5"
-                />
-
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fontSize: 10,
-                    fill: "#8993A5",
+          {chartData.length > 0 ? (
+            <div className="h-[330px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{
+                    top: 10,
+                    right: 10,
+                    left: -15,
+                    bottom: 5,
                   }}
-                />
+                  barGap={5}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#EEF1F5"
+                  />
 
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fontSize: 9,
-                    fill: "#8993A5",
-                  }}
-                />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 10,
+                      fill: "#8993A5",
+                    }}
+                  />
 
-                <Tooltip
-                  cursor={{
-                    fill: "#F8F9FB",
-                  }}
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "1px solid #E7EBF2",
-                    fontSize: "11px",
-                    direction: "rtl",
-                  }}
-                />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    allowDecimals={false}
+                    tick={{
+                      fontSize: 9,
+                      fill: "#8993A5",
+                    }}
+                  />
 
-                <Legend
-                  wrapperStyle={{
-                    fontSize: "10px",
-                    paddingTop: "10px",
-                  }}
-                />
+                  <Tooltip
+                    cursor={{
+                      fill: "#F8F9FB",
+                    }}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #E7EBF2",
+                      fontSize: "11px",
+                      direction: "rtl",
+                    }}
+                    formatter={(value, name) => {
+                      if (name === "إجمالي القضايا") {
+                        return [value, "إجمالي القضايا"];
+                      }
 
-                <Bar
-                  dataKey="cases"
-                  name="إجمالي القضايا"
-                  fill="#8AA8D8"
-                  radius={[5, 5, 0, 0]}
-                  barSize={18}
-                />
+                      return [value, "القضايا المحكوم فيها"];
+                    }}
+                  />
 
-                <Bar
-                  dataKey="completed"
-                  name="القضايا المكتملة"
-                  fill="#3D9561"
-                  radius={[5, 5, 0, 0]}
-                  barSize={18}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+                  <Legend
+                    wrapperStyle={{
+                      fontSize: "10px",
+                      paddingTop: "10px",
+                    }}
+                  />
 
-          </div>
+                  <Bar
+                    dataKey="cases"
+                    name="إجمالي القضايا"
+                    fill="#8AA8D8"
+                    radius={[5, 5, 0, 0]}
+                    barSize={18}
+                  />
+
+                  <Bar
+                    dataKey="completed"
+                    name="القضايا المحكوم فيها"
+                    fill="#3D9561"
+                    radius={[5, 5, 0, 0]}
+                    barSize={18}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex h-[330px] items-center justify-center">
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5F7FA]">
+                  <BriefcaseBusiness
+                    size={20}
+                    className="text-[#8993A5]"
+                  />
+                </div>
+
+                <p className="text-[12px] font-bold text-[#45464D]">
+                  لا توجد قضايا في هذه الفترة
+                </p>
+
+                <p className="mt-1 text-[10px] text-[#8993A5]">
+                  ستظهر بيانات الأداء هنا عند إضافة القضايا
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Top Lawyers */}
-        <div className="rounded-2xl border border-[#EEF1F5] p-4">
+        {/* Lawyers Performance */}
 
+        <div className="rounded-2xl border border-[#EEF1F5] p-4">
           <div className="mb-5">
             <h3 className="text-sm font-bold text-[#111827]">
-              مؤشرات النجاح
+              نشاط المحامين
             </h3>
 
             <p className="mt-1 text-[10px] text-[#8993A5]">
-              نسبة نجاح كل محامي
+              توزيع القضايا على المحامين
             </p>
           </div>
 
-          <div className="space-y-4">
+          {topLawyers.length > 0 ? (
+            <div className="space-y-4">
+              {topLawyers.map((lawyer, index) => {
+                const maxCases = topLawyers[0]?.cases || 1;
 
-            {data
-              .sort((a, b) => b.success - a.success)
-              .map((lawyer, index) => (
-                <div key={lawyer.name}>
+                const percentage =
+                  (lawyer.cases / maxCases) * 100;
 
-                  <div className="flex items-center justify-between mb-2">
+                return (
+                  <div key={lawyer.id || lawyer.name}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F5F7FA] text-[9px] font-bold text-[#687282]">
+                          {index + 1}
+                        </div>
 
-                    <div className="flex items-center gap-2">
+                        <div>
+                          <span className="block text-[11px] font-bold text-[#45464D]">
+                            {lawyer.name}
+                          </span>
 
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F5F7FA] text-[9px] font-bold text-[#687282]">
-                        {index + 1}
+                          <span className="text-[9px] text-[#8993A5]">
+                            {lawyer.active} قضايا نشطة
+                          </span>
+                        </div>
                       </div>
 
-                      <span className="text-[11px] font-bold text-[#45464D]">
-                        {lawyer.name}
+                      <span className="text-[10px] font-bold text-[#3E67A5]">
+                        {lawyer.cases} قضية
                       </span>
                     </div>
 
-                    <span className="text-[10px] font-bold text-[#3D9561]">
-                      {lawyer.success}%
-                    </span>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[#EEF1F5]">
+                      <div
+                        className="h-full rounded-full bg-[#3E67A5] transition-all"
+                        style={{
+                          width: `${percentage}%`,
+                        }}
+                      />
+                    </div>
                   </div>
-
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[#EEF1F5]">
-
-                    <div
-                      className="h-full rounded-full bg-[#3D9561] transition-all"
-                      style={{
-                        width: `${lawyer.success}%`,
-                      }}
-                    />
-
-                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex min-h-[250px] items-center justify-center">
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5F7FA]">
+                  <Users
+                    size={20}
+                    className="text-[#8993A5]"
+                  />
                 </div>
-              ))}
 
-          </div>
+                <p className="text-[12px] font-bold text-[#45464D]">
+                  لا يوجد نشاط حتى الآن
+                </p>
+
+                <p className="mt-1 text-[10px] text-[#8993A5]">
+                  لا يوجد محامون مرتبطون بقضايا في هذه الفترة
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

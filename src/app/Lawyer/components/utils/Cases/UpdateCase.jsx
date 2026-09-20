@@ -515,7 +515,7 @@ const UpdateCase = ({ selectCase }) => {
 
                   {/* ================= LAWYERS ================= */}
 
-                  <div>
+                  <div className="hidden">
                     <label
                       htmlFor="lawyers"
                       className="block mb-2 text-sm font-medium text-slate-300"

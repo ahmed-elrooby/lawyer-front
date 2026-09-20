@@ -1,109 +1,107 @@
 "use client";
-import React, { useMemo, useState } from "react";
+
+import React, { useContext, useMemo, useState } from "react";
 import {
   Users,
   Eye,
   Search,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
   BriefcaseBusiness,
   CalendarCheck2,
 } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const LawyersPerformance = () => {
+  const {
+    lawyers = [],
+    cases = [],
+    sessions = [],
+  } = useContext(OwnerContext);
+
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 5;
 
-  const lawyers = [
-    {
-      id: 1,
-      name: "أحمد محمد علي",
-      specialization: "محامي استئناف",
-      cases: 22,
-      closed: 14,
-      sessions: 18,
-      success: 92,
-      efficiency: 86,
-      status: "نشط",
-    },
-    {
-      id: 2,
-      name: "محمد أحمد حسن",
-      specialization: "محامي ومستشار قانوني",
-      cases: 38,
-      closed: 24,
-      sessions: 27,
-      success: 88,
-      efficiency: 82,
-      status: "نشط",
-    },
-    {
-      id: 3,
-      name: "خالد عبد الرحمن",
-      specialization: "محامي أحوال شخصية",
-      cases: 24,
-      closed: 18,
-      sessions: 21,
-      success: 95,
-      efficiency: 91,
-      status: "نشط",
-    },
-    {
-      id: 4,
-      name: "سامي محمود",
-      specialization: "محامي مدني",
-      cases: 14,
-      closed: 11,
-      sessions: 13,
-      success: 91,
-      efficiency: 79,
-      status: "نشط",
-    },
-    {
-      id: 5,
-      name: "ياسر إبراهيم",
-      specialization: "محامي تجاري",
-      cases: 31,
-      closed: 21,
-      sessions: 24,
-      success: 87,
-      efficiency: 67,
-      status: "مشغول",
-    },
-    {
-      id: 6,
-      name: "عمر حسن",
-      specialization: "محامي استئناف",
-      cases: 19,
-      closed: 15,
-      sessions: 17,
-      success: 94,
-      efficiency: 84,
-      status: "نشط",
-    },
-    {
-      id: 7,
-      name: "محمود علي",
-      specialization: "محامي جنائي",
-      cases: 27,
-      closed: 19,
-      sessions: 22,
-      success: 89,
-      efficiency: 81,
-      status: "نشط",
-    },
-  ];
+  const lawyersPerformance = useMemo(() => {
+    return lawyers.map((lawyer) => {
+      const lawyerId = lawyer?._id || lawyer?.id;
+
+      // القضايا الخاصة بالمحامي
+      const lawyerCases = cases.filter((item) => {
+        if (!Array.isArray(item?.lawyers)) return false;
+
+        return item.lawyers.some((caseLawyer) => {
+          const caseLawyerId =
+            typeof caseLawyer === "object"
+              ? caseLawyer?._id
+              : caseLawyer;
+
+          return String(caseLawyerId) === String(lawyerId);
+        });
+      });
+
+      // القضايا التي تم الحكم فيها
+      const judgedCases = lawyerCases.filter(
+        (item) => item?.status === "judged"
+      );
+
+      // الجلسات الخاصة بالمحامي
+      const lawyerSessions = sessions.filter((session) => {
+        const sessionLawyer =
+          session?.lawyerId ||
+          session?.lawyer ||
+          session?.lawyer_id;
+
+        const sessionLawyerId =
+          typeof sessionLawyer === "object"
+            ? sessionLawyer?._id
+            : sessionLawyer;
+
+        return (
+          String(sessionLawyerId) === String(lawyerId)
+        );
+      });
+
+      return {
+        ...lawyer,
+
+        cases: lawyerCases.length,
+
+        closed: judgedCases.length,
+
+        sessions: lawyerSessions.length,
+
+        status: lawyer?.isActive ? "نشط" : "غير نشط",
+      };
+    });
+  }, [lawyers, cases, sessions]);
 
   const filteredLawyers = useMemo(() => {
-    return lawyers.filter(
-      (lawyer) =>
-        lawyer.name.includes(search) ||
-        lawyer.specialization.includes(search)
-    );
-  }, [search]);
+    const searchValue = search.trim().toLowerCase();
+
+    if (!searchValue) {
+      return lawyersPerformance;
+    }
+
+    return lawyersPerformance.filter((lawyer) => {
+      const name =
+        lawyer?.name?.toLowerCase() || "";
+
+      const specialization =
+        lawyer?.specialization?.toLowerCase() || "";
+
+      const email =
+        lawyer?.email?.toLowerCase() || "";
+
+      return (
+        name.includes(searchValue) ||
+        specialization.includes(searchValue) ||
+        email.includes(searchValue)
+      );
+    });
+  }, [lawyersPerformance, search]);
 
   const totalPages = Math.ceil(
     filteredLawyers.length / itemsPerPage
@@ -124,7 +122,10 @@ const LawyersPerformance = () => {
 
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EAF0FF]">
-                <Users size={17} className="text-[#4868B4]" />
+                <Users
+                  size={17}
+                  className="text-[#4868B4]"
+                />
               </div>
 
               <div>
@@ -161,7 +162,7 @@ const LawyersPerformance = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[950px] text-right">
+          <table className="w-full min-w-[850px] text-right">
             <thead>
               <tr className="border-b border-[#EEF0F3] bg-[#FAFBFC]">
                 <th className="px-5 py-3 text-[9px] font-bold text-[#777B84]">
@@ -173,7 +174,7 @@ const LawyersPerformance = () => {
                 </th>
 
                 <th className="px-4 py-3 text-[9px] font-bold text-[#777B84]">
-                  القضايا المغلقة
+                  القضايا المحكوم فيها
                 </th>
 
                 <th className="px-4 py-3 text-[9px] font-bold text-[#777B84]">
@@ -181,146 +182,137 @@ const LawyersPerformance = () => {
                 </th>
 
                 <th className="px-4 py-3 text-[9px] font-bold text-[#777B84]">
-                  معدل النجاح
+                  نسبة الحكم
                 </th>
 
-                <th className="px-4 py-3 text-[9px] font-bold text-[#777B84]">
-                  الكفاءة
-                </th>
-
-                <th className="px-5 py-3 text-center text-[9px] font-bold text-[#777B84]">
-                  الإجراء
-                </th>
+              
               </tr>
             </thead>
 
             <tbody>
-              {paginatedLawyers.map((lawyer) => (
-                <tr
-                  key={lawyer.id}
-                  className="border-b border-[#F0F1F4] transition hover:bg-[#FBFCFE]"
-                >
-                  {/* Lawyer */}
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF0FF] text-[10px] font-bold text-[#4868B4]">
-                        {lawyer.name
-                          .split(" ")
-                          .slice(0, 2)
-                          .map((word) => word[0])
-                          .join("")}
-                      </div>
+              {paginatedLawyers.map((lawyer) => {
+                const casesCount = lawyer.cases || 0;
+                const judgedCount = lawyer.closed || 0;
 
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-[10px] font-bold text-[#0B1C30]">
-                            {lawyer.name}
+                const judgedPercentage =
+                  casesCount > 0
+                    ? Math.round(
+                        (judgedCount / casesCount) * 100
+                      )
+                    : 0;
+
+                return (
+                  <tr
+                    key={lawyer._id || lawyer.id}
+                    className="border-b border-[#F0F1F4] transition hover:bg-[#FBFCFE]"
+                  >
+                    {/* Lawyer */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        {lawyer?.profileImage?.url ? (
+                          <img
+                            src={lawyer.profileImage.url}
+                            alt={lawyer?.name || "محامي"}
+                            className="object-cover rounded-full h-9 w-9 shrink-0"
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF0FF] text-[10px] font-bold text-[#4868B4]">
+                            {(lawyer?.name || "م")
+                              .split(" ")
+                              .slice(0, 2)
+                              .map((word) => word[0])
+                              .join("")}
+                          </div>
+                        )}
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-[10px] font-bold text-[#0B1C30]">
+                              {lawyer?.name || "بدون اسم"}
+                            </p>
+
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                lawyer.status === "نشط"
+                                  ? "bg-[#258A5A]"
+                                  : "bg-[#C24A4A]"
+                              }`}
+                            />
+                          </div>
+
+                          <p className="mt-1 text-[8px] text-[#8A8E96]">
+                            {lawyer?.specialization ||
+                              lawyer?.email ||
+                              "محامي"}
                           </p>
+                        </div>
+                      </div>
+                    </td>
 
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              lawyer.status === "نشط"
-                                ? "bg-[#258A5A]"
-                                : "bg-[#C5A62A]"
-                            }`}
+                    {/* Cases */}
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <BriefcaseBusiness
+                          size={13}
+                          className="text-[#4868B4]"
+                        />
+
+                        <span className="text-[11px] font-bold text-[#0B1C30]">
+                          {casesCount}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Judged */}
+                    <td className="px-4 py-4">
+                      <div>
+                        <span className="text-[11px] font-bold text-[#258A5A]">
+                          {judgedCount}
+                        </span>
+
+                        <span className="mr-1 text-[8px] text-[#9AA0A8]">
+                          من {casesCount}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Sessions */}
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <CalendarCheck2
+                          size={13}
+                          className="text-[#7950B5]"
+                        />
+
+                        <span className="text-[11px] font-bold text-[#0B1C30]">
+                          {lawyer.sessions || 0}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Judged Percentage */}
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#258A5A]">
+                          {judgedPercentage}%
+                        </span>
+
+                        <div className="h-1.5 w-[70px] overflow-hidden rounded-full bg-[#EEF0F3]">
+                          <div
+                            className="h-full rounded-full bg-[#258A5A]"
+                            style={{
+                              width: `${judgedPercentage}%`,
+                            }}
                           />
                         </div>
-
-                        <p className="mt-1 text-[8px] text-[#8A8E96]">
-                          {lawyer.specialization}
-                        </p>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Cases */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <BriefcaseBusiness
-                        size={13}
-                        className="text-[#4868B4]"
-                      />
-
-                      <span className="text-[11px] font-bold text-[#0B1C30]">
-                        {lawyer.cases}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Closed */}
-                  <td className="px-4 py-4">
-                    <div>
-                      <span className="text-[11px] font-bold text-[#258A5A]">
-                        {lawyer.closed}
-                      </span>
-
-                      <span className="mr-1 text-[8px] text-[#9AA0A8]">
-                        من {lawyer.cases}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Sessions */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <CalendarCheck2
-                        size={13}
-                        className="text-[#7950B5]"
-                      />
-
-                      <span className="text-[11px] font-bold text-[#0B1C30]">
-                        {lawyer.sessions}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Success */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-[#258A5A]">
-                        {lawyer.success}%
-                      </span>
-
-                      <div className="h-1.5 w-[70px] overflow-hidden rounded-full bg-[#EEF0F3]">
-                        <div
-                          className="h-full rounded-full bg-[#258A5A]"
-                          style={{
-                            width: `${lawyer.success}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Efficiency */}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-[#4868B4]">
-                        {lawyer.efficiency}%
-                      </span>
-
-                      <div className="h-1.5 w-[70px] overflow-hidden rounded-full bg-[#EEF0F3]">
-                        <div
-                          className="h-full rounded-full bg-[#4868B4]"
-                          style={{
-                            width: `${lawyer.efficiency}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Action */}
-                  <td className="px-5 py-4">
-                    <div className="flex justify-center">
-                      <button className="flex h-8 items-center gap-1.5 rounded-md border border-[#E4E7EC] px-3 text-[9px] font-bold text-[#59616D] transition hover:border-[#C8D2E5] hover:bg-[#F5F7FB] hover:text-[#4868B4]">
-                        <Eye size={13} />
-                        عرض التفاصيل
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    {/* Action */}
+                    
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

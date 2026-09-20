@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useContext, useMemo } from "react";
 import {
   BellRing,
   Clock3,
@@ -10,86 +12,215 @@ import {
   UserRound,
   CheckCircle2,
 } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const UpcomingImportantAlerts = () => {
-  const upcomingSessions = [
-    {
-      id: 1,
-      time: "بعد 35 دقيقة",
-      hour: "10:30 ص",
-      caseName: "قضية أحمد محمود عبد الله",
-      caseNumber: "#1031",
-      lawyer: "خالد عبد الرحمن",
-      court: "محكمة جنوب القاهرة",
-      chamber: "الدائرة 8",
-      priority: "عاجل",
-    },
-    {
-      id: 2,
-      time: "بعد ساعتين",
-      hour: "12:00 م",
-      caseName: "قضية مؤسسة المستقبل",
-      caseNumber: "#1048",
-      lawyer: "محمد أحمد حسن",
-      court: "محكمة الجيزة",
-      chamber: "الدائرة 5",
-      priority: "متوسط",
-    },
-    {
-      id: 3,
-      time: "بعد 4 ساعات",
-      hour: "02:00 م",
-      caseName: "قضية شركة الأمل",
-      caseNumber: "#1106",
-      lawyer: "ياسر إبراهيم",
-      court: "محكمة الجيزة",
-      chamber: "الدائرة 7",
-      priority: "عادي",
-    },
-  ];
+  const { notifications = [], sessions = [] } =
+    useContext(OwnerContext);
 
-  const alerts = [
-    {
-      id: 1,
-      type: "urgent",
-      icon: <AlertTriangle size={16} />,
-      title: "جلسة تبدأ قريباً",
-      description:
-        "جلسة قضية أحمد محمود عبد الله ستبدأ خلال 35 دقيقة.",
-      time: "منذ 5 دقائق",
-      action: "عرض الجلسة",
-    },
-    {
-      id: 2,
-      type: "warning",
-      icon: <FileWarning size={16} />,
-      title: "مستندات تحتاج مراجعة",
-      description:
-        "هناك 3 مستندات مرتبطة بجلسات اليوم لم تتم مراجعتها بعد.",
-      time: "منذ 18 دقيقة",
-      action: "مراجعة المستندات",
-    },
-    {
-      id: 3,
+  // =========================
+  // Helpers
+  // =========================
+
+  const formatTime = (time) => {
+    if (!time) {
+      return {
+        time: "--:--",
+        period: "",
+      };
+    }
+
+    const [hours, minutes] = time.split(":");
+    const hour = Number(hours);
+
+    if (Number.isNaN(hour)) {
+      return {
+        time,
+        period: "",
+      };
+    }
+
+    const formattedHour = hour % 12 || 12;
+    const period = hour >= 12 ? "م" : "ص";
+
+    return {
+      time: `${String(formattedHour).padStart(2, "0")}:${minutes}`,
+      period,
+    };
+  };
+
+  const getCaseData = (session) => {
+    const caseData =
+      session?.caseId && typeof session.caseId === "object"
+        ? session.caseId
+        : null;
+
+    const lawyers = Array.isArray(caseData?.lawyers)
+      ? caseData.lawyers
+      : [];
+
+    return {
+      number:
+        caseData?.caseNumber ||
+        session?.caseNumber ||
+        "بدون رقم",
+
+      court:
+        caseData?.court ||
+        "لم يتم تحديد المحكمة",
+
+      lawyer:
+        lawyers.length > 0
+          ? lawyers.map((lawyer) => lawyer?.name).filter(Boolean).join("، ")
+          : "لم يتم تحديد المحامي",
+    };
+  };
+
+  const getNotificationTime = (createdAt) => {
+    if (!createdAt) {
+      return "منذ قليل";
+    }
+
+    const createdDate = new Date(createdAt);
+
+    if (Number.isNaN(createdDate.getTime())) {
+      return "منذ قليل";
+    }
+
+    const now = new Date();
+    const difference = Math.floor(
+      (now.getTime() - createdDate.getTime()) / 60000
+    );
+
+    if (difference < 1) {
+      return "منذ قليل";
+    }
+
+    if (difference < 60) {
+      return `منذ ${difference} دقيقة`;
+    }
+
+    const hours = Math.floor(difference / 60);
+
+    if (hours < 24) {
+      return `منذ ${hours} ساعة`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    return `منذ ${days} يوم`;
+  };
+
+  // =========================
+  // Upcoming Sessions
+  // =========================
+
+  const upcomingSessions = useMemo(() => {
+    const now = new Date();
+
+    return [...sessions]
+      .filter((session) => {
+        if (session?.status !== "scheduled") {
+          return false;
+        }
+
+        if (!session?.sessionDate || !session?.sessionTime) {
+          return false;
+        }
+
+        const sessionDate = new Date(session.sessionDate);
+
+        if (Number.isNaN(sessionDate.getTime())) {
+          return false;
+        }
+
+        const [hours, minutes] = session.sessionTime
+          .split(":")
+          .map(Number);
+
+        sessionDate.setHours(hours || 0);
+        sessionDate.setMinutes(minutes || 0);
+        sessionDate.setSeconds(0);
+        sessionDate.setMilliseconds(0);
+
+        return sessionDate >= now;
+      })
+      .sort((a, b) => {
+        const getDate = (session) => {
+          const date = new Date(session.sessionDate);
+
+          const [hours, minutes] = session.sessionTime
+            .split(":")
+            .map(Number);
+
+          date.setHours(hours || 0);
+          date.setMinutes(minutes || 0);
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+
+          return date.getTime();
+        };
+
+        return getDate(a) - getDate(b);
+      })
+      .slice(0, 3);
+  }, [sessions]);
+
+  // =========================
+  // Notifications
+  // =========================
+
+  const sessionNotifications = useMemo(() => {
+    return notifications
+      .filter(
+        (notification) =>
+          notification?.type === "upcoming_session"
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      )
+      .slice(0, 4);
+  }, [notifications]);
+
+  // =========================
+  // Notification Styles
+  // =========================
+
+  const getNotificationStyle = (notification) => {
+    if (
+      notification?.reminderType === "1_hour_before"
+    ) {
+      return {
+        type: "urgent",
+        icon: <AlertTriangle size={16} />,
+        title:
+          notification?.title || "جلسة تبدأ قريباً",
+      
+      };
+    }
+
+    if (
+      notification?.reminderType === "1_day_before"
+    ) {
+      return {
+        type: "warning",
+        icon: <CalendarClock size={16} />,
+        title:
+          notification?.title || "جلسة غدًا",
+        
+      };
+    }
+
+    return {
       type: "info",
-      icon: <CalendarClock size={16} />,
-      title: "جلسة مؤجلة تحتاج متابعة",
-      description:
-        "جلسة القضية رقم #1130 تم تأجيلها وتحتاج إلى تحديد موعد جديد.",
-      time: "منذ ساعة",
-      action: "متابعة الجلسة",
-    },
-    {
-      id: 4,
-      type: "success",
-      icon: <CheckCircle2 size={16} />,
-      title: "تم تحديث جلسة",
-      description:
-        "تم تحديث بيانات جلسة قضية شركة النور التجارية بنجاح.",
-      time: "منذ ساعتين",
-      action: "عرض التفاصيل",
-    },
-  ];
+      icon: <BellRing size={16} />,
+      title:
+        notification?.title || "تنبيه جديد",
+   
+    };
+  };
 
   const alertStyles = {
     urgent: {
@@ -97,16 +228,19 @@ const UpcomingImportantAlerts = () => {
       icon: "bg-[#FCE8E8] text-[#B44E4E]",
       title: "text-[#9D4545]",
     },
+
     warning: {
       wrapper: "border-[#F0E2B9] bg-[#FFFCF4]",
       icon: "bg-[#FFF2CC] text-[#9A7800]",
       title: "text-[#806500]",
     },
+
     info: {
       wrapper: "border-[#D8E1F4] bg-[#F8FAFF]",
       icon: "bg-[#EAF0FF] text-[#4A67A8]",
       title: "text-[#405B96]",
     },
+
     success: {
       wrapper: "border-[#D5EBDD] bg-[#F8FCF9]",
       icon: "bg-[#E6F5EB] text-[#258055]",
@@ -115,13 +249,33 @@ const UpcomingImportantAlerts = () => {
   };
 
   const priorityStyles = {
-    عاجل: "bg-[#FCE8E8] text-[#B44E4E]",
-    متوسط: "bg-[#FFF2CC] text-[#8D7100]",
-    عادي: "bg-[#EEF2F8] text-[#5E6B80]",
+    urgent: "bg-[#FCE8E8] text-[#B44E4E]",
+    warning: "bg-[#FFF2CC] text-[#8D7100]",
+    info: "bg-[#EEF2F8] text-[#5E6B80]",
   };
 
+  // =========================
+  // Summary
+  // =========================
+
+  const urgentCount = sessionNotifications.filter(
+    (notification) =>
+      notification?.reminderType === "1_hour_before"
+  ).length;
+
+  const warningCount = sessionNotifications.filter(
+    (notification) =>
+      notification?.reminderType === "1_day_before"
+  ).length;
+
+  const infoCount = sessionNotifications.filter(
+    (notification) =>
+      notification?.reminderType !== "1_hour_before" &&
+      notification?.reminderType !== "1_day_before"
+  ).length;
+
   return (
-    <section dir="rtl" className="mt-6 w-full">
+    <section dir="rtl" className="w-full mt-6">
       <div className="overflow-hidden rounded-2xl border border-[#E7EAF0] bg-white">
 
         {/* Header */}
@@ -133,7 +287,7 @@ const UpcomingImportantAlerts = () => {
                 <BellRing size={19} />
 
                 <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#B44E4E] px-1 text-[8px] font-bold text-white">
-                  4
+                  {sessionNotifications.length}
                 </span>
               </div>
 
@@ -144,7 +298,7 @@ const UpcomingImportantAlerts = () => {
                   </h2>
 
                   <span className="rounded-full bg-[#FFF2D3] px-2 py-1 text-[9px] font-bold text-[#8A6D00]">
-                    4 تنبيهات
+                    {sessionNotifications.length} تنبيهات
                   </span>
                 </div>
 
@@ -154,10 +308,7 @@ const UpcomingImportantAlerts = () => {
               </div>
             </div>
 
-            <button className="flex items-center justify-center gap-2 rounded-lg border border-[#E3E6EC] px-3.5 py-2 text-[10px] font-semibold text-[#626A76] transition hover:bg-[#F7F8FA]">
-              عرض كل التنبيهات
-              <ChevronLeft size={13} />
-            </button>
+            
 
           </div>
         </div>
@@ -168,7 +319,7 @@ const UpcomingImportantAlerts = () => {
           {/* Upcoming Sessions */}
           <div className="rounded-2xl border border-[#EEF0F4] bg-[#FCFDFE] p-4">
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-[13px] font-bold text-[#273243]">
                   الجلسات القادمة
@@ -185,84 +336,134 @@ const UpcomingImportantAlerts = () => {
             </div>
 
             <div className="space-y-2.5">
+              {upcomingSessions.length === 0 ? (
+                <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-[#E3E8EF] bg-white px-4 text-center">
+                  <CalendarClock
+                    size={24}
+                    className="text-[#A3ACB9]"
+                  />
 
-              {upcomingSessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="group rounded-xl border border-[#E9ECF1] bg-white p-3.5 transition hover:border-[#D4DAE5] hover:shadow-sm"
-                >
-                  <div className="flex items-start gap-3">
+                  <p className="mt-2 text-[10px] font-bold text-[#687282]">
+                    لا توجد جلسات قادمة
+                  </p>
 
-                    {/* Time */}
-                    <div className="flex w-[58px] shrink-0 flex-col items-center rounded-lg bg-[#F5F7FA] px-2 py-2">
-                      <Clock3
-                        size={13}
-                        className="text-[#667286]"
-                      />
+                  <p className="mt-1 text-[9px] text-[#9AA3B1]">
+                    لا توجد جلسات مجدولة حاليًا.
+                  </p>
+                </div>
+              ) : (
+                upcomingSessions.map((session) => {
+                  const caseData = getCaseData(session);
+                  const formattedTime = formatTime(
+                    session.sessionTime
+                  );
 
-                      <span className="mt-1 text-[10px] font-bold text-[#3E4858]">
-                        {session.hour}
-                      </span>
-                    </div>
+                  const notificationForSession =
+                    sessionNotifications.find(
+                      (notification) =>
+                        notification?.sessionId?._id ===
+                        session?._id
+                    );
 
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
+                  let priority = "info";
 
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-[11px] font-bold text-[#293342]">
-                            {session.caseName}
-                          </p>
+                  if (
+                    notificationForSession?.reminderType ===
+                    "1_hour_before"
+                  ) {
+                    priority = "urgent";
+                  } else if (
+                    notificationForSession?.reminderType ===
+                    "1_day_before"
+                  ) {
+                    priority = "warning";
+                  }
 
-                          <p className="mt-1 text-[9px] text-[#9198A3]">
-                            {session.caseNumber}
-                          </p>
+                  return (
+                    <div
+                      key={session._id}
+                      className="group rounded-xl border border-[#E9ECF1] bg-white p-3.5 transition hover:border-[#D4DAE5] hover:shadow-sm"
+                    >
+                      <div className="flex items-start gap-3">
+
+                        {/* Time */}
+                        <div className="flex w-[58px] shrink-0 flex-col items-center rounded-lg bg-[#F5F7FA] px-2 py-2">
+                          <Clock3
+                            size={13}
+                            className="text-[#667286]"
+                          />
+
+                          <span className="mt-1 text-[10px] font-bold text-[#3E4858]">
+                            {formattedTime.time}
+                          </span>
+
+                          <span className="text-[8px] text-[#8D949E]">
+                            {formattedTime.period}
+                          </span>
                         </div>
 
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-[8px] font-bold ${priorityStyles[session.priority]}`}
-                        >
-                          {session.priority}
-                        </span>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-[11px] font-bold text-[#293342]">
+                                قضية رقم {caseData.number}
+                              </p>
+
+                              <p className="mt-1 text-[9px] text-[#9198A3]">
+                                {caseData.court}
+                              </p>
+                            </div>
+
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-1 text-[8px] font-bold ${priorityStyles[priority]}`}
+                            >
+                              {priority === "urgent"
+                                ? "عاجل"
+                                : priority === "warning"
+                                ? "قريب"
+                                : "عادي"}
+                            </span>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+
+                            <span className="flex items-center gap-1 text-[9px] text-[#737C89]">
+                              <UserRound size={11} />
+                              {caseData.lawyer}
+                            </span>
+
+                            <span className="flex items-center gap-1 text-[9px] text-[#737C89]">
+                              <MapPin size={11} />
+                              {caseData.court}
+                            </span>
+
+                          </div>
+
+                          <div className="mt-2.5 flex items-center justify-between">
+                            <span className="text-[9px] font-semibold text-[#8A919C]">
+                              {formattedTime.time}{" "}
+                              {formattedTime.period}
+                            </span>
+
+                           
+                          </div>
+
+                        </div>
+
                       </div>
-
-                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-
-                        <span className="flex items-center gap-1 text-[9px] text-[#737C89]">
-                          <UserRound size={11} />
-                          {session.lawyer}
-                        </span>
-
-                        <span className="flex items-center gap-1 text-[9px] text-[#737C89]">
-                          <MapPin size={11} />
-                          {session.court}
-                        </span>
-
-                      </div>
-
-                      <div className="mt-2.5 flex items-center justify-between">
-                        <span className="text-[9px] font-semibold text-[#8A919C]">
-                          {session.time}
-                        </span>
-
-                        <button className="text-[9px] font-bold text-[#4A67A8] opacity-0 transition group-hover:opacity-100">
-                          التفاصيل
-                        </button>
-                      </div>
-
                     </div>
-
-                  </div>
-                </div>
-              ))}
-
+                  );
+                })
+              )}
             </div>
           </div>
 
           {/* Alerts */}
           <div className="rounded-2xl border border-[#EEF0F4] bg-[#FCFDFE] p-4">
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-[13px] font-bold text-[#273243]">
                   التنبيهات المهمة
@@ -274,58 +475,75 @@ const UpcomingImportantAlerts = () => {
               </div>
 
               <span className="text-[9px] text-[#9298A2]">
-                آخر تحديث منذ 5 دقائق
+                {sessionNotifications.length > 0
+                  ? "آخر تحديث الآن"
+                  : "لا توجد تنبيهات"}
               </span>
             </div>
 
             <div className="space-y-2.5">
+              {sessionNotifications.length === 0 ? (
+                <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-[#E3E8EF] bg-white px-4 text-center">
+                  <CheckCircle2
+                    size={24}
+                    className="text-[#258055]"
+                  />
 
-              {alerts.map((alert) => {
-                const style = alertStyles[alert.type];
+                  <p className="mt-2 text-[10px] font-bold text-[#394352]">
+                    لا توجد تنبيهات
+                  </p>
 
-                return (
-                  <div
-                    key={alert.id}
-                    className={`group flex items-start gap-3 rounded-xl border p-3.5 transition hover:shadow-sm ${style.wrapper}`}
-                  >
+                  <p className="mt-1 text-[9px] text-[#8D949E]">
+                    لا توجد تنبيهات جلسات تحتاج إلى متابعة.
+                  </p>
+                </div>
+              ) : (
+                sessionNotifications.map((notification) => {
+                  const notificationStyle =
+                    getNotificationStyle(notification);
 
+                  const style =
+                    alertStyles[notificationStyle.type];
+
+                  return (
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${style.icon}`}
+                      key={notification._id}
+                      className={`group flex items-start gap-3 rounded-xl border p-3.5 transition hover:shadow-sm ${style.wrapper}`}
                     >
-                      {alert.icon}
-                    </div>
 
-                    <div className="min-w-0 flex-1">
-
-                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <p
-                          className={`text-[11px] font-bold ${style.title}`}
-                        >
-                          {alert.title}
-                        </p>
-
-                        <span className="text-[8px] text-[#9A9FA7]">
-                          {alert.time}
-                        </span>
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${style.icon}`}
+                      >
+                        {notificationStyle.icon}
                       </div>
 
-                      <p className="mt-1.5 max-w-2xl text-[9px] leading-5 text-[#777F8B]">
-                        {alert.description}
-                      </p>
+                      <div className="flex-1 min-w-0">
 
-                      <button
-                        className={`mt-2 flex items-center gap-1 text-[9px] font-bold ${style.title}`}
-                      >
-                        {alert.action}
-                        <ChevronLeft size={11} />
-                      </button>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                          <p
+                            className={`text-[11px] font-bold ${style.title}`}
+                          >
+                            {notificationStyle.title}
+                          </p>
+
+                          <span className="text-[8px] text-[#9A9FA7]">
+                            {getNotificationTime(
+                              notification.createdAt
+                            )}
+                          </span>
+                        </div>
+
+                        <p className="mt-1.5 max-w-2xl text-[9px] leading-5 text-[#777F8B]">
+                          {notification.message}
+                        </p>
+
+                       
+                      </div>
 
                     </div>
-
-                  </div>
-                );
-              })}
-
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -347,7 +565,13 @@ const UpcomingImportantAlerts = () => {
                 </p>
 
                 <p className="mt-0.5 text-[9px] text-[#8D949E]">
-                  لا توجد تنبيهات حرجة غير معالجة
+                  {urgentCount > 0
+                    ? `لديك ${urgentCount} تنبيه ${
+                        urgentCount === 1
+                          ? "عاجل"
+                          : "عاجلة"
+                      } تحتاج إلى متابعة`
+                    : "لا توجد تنبيهات حرجة غير معالجة"}
                 </p>
               </div>
             </div>
@@ -355,15 +579,24 @@ const UpcomingImportantAlerts = () => {
             <div className="flex items-center gap-4 text-[9px] text-[#7D858F]">
 
               <span>
-                <strong className="text-[#B44E4E]">1</strong> عاجل
+                <strong className="text-[#B44E4E]">
+                  {urgentCount}
+                </strong>{" "}
+                عاجل
               </span>
 
               <span>
-                <strong className="text-[#967700]">1</strong> يحتاج مراجعة
+                <strong className="text-[#967700]">
+                  {warningCount}
+                </strong>{" "}
+                يحتاج مراجعة
               </span>
 
               <span>
-                <strong className="text-[#4A67A8]">2</strong> معلومات
+                <strong className="text-[#4A67A8]">
+                  {infoCount}
+                </strong>{" "}
+                معلومات
               </span>
 
             </div>

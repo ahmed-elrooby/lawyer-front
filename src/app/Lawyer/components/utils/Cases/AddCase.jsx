@@ -337,71 +337,7 @@ const AddCase = () => {
                     />
                   </div>
 
-                  {/* ================= LAWYERS ================= */}
-
-                  <div>
-                    <label
-                      htmlFor="lawyers"
-                      className="block mb-2 text-sm font-medium text-slate-300"
-                    >
-                      المحامي
-                    </label>
-
-                    {isOfficeOwner ? (
-                      <Field
-                        as="select"
-                        name="lawyers"
-                        id="lawyers"
-                        value={
-                          values.lawyers?.[0] ||
-                          ""
-                        }
-                        onChange={(e) => {
-                          setFieldValue(
-                            "lawyers",
-                            e.target.value
-                              ? [
-                                  e.target
-                                    .value,
-                                ]
-                              : []
-                          );
-                        }}
-                        className="w-full px-4 py-3 text-sm text-white transition-colors border outline-none rounded-xl border-slate-700 bg-slate-800 focus:border-emerald-500"
-                      >
-                        <option value="">
-                          اختر المحامي
-                        </option>
-
-                        {lawyers?.map(
-                          (lawyer) => (
-                            <option
-                              key={
-                                lawyer?._id
-                              }
-                              value={
-                                lawyer?._id
-                              }
-                            >
-                              {lawyer?.name}
-                            </option>
-                          )
-                        )}
-                      </Field>
-                    ) : (
-                      <div className="w-full px-4 py-3 text-sm border text-slate-300 rounded-xl border-slate-700 bg-slate-800">
-                        {profile?.user?.name ||
-                          "المحامي الحالي"}
-                      </div>
-                    )}
-
-                    <ErrorMessage
-                      name="lawyers"
-                      component="p"
-                      className="mt-1 text-xs text-red-400"
-                    />
-                  </div>
-
+               
                   {/* ================= CASE NUMBER ================= */}
 
                   <div>

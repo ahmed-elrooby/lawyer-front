@@ -12,6 +12,7 @@ import OfficeActivity from '../utils/Home/OfficeActivity.jsx'
 import OfficeStatistics from '../utils/Home/OfficeStatistics.jsx'
 
 const Home = () => {
+
   return <>
   <Welcome/>
   <Cards/>

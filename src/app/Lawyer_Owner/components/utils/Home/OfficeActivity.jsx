@@ -1,47 +1,142 @@
-
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const OfficeActivity = () => {
-  const activities = [
-    {
-      initial: "أ",
-      name: "أحمد علي",
-      action: "أضاف قضية جديدة",
-      caseNumber: "#1089",
-      time: "منذ 5 دقائق",
-      type: "قضية مدنية",
-      avatarClass: "bg-slate-900 text-white",
-    },
-    {
-      initial: "س",
-      name: "سارة محمود",
-      action: "رفعت ملفًا للقضية",
-      caseNumber: "#1038",
-      time: "منذ 18 دقيقة",
-      type: "مستندات قانونية",
-      avatarClass: "bg-amber-100 text-amber-700",
-    },
-    {
-      initial: "م",
-      name: "محمد حسن",
-      action: "حدّث حالة القضية",
-      caseNumber: "#1021",
-      status: "مغلقة",
-      time: "منذ 32 دقيقة",
-      type: "تحديث القضية",
-      avatarClass: "bg-blue-100 text-blue-700",
-    },
-    {
-      initial: "أ",
-      name: "أحمد الروبي",
-      action: "أضاف محاميًا جديدًا للفريق",
-      time: "منذ ساعة",
-      type: "إدارة المكتب",
-      avatarClass: "bg-yellow-100 text-yellow-700",
-    },
-  ];
+  const {
+    cases = [],
+    documents = [],
+    lawyers = [],
+  } = useContext(OwnerContext);
+
+  const router = useRouter();
+
+  const activities = useMemo(() => {
+    const result = [];
+
+    // Cases
+    if (Array.isArray(cases)) {
+      cases.forEach((item) => {
+        const createdAt = item?.createdAt;
+        const updatedAt = item?.updatedAt;
+
+        if (!createdAt && !updatedAt) return;
+
+        const isUpdated =
+          updatedAt &&
+          createdAt &&
+          new Date(updatedAt).getTime() >
+            new Date(createdAt).getTime();
+
+        const date = new Date(
+          isUpdated ? updatedAt : createdAt
+        );
+
+        result.push({
+          id: `case-${item?._id}`,
+          date,
+          name:
+            item?.createdBy?.name ||
+            item?.lawyer?.name ||
+            "المكتب",
+          action: isUpdated
+            ? "حدّث حالة القضية"
+            : "أضاف قضية جديدة",
+          caseNumber: item?.caseNumber
+            ? `#${item.caseNumber}`
+            : null,
+          status:
+            isUpdated && item?.status === "judged"
+              ? "مغلقة"
+              : null,
+          type: "قضايا",
+          avatarClass:
+            "bg-slate-900 text-white",
+        });
+      });
+    }
+
+    // Documents
+    if (Array.isArray(documents)) {
+      documents.forEach((item) => {
+        if (!item?.createdAt) return;
+
+        result.push({
+          id: `document-${item?._id}`,
+          date: new Date(item.createdAt),
+          name:
+            item?.uploadedBy?.name ||
+            "المكتب",
+          action: "رفع ملفًا قانونيًا",
+          caseNumber: null,
+          status: null,
+          type: "مستندات قانونية",
+          avatarClass:
+            "bg-amber-100 text-amber-700",
+        });
+      });
+    }
+
+    // Lawyers
+    if (Array.isArray(lawyers)) {
+      lawyers.forEach((item) => {
+        if (!item?.createdAt) return;
+
+        result.push({
+          id: `lawyer-${item?._id}`,
+          date: new Date(item.createdAt),
+          name: item?.createdBy?.name || "المكتب",
+          action: "أضاف محاميًا جديدًا للفريق",
+          caseNumber: null,
+          status: null,
+          type: "إدارة المكتب",
+          avatarClass:
+            "bg-yellow-100 text-yellow-700",
+        });
+      });
+    }
+
+    return result
+      .filter((item) => !Number.isNaN(item.date.getTime()))
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 4);
+  }, [cases, documents, lawyers]);
+
+  const getRelativeTime = (date) => {
+    const diff = Math.floor(
+      (Date.now() - date.getTime()) / 1000
+    );
+
+    if (diff < 60) {
+      return "منذ أقل من دقيقة";
+    }
+
+    const minutes = Math.floor(diff / 60);
+
+    if (minutes < 60) {
+      return `منذ ${minutes} دقيقة`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+      return `منذ ${hours} ساعة`;
+    }
+
+    const days = Math.floor(hours / 24);
+
+    if (days === 1) {
+      return "منذ يوم";
+    }
+
+    return `منذ ${days} أيام`;
+  };
+
+  const getInitial = (name) => {
+    return name?.trim()?.charAt(0) || "م";
+  };
 
   return (
     <div className="col-span-2 p-4 bg-white rounded-2xl shadow-soft fade-border">
@@ -65,51 +160,53 @@ const OfficeActivity = () => {
 
       {/* Activities */}
       <div className="space-y-1.5">
-        {activities.map((activity, index) => (
-          <div
-            key={index}
-            className="flex items-start gap-2 rounded-xl bg-slate-50 p-2.5"
-          >
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[8px] ${activity.avatarClass}`}
+        {activities.length > 0 ? (
+          activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex items-start gap-2 rounded-xl bg-slate-50 p-2.5"
             >
-              {activity.initial}
-            </span>
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[8px] ${activity.avatarClass}`}
+              >
+                {getInitial(activity.name)}
+              </span>
 
-            <div className="flex-1">
-              <div className="text-[8px] leading-4 text-slate-700">
-                <b>{activity.name}</b>{" "}
-                {activity.action}{" "}
-                {activity.caseNumber && (
-                  <span className="text-blue-600">
-                    {activity.caseNumber}
-                  </span>
-                )}{" "}
-                {activity.status && (
-                  <>
-                    إلى{" "}
-                    <b className="text-emerald-600">
-                      {activity.status}
-                    </b>
-                  </>
-                )}
-              </div>
+              <div className="flex-1">
+                <div className="text-[8px] leading-4 text-slate-700">
+                  <b>{activity.name}</b>{" "}
+                  {activity.action}{" "}
+                  {activity.caseNumber && (
+                    <span className="text-blue-600">
+                      {activity.caseNumber}
+                    </span>
+                  )}{" "}
+                  {activity.status && (
+                    <>
+                      إلى{" "}
+                      <b className="text-emerald-600">
+                        {activity.status}
+                      </b>
+                    </>
+                  )}
+                </div>
 
-              <div className="text-[7px] text-slate-400">
-                {activity.time} • {activity.type}
+                <div className="text-[7px] text-slate-400">
+                  {getRelativeTime(activity.date)} •{" "}
+                  {activity.type}
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="rounded-xl bg-slate-50 p-5 text-center text-[8px] text-slate-400">
+            لا توجد أنشطة مسجلة حاليًا
           </div>
-        ))}
+        )}
       </div>
 
       {/* Footer */}
-      <button
-        type="button"
-        className="mt-3 text-[8px] font-bold text-slate-600"
-      >
-        عرض سجل النشاط بالكامل ←
-      </button>
+     
     </div>
   );
 };

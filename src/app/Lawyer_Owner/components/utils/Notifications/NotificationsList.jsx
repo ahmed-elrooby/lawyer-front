@@ -1,5 +1,6 @@
 "use client";
-import React, { useMemo, useState } from "react";
+
+import React, { useContext, useMemo, useState } from "react";
 import {
   Bell,
   BellRing,
@@ -14,153 +15,241 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const NotificationsList = () => {
+  const {
+    handleReadNoteFun,
+    handleReadNotificationFun,
+    unreadNotifications,
+    notifications = [],
+  } = useContext(OwnerContext);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("الكل");
   const [typeFilter, setTypeFilter] = useState("الكل");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "جلسة قريبة",
-      description:
-        "جلسة قضية شركة النور التجارية ستبدأ بعد 30 دقيقة.",
-      time: "منذ 10 دقائق",
-      type: "الجلسات",
-      status: "غير مقروءة",
-      icon: CalendarCheck2,
-      iconBg: "bg-[#EAF0FF]",
-      iconColor: "text-[#4868B4]",
-    },
-    {
-      id: 2,
-      title: "تم إضافة مستند جديد",
-      description:
-        "تمت إضافة مستند جديد إلى قضية أحمد محمود عبد الله.",
-      time: "منذ ساعة",
-      type: "المستندات",
-      status: "غير مقروءة",
-      icon: FileText,
-      iconBg: "bg-[#F2ECFF]",
-      iconColor: "text-[#7551A8]",
-    },
-    {
-      id: 3,
-      title: "تحديث حالة القضية",
-      description:
-        'تم تغيير حالة القضية "شركة الأمل" إلى قيد المراجعة.',
-      time: "منذ ساعتين",
-      type: "القضايا",
-      status: "غير مقروءة",
-      icon: BellRing,
-      iconBg: "bg-[#EAF7F0]",
-      iconColor: "text-[#25804D]",
-    },
-    {
-      id: 4,
-      title: "جلسة تم تأجيلها",
-      description:
-        "تم تأجيل جلسة القضية رقم #1048 إلى موعد جديد.",
-      time: "منذ 3 ساعات",
-      type: "الجلسات",
-      status: "غير مقروءة",
-      icon: CalendarCheck2,
-      iconBg: "bg-[#FFF4D6]",
-      iconColor: "text-[#8A6A00]",
-    },
-    {
-      id: 5,
-      title: "إضافة عميل جديد",
-      description:
-        "تم تسجيل العميل محمد أحمد حسن في النظام.",
-      time: "منذ 5 ساعات",
-      type: "العملاء",
-      status: "مقروءة",
-      icon: UserRound,
-      iconBg: "bg-[#EAF7F0]",
-      iconColor: "text-[#25804D]",
-    },
-    {
-      id: 6,
-      title: "تم تحديث بيانات القضية",
-      description:
-        "تم تعديل بيانات قضية مؤسسة المستقبل بواسطة أحمد محمد.",
-      time: "أمس",
-      type: "القضايا",
-      status: "مقروءة",
-      icon: FileText,
-      iconBg: "bg-[#EAF0FF]",
-      iconColor: "text-[#4868B4]",
-    },
-    {
-      id: 7,
-      title: "تذكير بمراجعة المستندات",
-      description:
-        "يوجد 4 مستندات تحتاج إلى مراجعة قبل موعد الجلسة القادمة.",
-      time: "أمس",
-      type: "المستندات",
-      status: "مقروءة",
-      icon: CircleAlert,
-      iconBg: "bg-[#FFF4D6]",
-      iconColor: "text-[#8A6A00]",
-    },
-    {
-      id: 8,
-      title: "تحديث النظام",
-      description:
-        "تم تحديث إعدادات النظام بنجاح.",
-      time: "منذ يومين",
-      type: "النظام",
-      status: "مقروءة",
+  const itemsPerPage = 5;
+
+  const getNotificationType = (notification) => {
+    const type = notification?.type;
+
+    if (
+      type === "upcoming_session" ||
+      type?.includes("session")
+    ) {
+      return "الجلسات";
+    }
+
+    if (
+      type === "case_update" ||
+      type === "case_status" ||
+      type?.includes("case")
+    ) {
+      return "القضايا";
+    }
+
+    if (
+      type === "document_added" ||
+      type === "document_updated" ||
+      type?.includes("document")
+    ) {
+      return "المستندات";
+    }
+
+    if (
+      type === "client_added" ||
+      type === "client_updated" ||
+      type?.includes("client")
+    ) {
+      return "العملاء";
+    }
+
+    return "النظام";
+  };
+
+  const getNotificationIcon = (notification) => {
+    const type = notification?.type;
+
+    if (
+      type === "upcoming_session" ||
+      type?.includes("session")
+    ) {
+      return {
+        icon: CalendarCheck2,
+        iconBg: "bg-[#EAF0FF]",
+        iconColor: "text-[#4868B4]",
+      };
+    }
+
+    if (
+      type === "document_added" ||
+      type === "document_updated" ||
+      type?.includes("document")
+    ) {
+      return {
+        icon: FileText,
+        iconBg: "bg-[#F2ECFF]",
+        iconColor: "text-[#7551A8]",
+      };
+    }
+
+    if (
+      type === "case_update" ||
+      type === "case_status" ||
+      type?.includes("case")
+    ) {
+      return {
+        icon: BellRing,
+        iconBg: "bg-[#EAF7F0]",
+        iconColor: "text-[#25804D]",
+      };
+    }
+
+    if (
+      type === "client_added" ||
+      type === "client_updated" ||
+      type?.includes("client")
+    ) {
+      return {
+        icon: UserRound,
+        iconBg: "bg-[#EAF7F0]",
+        iconColor: "text-[#25804D]",
+      };
+    }
+
+    return {
       icon: Bell,
       iconBg: "bg-[#F2ECFF]",
       iconColor: "text-[#7551A8]",
-    },
-  ]);
+    };
+  };
+
+  const getRelativeTime = (date) => {
+    if (!date) return "";
+
+    const createdDate = new Date(date);
+    const now = new Date();
+
+    const diffInSeconds = Math.floor(
+      (now - createdDate) / 1000
+    );
+
+    if (diffInSeconds < 60) {
+      return "منذ أقل من دقيقة";
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+
+    if (diffInMinutes < 60) {
+      return `منذ ${diffInMinutes} دقيقة`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+
+    if (diffInHours < 24) {
+      return `منذ ${diffInHours} ساعة`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays === 1) {
+      return "أمس";
+    }
+
+    if (diffInDays < 7) {
+      return `منذ ${diffInDays} أيام`;
+    }
+
+    return createdDate.toLocaleDateString("ar-EG");
+  };
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter((notification) => {
+      const title = notification?.title || "";
+      const message = notification?.message || "";
+      const type = getNotificationType(notification);
+
+      const searchValue = search.trim().toLowerCase();
+
       const matchesSearch =
-        notification.title
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        notification.description
-          .toLowerCase()
-          .includes(search.toLowerCase());
+        !searchValue ||
+        title.toLowerCase().includes(searchValue) ||
+        message.toLowerCase().includes(searchValue);
+
+      const notificationStatus = notification?.isRead
+        ? "مقروءة"
+        : "غير مقروءة";
 
       const matchesStatus =
         statusFilter === "الكل" ||
-        notification.status === statusFilter;
+        notificationStatus === statusFilter;
 
       const matchesType =
         typeFilter === "الكل" ||
-        notification.type === typeFilter;
+        type === typeFilter;
 
-      return matchesSearch && matchesStatus && matchesType;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesType
+      );
     });
-  }, [notifications, search, statusFilter, typeFilter]);
+  }, [
+    notifications,
+    search,
+    statusFilter,
+    typeFilter,
+  ]);
 
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id
-          ? { ...notification, status: "مقروءة" }
-          : notification
-      )
+  const totalPages = Math.ceil(
+    filteredNotifications.length / itemsPerPage
+  );
+
+  const paginatedNotifications = useMemo(() => {
+    const startIndex =
+      (currentPage - 1) * itemsPerPage;
+
+    return filteredNotifications.slice(
+      startIndex,
+      startIndex + itemsPerPage
     );
+  }, [filteredNotifications, currentPage]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
   };
 
-  const deleteNotification = (id) => {
-    setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id)
-    );
+  const handleStatusChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleTypeChange = (e) => {
+    setTypeFilter(e.target.value);
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("الكل");
     setTypeFilter("الكل");
+    setCurrentPage(1);
+  };
+
+  const handleRead = (notification) => {
+    if (notification?.isRead) return;
+
+    if (handleReadNotificationFun) {
+      handleReadNotificationFun(notification._id);
+      return;
+    }
+
+    if (handleReadNoteFun) {
+      handleReadNoteFun(notification._id);
+    }
   };
 
   return (
@@ -199,7 +288,7 @@ const NotificationsList = () => {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="البحث في الإشعارات..."
                 className="
                   h-10 w-full rounded-lg
@@ -219,7 +308,7 @@ const NotificationsList = () => {
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={handleStatusChange}
               className="
                 h-10 rounded-lg
                 border border-[#E1E4E9]
@@ -239,7 +328,7 @@ const NotificationsList = () => {
             {/* Type Filter */}
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={handleTypeChange}
               className="
                 h-10 rounded-lg
                 border border-[#E1E4E9]
@@ -282,22 +371,29 @@ const NotificationsList = () => {
         {/* Notifications */}
         <div className="divide-y divide-[#EEF0F3]">
 
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => {
-              const Icon = notification.icon;
+          {paginatedNotifications.length > 0 ? (
+            paginatedNotifications.map((notification) => {
+              const {
+                icon: Icon,
+                iconBg,
+                iconColor,
+              } = getNotificationIcon(notification);
 
-              const isUnread =
-                notification.status === "غير مقروءة";
+              const isUnread = !notification?.isRead;
 
               return (
                 <div
-                  key={notification.id}
+                  key={notification._id}
                   className={`
                     group flex flex-col gap-4 p-5
                     transition
                     hover:bg-[#FAFBFC]
                     sm:flex-row sm:items-start
-                    ${isUnread ? "bg-[#FBFCFF]" : "bg-white"}
+                    ${
+                      isUnread
+                        ? "bg-[#FBFCFF]"
+                        : "bg-white"
+                    }
                   `}
                 >
                   {/* Icon */}
@@ -306,12 +402,12 @@ const NotificationsList = () => {
                       flex h-10 w-10 shrink-0
                       items-center justify-center
                       rounded-lg
-                      ${notification.iconBg}
+                      ${iconBg}
                     `}
                   >
                     <Icon
                       size={18}
-                      className={notification.iconColor}
+                      className={iconColor}
                     />
                   </div>
 
@@ -319,7 +415,7 @@ const NotificationsList = () => {
                   <div className="flex-1 min-w-0">
 
                     <div className="flex flex-wrap items-center gap-2">
-                      
+
                       <h3
                         className={`
                           text-[12px]
@@ -330,7 +426,7 @@ const NotificationsList = () => {
                           }
                         `}
                       >
-                        {notification.title}
+                        {notification?.title}
                       </h3>
 
                       {isUnread && (
@@ -338,27 +434,27 @@ const NotificationsList = () => {
                       )}
 
                       <span className="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-[9px] font-semibold text-[#737984]">
-                        {notification.type}
+                        {getNotificationType(notification)}
                       </span>
                     </div>
 
                     <p className="mt-1.5 max-w-3xl text-[11px] leading-5 text-[#737984]">
-                      {notification.description}
+                      {notification?.message}
                     </p>
 
                     <div className="mt-2 text-[10px] font-medium text-[#A0A5AD]">
-                      {notification.time}
+                      {getRelativeTime(notification?.createdAt)}
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div
-                    className="flex items-center gap-1 opacity-100  shrink-0 sm:opacity-0 sm:transition sm:group-hover:opacity-100"
+                    className="flex items-center gap-1 opacity-100 shrink-0 sm:opacity-0 sm:transition sm:group-hover:opacity-100"
                   >
                     {isUnread && (
                       <button
                         onClick={() =>
-                          markAsRead(notification.id)
+                          handleRead(notification)
                         }
                         title="تحديد كمقروء"
                         className="
@@ -374,29 +470,14 @@ const NotificationsList = () => {
                       </button>
                     )}
 
-                    <button
-                      onClick={() =>
-                        deleteNotification(notification.id)
-                      }
-                      title="حذف الإشعار"
-                      className="
-                        flex h-8 w-8 items-center justify-center
-                        rounded-lg
-                        text-[#8A9099]
-                        transition
-                        hover:bg-[#FFF0F0]
-                        hover:text-[#C74B4B]
-                      "
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    
                   </div>
                 </div>
               );
             })
           ) : (
             <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-              
+
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4F6F8]">
                 <Bell size={24} className="text-[#9AA1AA]" />
               </div>
@@ -417,64 +498,78 @@ const NotificationsList = () => {
           <div className="flex items-center justify-between border-t border-[#EEF0F3] px-5 py-4">
 
             <p className="text-[10px] font-medium text-[#8A9099]">
-              عرض 1 - {filteredNotifications.length} من{" "}
-              {notifications.length}
+              عرض{" "}
+              {((currentPage - 1) * itemsPerPage) + 1}
+              {" - "}
+              {Math.min(
+                currentPage * itemsPerPage,
+                filteredNotifications.length
+              )}
+              {" من "}
+              {filteredNotifications.length}
             </p>
 
             <div className="flex items-center gap-1">
 
               <button
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.max(prev - 1, 1)
+                  )
+                }
                 className="
                   flex h-8 w-8 items-center justify-center
                   rounded-lg border border-[#E1E4E9]
                   text-[#737984]
-                  transition hover:bg-[#F7F8FA]
+                  transition
+                  hover:bg-[#F7F8FA]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
                 "
               >
                 <ChevronRight size={14} />
               </button>
 
-              <button
-                className="
-                  flex h-8 min-w-8 items-center justify-center
-                  rounded-lg bg-[#0B1C30]
-                  px-2
-                  text-[10px] font-bold text-white
-                "
-              >
-                1
-              </button>
+              {Array.from(
+                { length: totalPages },
+                (_, index) => index + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`
+                    flex h-8 min-w-8 items-center justify-center
+                    rounded-lg
+                    px-2
+                    text-[10px] font-semibold
+                    transition
+                    ${
+                      currentPage === page
+                        ? "bg-[#0B1C30] font-bold text-white"
+                        : "border border-[#E1E4E9] text-[#59616D] hover:bg-[#F7F8FA]"
+                    }
+                  `}
+                >
+                  {page}
+                </button>
+              ))}
 
               <button
-                className="
-                  flex h-8 min-w-8 items-center justify-center
-                  rounded-lg border border-[#E1E4E9]
-                  px-2
-                  text-[10px] font-semibold text-[#59616D]
-                  transition hover:bg-[#F7F8FA]
-                "
-              >
-                2
-              </button>
-
-              <button
-                className="
-                  flex h-8 min-w-8 items-center justify-center
-                  rounded-lg border border-[#E1E4E9]
-                  px-2
-                  text-[10px] font-semibold text-[#59616D]
-                  transition hover:bg-[#F7F8FA]
-                "
-              >
-                3
-              </button>
-
-              <button
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, totalPages)
+                  )
+                }
                 className="
                   flex h-8 w-8 items-center justify-center
                   rounded-lg border border-[#E1E4E9]
                   text-[#737984]
-                  transition hover:bg-[#F7F8FA]
+                  transition
+                  hover:bg-[#F7F8FA]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
                 "
               >
                 <ChevronLeft size={14} />

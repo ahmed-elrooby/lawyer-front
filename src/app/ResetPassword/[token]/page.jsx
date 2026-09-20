@@ -1,10 +1,17 @@
-import React from 'react'
-import ResetPassword from '../../components/ResetPassword/ResetPassword.jsx'
+import ResetPassword from "../../components/ResetPassword/ResetPassword.jsx";
 
-const page = () => {
-  return <>
-  <ResetPassword/>
-  </>
-}
+export const metadata = {
+  title: "إعادة تعيين كلمة المرور",
+  description: "إعادة تعيين كلمة المرور لحسابك في منصة قضاء.",
 
-export default page
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+const Page = () => {
+  return <ResetPassword />;
+};
+
+export default Page;

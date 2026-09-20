@@ -1,10 +1,11 @@
-import React from 'react'
-import Clients from '../components/Clients/Clients'
+import Clients from "../components/Clients/Clients";
 
-const page = () => {
-  return <>
-  <Clients/>
-  </>
-}
+export const metadata = {
+  title: "العملاء",
+};
 
-export default page
+const Page = () => {
+  return <Clients />;
+};
+
+export default Page;

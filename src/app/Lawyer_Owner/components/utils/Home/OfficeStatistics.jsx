@@ -1,35 +1,95 @@
-
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const OfficeStatistics = () => {
-  const statistics = [
-    {
-      value: "72%",
-      title: "معدل إغلاق القضايا",
-      subtitle: "تحسن 4.1%",
-      valueClass: "text-emerald-600",
-    },
-    {
-      value: "10.6",
-      title: "متوسط القضايا لكل محامي",
-      subtitle: "من أصل 12 محامي",
-      valueClass: "text-slate-900",
-    },
-    {
-      value: "94%",
-      title: "معدل حضور الجلسات",
-      subtitle: "آخر 30 يوم",
-      valueClass: "text-amber-600",
-    },
-    {
-      value: "89%",
-      title: "نشاط الفريق",
-      subtitle: "معدل النشاط الحالي",
-      valueClass: "text-blue-600",
-    },
-  ];
+  const {
+    cases = [],
+    sessions = [],
+    lawyers = [],
+  } = useContext(OwnerContext);
+
+  const statistics = useMemo(() => {
+    const totalCases = Array.isArray(cases) ? cases.length : 0;
+    const totalLawyers = Array.isArray(lawyers) ? lawyers.length : 0;
+    const totalSessions = Array.isArray(sessions) ? sessions.length : 0;
+
+    // معدل إغلاق القضايا
+    const closedCases = Array.isArray(cases)
+      ? cases.filter(
+          (item) => item?.status === "judged"
+        ).length
+      : 0;
+
+    const closingRate =
+      totalCases > 0
+        ? Math.round((closedCases / totalCases) * 100)
+        : 0;
+
+    // متوسط القضايا لكل محامي
+    const averageCasesPerLawyer =
+      totalLawyers > 0
+        ? (totalCases / totalLawyers).toFixed(1)
+        : "0.0";
+
+    // معدل حضور الجلسات
+    const attendedSessions = Array.isArray(sessions)
+      ? sessions.filter(
+          (item) =>
+            item?.status === "attended" ||
+            item?.status === "completed"
+        ).length
+      : 0;
+
+    const attendanceRate =
+      totalSessions > 0
+        ? Math.round(
+            (attendedSessions / totalSessions) * 100
+          )
+        : 0;
+
+    // نشاط الفريق
+    const activeLawyers = Array.isArray(lawyers)
+      ? lawyers.filter(
+          (item) => item?.isActive === true
+        ).length
+      : 0;
+
+    const teamActivity =
+      totalLawyers > 0
+        ? Math.round(
+            (activeLawyers / totalLawyers) * 100
+          )
+        : 0;
+
+    return [
+      {
+        value: `${closingRate}%`,
+        title: "معدل إغلاق القضايا",
+        subtitle: "من إجمالي القضايا",
+        valueClass: "text-emerald-600",
+      },
+      {
+        value: averageCasesPerLawyer,
+        title: "متوسط القضايا لكل محامي",
+        subtitle: `من أصل ${totalLawyers} محامي`,
+        valueClass: "text-slate-900",
+      },
+      {
+        value: `${attendanceRate}%`,
+        title: "معدل حضور الجلسات",
+        subtitle: "من إجمالي الجلسات",
+        valueClass: "text-amber-600",
+      },
+      {
+        value: `${teamActivity}%`,
+        title: "نشاط الفريق",
+        subtitle: "معدل النشاط الحالي",
+        valueClass: "text-blue-600",
+      },
+    ];
+  }, [cases, sessions, lawyers]);
 
   return (
     <section className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">

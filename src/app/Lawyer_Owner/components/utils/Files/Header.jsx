@@ -1,9 +1,16 @@
-import React from "react";
+"use client";
+import React, { useContext } from "react";
 import { FileText, Plus, Download } from "lucide-react";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+import AddFile from "./AddFile.jsx";
 
 const Header = () => {
-  return (
-    <header dir="rtl" className="w-full mb-7">
+  const {openAddDocument,documents, setOpenAddDocument}=useContext(OwnerContext)
+  return <>
+  {
+    openAddDocument && <AddFile />
+  }
+    <header  className="w-full mb-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
 
         {/* Right Side */}
@@ -18,7 +25,7 @@ const Header = () => {
 
             <span className="flex items-center gap-1.5 rounded-full bg-[#EAF0FF] px-2.5 py-1 text-[10px] font-bold text-[#4868B4]">
               <FileText size={11} />
-              128 صيغة قانونية
+             {documents.length || 0} صيغة قانونية
             </span>
 
           </div>
@@ -34,25 +41,13 @@ const Header = () => {
         {/* Left Side */}
         <div className="flex flex-wrap items-center gap-2">
 
-          {/* Export */}
-          <button
-            className="
-              flex h-10 items-center gap-2 rounded-lg
-              border border-[#E4D7A8]
-              bg-[#FFF9E8]
-              px-4
-              text-[11px] font-bold
-              text-[#806700]
-              transition
-              hover:bg-[#FFF3C9]
-            "
-          >
-            <Download size={15} />
-            تصدير الصيغ
-          </button>
+        
 
           {/* Add */}
           <button
+          onClick={()=>{
+            setOpenAddDocument(true)
+          }}
             className="
               flex h-10 items-center gap-2 rounded-lg
               bg-[#0B1C30]
@@ -72,7 +67,7 @@ const Header = () => {
 
       </div>
     </header>
-  );
+  </>
 };
 
 export default Header;

@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useContext, useMemo, useState } from "react";
 import {
   BarChart3,
   BriefcaseBusiness,
   CheckCircle2,
-  Clock3,
-  PauseCircle,
+  Scale,
   TrendingUp,
 } from "lucide-react";
 import {
@@ -17,120 +17,199 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const CasePerformance = () => {
   const [period, setPeriod] = useState("شهري");
 
-  const monthlyData = [
-    {
-      name: "يناير",
-      newCases: 18,
-      closedCases: 12,
-    },
-    {
-      name: "فبراير",
-      newCases: 24,
-      closedCases: 17,
-    },
-    {
-      name: "مارس",
-      newCases: 21,
-      closedCases: 19,
-    },
-    {
-      name: "أبريل",
-      newCases: 28,
-      closedCases: 22,
-    },
-    {
-      name: "مايو",
-      newCases: 25,
-      closedCases: 21,
-    },
-    {
-      name: "يونيو",
-      newCases: 31,
-      closedCases: 26,
-    },
-  ];
+  const { cases = [] } = useContext(OwnerContext);
 
-  const weeklyData = [
-    {
-      name: "الأسبوع 1",
-      newCases: 8,
-      closedCases: 6,
-    },
-    {
-      name: "الأسبوع 2",
-      newCases: 11,
-      closedCases: 9,
-    },
-    {
-      name: "الأسبوع 3",
-      newCases: 9,
-      closedCases: 8,
-    },
-    {
-      name: "الأسبوع 4",
-      newCases: 13,
-      closedCases: 11,
-    },
-  ];
+  // حالات القضايا
+  const activeCases = cases.filter(
+    (item) => item?.status === "active"
+  ).length;
 
-  const chartData = period === "شهري" ? monthlyData : weeklyData;
+  const reservedCases = cases.filter(
+    (item) => item?.status === "reserved_for_judgment"
+  ).length;
+
+  const judgedCases = cases.filter(
+    (item) => item?.status === "judged"
+  ).length;
+
+  const totalCases = cases.length;
+
+  const closingRate =
+    totalCases > 0
+      ? Math.round((judgedCases / totalCases) * 100)
+      : 0;
+
+  // البيانات الشهرية
+  const monthlyData = useMemo(() => {
+    const months = [
+      "يناير",
+      "فبراير",
+      "مارس",
+      "أبريل",
+      "مايو",
+      "يونيو",
+      "يوليو",
+      "أغسطس",
+      "سبتمبر",
+      "أكتوبر",
+      "نوفمبر",
+      "ديسمبر",
+    ];
+
+    const currentYear = new Date().getFullYear();
+
+    return months.map((month, index) => {
+      const monthCases = cases.filter((item) => {
+        if (!item?.createdAt) return false;
+
+        const date = new Date(item.createdAt);
+
+        return (
+          date.getFullYear() === currentYear &&
+          date.getMonth() === index
+        );
+      });
+
+      return {
+        name: month,
+        newCases: monthCases.length,
+        judgedCases: monthCases.filter(
+          (item) => item?.status === "judged"
+        ).length,
+      };
+    });
+  }, [cases]);
+
+  // البيانات الأسبوعية
+  const weeklyData = useMemo(() => {
+    const now = new Date();
+
+    return [0, 1, 2, 3].map((week) => {
+      const start = new Date(now);
+
+      start.setDate(
+        now.getDate() - (3 - week) * 7 - 6
+      );
+
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(now);
+
+      end.setDate(
+        now.getDate() - (3 - week) * 7
+      );
+
+      end.setHours(23, 59, 59, 999);
+
+      const weekCases = cases.filter((item) => {
+        if (!item?.createdAt) return false;
+
+        const date = new Date(item.createdAt);
+
+        return date >= start && date <= end;
+      });
+
+      return {
+        name: `الأسبوع ${week + 1}`,
+        newCases: weekCases.length,
+        judgedCases: weekCases.filter(
+          (item) => item?.status === "judged"
+        ).length,
+      };
+    });
+  }, [cases]);
+
+  const chartData =
+    period === "شهري" ? monthlyData : weeklyData;
+
+  const chartTotals = useMemo(() => {
+    return chartData.reduce(
+      (acc, item) => {
+        acc.newCases += item.newCases;
+        acc.judgedCases += item.judgedCases;
+
+        return acc;
+      },
+      {
+        newCases: 0,
+        judgedCases: 0,
+      }
+    );
+  }, [chartData]);
+
+  const chartClosingRate =
+    chartTotals.newCases > 0
+      ? (
+          (chartTotals.judgedCases /
+            chartTotals.newCases) *
+          100
+        ).toFixed(1)
+      : "0.0";
 
   const statuses = [
     {
       title: "قضايا نشطة",
-      value: 42,
-      percentage: 42,
+      value: activeCases,
+      percentage:
+        totalCases > 0
+          ? Math.round(
+              (activeCases / totalCases) * 100
+            )
+          : 0,
       icon: BriefcaseBusiness,
       iconBg: "bg-[#EAF0FF]",
       iconColor: "text-[#4868B4]",
       barBg: "bg-[#4868B4]",
     },
     {
-      title: "قضايا مغلقة",
-      value: 68,
-      percentage: 68,
-      icon: CheckCircle2,
-      iconBg: "bg-[#E8F6EF]",
-      iconColor: "text-[#258A5A]",
-      barBg: "bg-[#258A5A]",
-    },
-    {
-      title: "قضايا مؤجلة",
-      value: 12,
-      percentage: 12,
-      icon: Clock3,
+      title: "محجوزة للحكم",
+      value: reservedCases,
+      percentage:
+        totalCases > 0
+          ? Math.round(
+              (reservedCases / totalCases) * 100
+            )
+          : 0,
+      icon: Scale,
       iconBg: "bg-[#FFF7DF]",
       iconColor: "text-[#9A7A00]",
       barBg: "bg-[#C5A62A]",
     },
     {
-      title: "قضايا متوقفة",
-      value: 6,
-      percentage: 6,
-      icon: PauseCircle,
-      iconBg: "bg-[#F3F4F6]",
-      iconColor: "text-[#69717D]",
-      barBg: "bg-[#69717D]",
+      title: "تم الحكم فيها",
+      value: judgedCases,
+      percentage:
+        totalCases > 0
+          ? Math.round(
+              (judgedCases / totalCases) * 100
+            )
+          : 0,
+      icon: CheckCircle2,
+      iconBg: "bg-[#E8F6EF]",
+      iconColor: "text-[#258A5A]",
+      barBg: "bg-[#258A5A]",
     },
   ];
 
   return (
-    <section dir="rtl" className="w-full mb-7">
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.8fr_1fr]">
-
+    <section className="w-full mb-7">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         {/* Chart */}
-        <div className="rounded-xl border border-[#E8EAF0] bg-white p-5 shadow-[0_2px_8px_rgba(11,28,48,0.03)]">
-
+        <div className="col-span-2 rounded-xl border border-[#E8EAF0] bg-white p-5 shadow-[0_2px_8px_rgba(11,28,48,0.03)]">
           {/* Header */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EAF0FF]">
-                  <BarChart3 size={16} className="text-[#4868B4]" />
+                  <BarChart3
+                    size={16}
+                    className="text-[#4868B4]"
+                  />
                 </div>
 
                 <div>
@@ -139,7 +218,7 @@ const CasePerformance = () => {
                   </h2>
 
                   <p className="mt-0.5 text-[9px] text-[#8A8E96]">
-                    مقارنة القضايا الجديدة والمغلقة
+                    مقارنة القضايا الجديدة والمحكوم فيها
                   </p>
                 </div>
               </div>
@@ -179,27 +258,27 @@ const CasePerformance = () => {
               </p>
 
               <p className="mt-1 text-[20px] font-bold text-[#0B1C30]">
-                147
+                {chartTotals.newCases}
               </p>
             </div>
 
             <div>
               <p className="text-[9px] text-[#8A8E96]">
-                القضايا المغلقة
+                القضايا المحكوم فيها
               </p>
 
               <p className="mt-1 text-[20px] font-bold text-[#258A5A]">
-                117
+                {chartTotals.judgedCases}
               </p>
             </div>
 
             <div>
               <p className="text-[9px] text-[#8A8E96]">
-                معدل الإغلاق
+                معدل الحكم
               </p>
 
               <p className="mt-1 flex items-center gap-1 text-[20px] font-bold text-[#9A7A00]">
-                79.6%
+                {chartClosingRate}%
                 <TrendingUp size={13} />
               </p>
             </div>
@@ -207,7 +286,10 @@ const CasePerformance = () => {
 
           {/* Chart */}
           <div className="mt-5 h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
               <BarChart
                 data={chartData}
                 margin={{
@@ -244,7 +326,9 @@ const CasePerformance = () => {
                 />
 
                 <Tooltip
-                  cursor={{ fill: "#F8F9FB" }}
+                  cursor={{
+                    fill: "#F8F9FB",
+                  }}
                   contentStyle={{
                     border: "1px solid #E8EAF0",
                     borderRadius: "8px",
@@ -261,8 +345,8 @@ const CasePerformance = () => {
                 />
 
                 <Bar
-                  dataKey="closedCases"
-                  name="قضايا مغلقة"
+                  dataKey="judgedCases"
+                  name="تم الحكم فيها"
                   fill="#258A5A"
                   radius={[4, 4, 0, 0]}
                   barSize={18}
@@ -275,6 +359,7 @@ const CasePerformance = () => {
           <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#4868B4]" />
+
               <span className="text-[9px] text-[#777B84]">
                 قضايا جديدة
               </span>
@@ -282,8 +367,9 @@ const CasePerformance = () => {
 
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#258A5A]" />
+
               <span className="text-[9px] text-[#777B84]">
-                قضايا مغلقة
+                تم الحكم فيها
               </span>
             </div>
           </div>
@@ -291,7 +377,6 @@ const CasePerformance = () => {
 
         {/* Status Summary */}
         <div className="rounded-xl border border-[#E8EAF0] bg-white p-5 shadow-[0_2px_8px_rgba(11,28,48,0.03)]">
-
           <div>
             <h2 className="text-[14px] font-bold text-[#0B1C30]">
               حالة القضايا
@@ -309,7 +394,6 @@ const CasePerformance = () => {
               return (
                 <div key={index}>
                   <div className="flex items-center justify-between gap-3">
-
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`flex h-8 w-8 items-center justify-center rounded-lg ${status.iconBg}`}
@@ -347,7 +431,10 @@ const CasePerformance = () => {
                     <div
                       className={`h-full rounded-full ${status.barBg}`}
                       style={{
-                        width: `${Math.min(status.percentage, 100)}%`,
+                        width: `${Math.min(
+                          status.percentage,
+                          100
+                        )}%`,
                       }}
                     />
                   </div>
@@ -366,18 +453,18 @@ const CasePerformance = () => {
 
               <div>
                 <p className="text-[10px] font-bold text-[#258A5A]">
-                  مؤشر إيجابي
+                  مؤشر القضايا
                 </p>
 
                 <p className="mt-1 text-[9px] leading-5 text-[#68716B]">
-                  معدل إغلاق القضايا يتجاوز عدد القضايا الجديدة،
-                  مما يشير إلى تحسن مستوى الإنجاز خلال الفترة المحددة.
+                  يوجد حاليًا {judgedCases} قضية تم الحكم
+                  فيها من إجمالي {totalCases} قضية، بمعدل{" "}
+                  {closingRate}%.
                 </p>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );

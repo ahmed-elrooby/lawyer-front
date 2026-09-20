@@ -1,10 +1,11 @@
-import React from 'react'
-import Managment from '../components/Managment/Managment.jsx'
+import Managment from "../components/Managment/Managment.jsx";
 
-const page = () => {
-  return <>
-  <Managment/>
-  </>
-}
+export const metadata = {
+  title: "إدارة المكتب",
+};
 
-export default page
+const Page = () => {
+  return <Managment />;
+};
+
+export default Page;

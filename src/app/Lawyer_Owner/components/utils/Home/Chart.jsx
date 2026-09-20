@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -12,105 +11,80 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-
-const data = [
-  {
-    month: "أبريل",
-    active: 42,
-    closed: 35,
-    clients: 28,
-  },
-  {
-    month: "مايو",
-    active: 52,
-    closed: 42,
-    clients: 32,
-  },
-  {
-    month: "يونيو",
-    active: 48,
-    closed: 47,
-    clients: 38,
-  },
-  {
-    month: "يوليو",
-    active: 64,
-    closed: 58,
-    clients: 44,
-  },
-  {
-    month: "أغسطس",
-    active: 59,
-    closed: 52,
-    clients: 49,
-  },
-  {
-    month: "سبتمبر",
-    active: 76,
-    closed: 62,
-    clients: 56,
-  },
-];
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload || !payload.length) return null;
-
-  const activeCase = payload.find((item) => item.dataKey === "active");
-
-  return (
-    <div className="rounded-lg bg-slate-900 px-2.5 py-1.5 text-[7px] text-white shadow-lg">
-      <div className="mb-0.5">{label} 2026</div>
-
-      <div className="font-bold">
-        القضايا النشطة: {activeCase?.value ?? 0}
-      </div>
-    </div>
-  );
-};
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
 
 const OfficePerformanceChart = () => {
+  const { cases = [] } = useContext(OwnerContext);
   const [period, setPeriod] = useState("6");
 
-  return (
-    <div
-    
-      className="col-span-2 p-4 bg-white rounded-2xl shadow-soft fade-border"
-    >
-      {/* Header */} 
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <div>
-          <h3 className="text-xs font-extrabold text-slate-900">
-            أداء المكتب خلال الفترة
-          </h3>
+  const data = useMemo(() => {
+    const now = new Date();
 
-          <p className="mt-1 text-[8px] text-slate-400">
+    return Array.from({ length: 6 }, (_, i) => {
+      const date = new Date(
+        now.getFullYear(),
+        now.getMonth() - 5 + i,
+        1
+      );
+
+      const monthCases = cases.filter((item) => {
+        const created = new Date(item.createdAt);
+
+        return (
+          created.getFullYear() === date.getFullYear() &&
+          created.getMonth() === date.getMonth()
+        );
+      });
+
+      return {
+        month: date.toLocaleDateString("ar-EG", {
+          month: "short",
+        }),
+        active: monthCases.filter(
+          (item) => item.status === "active"
+        ).length,
+        closed: monthCases.filter(
+          (item) =>
+            item.status === "judged" ||
+            item.status === "reserved_for_judgment"
+        ).length,
+        clients: new Set(
+          monthCases
+            .map((item) => item.clientId?._id)
+            .filter(Boolean)
+        ).size,
+      };
+    });
+  }, [cases]);
+
+  return (
+    <div className="col-span-2 p-5 bg-white border shadow-sm rounded-2xl border-slate-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-lg font-bold text-slate-800">
+            أداء المكتب خلال الفترة
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
             مؤشرات الأداء للقضايا والعملاء والجلسات
           </p>
         </div>
 
-        {/* Period Buttons */}
-        <div className="flex p-1 rounded-lg bg-slate-50">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100">
           {[
-            { id: "6", label: "6 أشهر" },
-            { id: "30", label: "30 يوم" },
-            { id: "7", label: "7 أيام" },
-          ].map((item, index) => (
+            { value: "6", label: "6 أشهر" },
+            { value: "30", label: "30 يوم" },
+            { value: "7", label: "7 أيام" },
+          ].map((item) => (
             <button
-              key={item.id}
-              onClick={() => setPeriod(item.id)}
-              className={`
-                rounded-md px-2 py-1 text-[8px]
-                ${
-                  index === 2
-                    ? "hidden sm:block"
-                    : ""
-                }
-                ${
-                  period === item.id
-                    ? "bg-white font-bold text-slate-700 shadow-sm"
-                    : "text-slate-400"
-                }
-              `}
+              key={item.value}
+              onClick={() => setPeriod(item.value)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                period === item.value
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
             >
               {item.label}
             </button>
@@ -119,49 +93,17 @@ const OfficePerformanceChart = () => {
       </div>
 
       {/* Chart */}
-      <div className="relative h-[210px] overflow-hidden rounded-xl bg-white">
+      <div className="h-[210px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
             margin={{
               top: 10,
               right: 5,
-              left: 5,
-              bottom: 20,
+              left: -20,
+              bottom: 0,
             }}
           >
-            {/* نفس الـ Grid الخفيف */}
-            <CartesianGrid
-              stroke="#e2e8f0"
-              strokeDasharray="2 4"
-              vertical={false}
-            />
-
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fontSize: 7,
-                fill: "#94a3b8",
-              }}
-              dy={8}
-            />
-
-            <YAxis
-              hide
-              domain={[0, 100]}
-            />
-
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{
-                stroke: "#94a3b8",
-                strokeDasharray: "4 5",
-              }}
-            />
-
-            {/* Blue Area */}
             <defs>
               <linearGradient
                 id="blueGradient"
@@ -172,79 +114,103 @@ const OfficePerformanceChart = () => {
               >
                 <stop
                   offset="0%"
-                  stopColor="#2563eb"
-                  stopOpacity={0.18}
+                  stopColor="#3b82f6"
+                  stopOpacity={0.25}
                 />
-
                 <stop
                   offset="100%"
-                  stopColor="#2563eb"
+                  stopColor="#3b82f6"
                   stopOpacity={0}
                 />
               </linearGradient>
             </defs>
 
-            <Area
-              type="monotone"
-              dataKey="active"
-              stroke="#2563eb"
-              strokeWidth={3}
-              fill="url(#blueGradient)"
-              dot={false}
-              activeDot={{
-                r: 5,
-                fill: "#2563eb",
-                stroke: "#2563eb",
+            <CartesianGrid
+              stroke="#e2e8f0"
+              strokeDasharray="4 4"
+              vertical={false}
+            />
+
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{
+                fontSize: 11,
+                fill: "#64748b",
               }}
             />
 
-            {/* Closed Cases */}
+            <YAxis hide />
+
+            <Tooltip
+              contentStyle={{
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              }}
+              formatter={(value, name) => {
+                const labels = {
+                  active: "القضايا النشطة",
+                  closed: "القضايا المغلقة",
+                  clients: "العملاء",
+                };
+
+                return [value, labels[name] || name];
+              }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="active"
+              stroke="#3b82f6"
+              strokeWidth={2.5}
+              fill="url(#blueGradient)"
+            />
+
             <Line
               type="monotone"
               dataKey="closed"
-              stroke="#C9A227"
-              strokeWidth={2.2}
-              strokeDasharray="7 5"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              strokeDasharray="5 5"
               dot={false}
-              activeDot={false}
             />
 
-            {/* New Clients */}
             <Line
               type="monotone"
               dataKey="clients"
-              stroke="#059669"
-              strokeWidth={2.5}
+              stroke="#10b981"
+              strokeWidth={2}
               dot={false}
-              activeDot={false}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-[8px] text-slate-500">
-        <span>
-          <i className="inline-block w-2 h-2 mr-1 bg-blue-600 rounded-full" />
+      <div className="flex items-center justify-center gap-6 mt-4">
+        <div className="flex items-center gap-2 text-xs text-slate-600">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
           القضايا النشطة
-        </span>
+        </div>
 
-        <span>
-          <i className="inline-block w-2 h-2 mr-1 rounded-full bg-amber-500" />
+        <div className="flex items-center gap-2 text-xs text-slate-600">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
           القضايا المغلقة
-        </span>
+        </div>
 
-        <span>
-          <i className="inline-block w-2 h-2 mr-1 rounded-full bg-emerald-600" />
-          العملاء الجدد
-        </span>
+        <div className="flex items-center gap-2 text-xs text-slate-600">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+          العملاء
+        </div>
       </div>
 
-      {/* Bottom Statistics */}
-      <div className="mt-3 rounded-xl bg-slate-50 p-2 text-center text-[8px] text-slate-500">
-        ↗ ارتفع إجمالي نشاط المكتب بنسبة{" "}
-        <b className="text-emerald-600">18.4%</b>{" "}
-        خلال آخر 6 أشهر
+      {/* Footer */}
+      <div className="pt-4 mt-4 border-t border-slate-100">
+        <p className="text-xs text-center text-slate-500">
+          ↗ يتم عرض نشاط المكتب بناءً على البيانات المسجلة خلال الفترة
+        </p>
       </div>
     </div>
   );

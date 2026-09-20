@@ -1,10 +1,11 @@
-import React from 'react'
-import Home from './components/Home/Home.jsx'
+import Home from "./components/Home/Home.jsx";
 
-const page = () => {
-  return <>
-<Home/>
-  </>
-}
+export const metadata = {
+  title: "مركز قيادة المكتب",
+};
 
-export default page
+const Page = () => {
+  return <Home />;
+};
+
+export default Page;

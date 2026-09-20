@@ -1,10 +1,11 @@
-import React from 'react'
-import Files from '../components/Files/Files.jsx'
+import Files from "../components/Files/Files.jsx";
 
-const page = () => {
-  return <>
-  <Files/>
-  </>
-}
+export const metadata = {
+  title: "الملفات",
+};
 
-export default page
+const Page = () => {
+  return <Files />;
+};
+
+export default Page;

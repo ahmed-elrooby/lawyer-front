@@ -1,8 +1,11 @@
-import React from 'react'
-import Notes from '../components/Notes/Notes.jsx'
+import Notes from "../components/Notes/Notes.jsx";
 
-const page = () => {
-  return <Notes/>
-}
+export const metadata = {
+  title: "الملاحظات",
+};
 
-export default page
+const Page = () => {
+  return <Notes />;
+};
+
+export default Page;

@@ -1,5 +1,7 @@
+
 "use client";
-import React, { useMemo, useState } from "react";
+
+import React, { useContext, useMemo, useState } from "react";
 import {
   LuSearch,
   LuLayoutGrid,
@@ -10,1257 +12,654 @@ import {
   LuChevronDown,
 } from "react-icons/lu";
 
-const data = [
-  {
-    id: 1,
-    caseNumber: "2026/128",
-    name: "أحمد محمد علي",
-    image: "https://i.pravatar.cc/150?img=12",
-    lawyer: "أحمد محمد",
-    client: "أحمد محمد علي",
-    type: "قضية مالية",
-    status: "قيد النظر",
-    date: "16/09/2026",
-  },
-  {
-    id: 2,
-    caseNumber: "2026/127",
-    name: "محمد أحمد حسن",
-    image: "https://i.pravatar.cc/150?img=13",
-    lawyer: "محمد علي",
-    client: "محمد أحمد حسن",
-    type: "قضية تجارية",
-    status: "مغلقة",
-    date: "15/09/2026",
-  },
-  {
-    id: 3,
-    caseNumber: "2026/126",
-    name: "عمر محمود",
-    image: "https://i.pravatar.cc/150?img=14",
-    lawyer: "خالد حسن",
-    client: "عمر محمود",
-    type: "قضية مالية",
-    status: "قيد النظر",
-    date: "14/09/2026",
-  },
-  {
-    id: 4,
-    caseNumber: "2026/125",
-    name: "خالد إبراهيم",
-    image: "https://i.pravatar.cc/150?img=15",
-    lawyer: "أحمد محمد",
-    client: "خالد إبراهيم",
-    type: "قضية إدارية",
-    status: "معلقة",
-    date: "13/09/2026",
-  },
-  {
-    id: 5,
-    caseNumber: "2026/124",
-    name: "يوسف علي",
-    image: "https://i.pravatar.cc/150?img=16",
-    lawyer: "محمد علي",
-    client: "يوسف علي",
-    type: "قضية تجارية",
-    status: "مغلقة",
-    date: "12/09/2026",
-  },
-  {
-    id: 6,
-    caseNumber: "2026/123",
-    name: "محمود حسن",
-    image: "https://i.pravatar.cc/150?img=17",
-    lawyer: "خالد حسن",
-    client: "محمود حسن",
-    type: "قضية مالية",
-    status: "قيد النظر",
-    date: "11/09/2026",
-  },
-  {
-    id: 7,
-    caseNumber: "2026/122",
-    name: "إبراهيم محمد",
-    image: "https://i.pravatar.cc/150?img=18",
-    lawyer: "أحمد محمد",
-    client: "إبراهيم محمد",
-    type: "قضية إدارية",
-    status: "معلقة",
-    date: "10/09/2026",
-  },
-  {
-    id: 8,
-    caseNumber: "2026/121",
-    name: "عبدالله أحمد",
-    image: "https://i.pravatar.cc/150?img=19",
-    lawyer: "محمد علي",
-    client: "عبدالله أحمد",
-    type: "قضية مالية",
-    status: "قيد النظر",
-    date: "09/09/2026",
-  },
-  {
-    id: 9,
-    caseNumber: "2026/120",
-    name: "مصطفى محمود",
-    image: "https://i.pravatar.cc/150?img=20",
-    lawyer: "خالد حسن",
-    client: "مصطفى محمود",
-    type: "قضية تجارية",
-    status: "مغلقة",
-    date: "08/09/2026",
-  },
-  {
-    id: 10,
-    caseNumber: "2026/119",
-    name: "حسن أحمد",
-    image: "https://i.pravatar.cc/150?img=21",
-    lawyer: "أحمد محمد",
-    client: "حسن أحمد",
-    type: "قضية مالية",
-    status: "قيد النظر",
-    date: "07/09/2026",
-  },
-  {
-    id: 11,
-    caseNumber: "2026/118",
-    name: "طارق محمد",
-    image: "https://i.pravatar.cc/150?img=22",
-    lawyer: "محمد علي",
-    client: "طارق محمد",
-    type: "قضية إدارية",
-    status: "معلقة",
-    date: "06/09/2026",
-  },
-  {
-    id: 12,
-    caseNumber: "2026/117",
-    name: "كريم علي",
-    image: "https://i.pravatar.cc/150?img=23",
-    lawyer: "خالد حسن",
-    client: "كريم علي",
-    type: "قضية مالية",
-    status: "مغلقة",
-    date: "05/09/2026",
-  },
-];
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+import DeleteCase from "./DeleteCase.jsx";
+import Details from "./Details.jsx";
+import UpdateCase from "./UpdateCase.jsx";
+
+const ITEMS_PER_PAGE = 5;
+
+const STATUS_LABELS = {
+  active: "قيد النظر",
+  reserved_for_judgment: "محجوزة للحكم",
+  judged: "تم الحكم",
+};
+
+const STATUS_STYLES = {
+  active: "bg-[#E5EEFF] text-[#315DAA]",
+  reserved_for_judgment: "bg-[#F3E8FF] text-[#7E22CE]",
+  judged: "bg-[#E8F5EC] text-[#31804A]",
+};
+
+const getDate = (date) => {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
 const Table = () => {
+  const {
+    cases: caseList = [],
+    clients: clientList = [],
+    setOpenDeleteCase,
+    openDeleteCase,
+    openUpdateCase,
+    setOpenUpdateCase,
+  } = useContext(OwnerContext);
+
+  const [selectCase, setSelectCase] = useState(null);
+  const [openDetails, setOpenDetails] = useState(false);
   const [view, setView] = useState("table");
-
   const [search, setSearch] = useState("");
-
   const [caseFilter, setCaseFilter] = useState("");
   const [lawyerFilter, setLawyerFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
-
   const [page, setPage] = useState(1);
 
-  const itemsPerPage = 5;
+  const selectCaseHandler = (item, action) => {
+    setSelectCase(item);
 
-  // ==========================================
-  // FILTER DATA
-  // ==========================================
+    if (action === "details") setOpenDetails(true);
+    if (action === "update") setOpenUpdateCase(true);
+    if (action === "delete") setOpenDeleteCase(true);
+  };
+
+  const clientsMap = useMemo(
+    () =>
+      new Map(
+        clientList.map((client) => [String(client._id), client])
+      ),
+    [clientList]
+  );
+
+  const formattedCases = useMemo(
+    () =>
+      caseList.map((item) => {
+        const client =
+          item.clientId && typeof item.clientId === "object"
+            ? item.clientId
+            : clientsMap.get(String(item.clientId));
+
+        const lawyers = Array.isArray(item.lawyers)
+          ? item.lawyers
+          : [];
+
+        return {
+          ...item,
+          client,
+          clientName: client?.name || "غير محدد",
+          clientImage: client?.profileImage?.url || "",
+          lawyers,
+          lawyerNames: lawyers
+            .map((lawyer) => lawyer?.name)
+            .filter(Boolean),
+          formattedDate: getDate(item.filingDate),
+        };
+      }),
+    [caseList, clientsMap]
+  );
+
+  const caseOptions = useMemo(
+    () => [
+      ...new Set(
+        formattedCases
+          .map((item) => item.caseNumber)
+          .filter(Boolean)
+      ),
+    ],
+    [formattedCases]
+  );
+
+  const lawyerOptions = useMemo(
+    () => [
+      ...new Set(
+        formattedCases.flatMap((item) => item.lawyerNames)
+      ),
+    ],
+    [formattedCases]
+  );
+
+  const clientOptions = useMemo(
+    () => [
+      ...new Set(
+        clientList
+          .map((client) => client?.name)
+          .filter(Boolean)
+      ),
+    ],
+    [clientList]
+  );
 
   const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      const searchValue = search.trim().toLowerCase();
+    const value = search.trim().toLowerCase();
 
+    return formattedCases.filter((item) => {
       const matchesSearch =
-        item.name.toLowerCase().includes(searchValue) ||
-        item.caseNumber.toLowerCase().includes(searchValue) ||
-        item.type.toLowerCase().includes(searchValue) ||
-        item.lawyer.toLowerCase().includes(searchValue) ||
-        item.client.toLowerCase().includes(searchValue);
-
-      const matchesCase =
-        !caseFilter ||
-        item.caseNumber === caseFilter;
-
-      const matchesLawyer =
-        !lawyerFilter ||
-        item.lawyer === lawyerFilter;
-
-      const matchesClient =
-        !clientFilter ||
-        item.client === clientFilter;
+        !value ||
+        item.caseNumber?.toLowerCase().includes(value) ||
+        item.clientName?.toLowerCase().includes(value) ||
+        item.lawyerNames
+          .join(" ")
+          .toLowerCase()
+          .includes(value) ||
+        item.court?.toLowerCase().includes(value);
 
       return (
         matchesSearch &&
-        matchesCase &&
-        matchesLawyer &&
-        matchesClient
+        (!caseFilter || item.caseNumber === caseFilter) &&
+        (!lawyerFilter ||
+          item.lawyerNames.includes(lawyerFilter)) &&
+        (!clientFilter || item.clientName === clientFilter)
       );
     });
   }, [
+    formattedCases,
     search,
     caseFilter,
     lawyerFilter,
     clientFilter,
   ]);
 
-  // ==========================================
-  // PAGINATION
-  // ==========================================
-
   const totalPages = Math.ceil(
-    filteredData.length / itemsPerPage
+    filteredData.length / ITEMS_PER_PAGE
   );
 
   const currentData = filteredData.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
   );
 
-  // ==========================================
-  // RESET PAGE
-  // ==========================================
+  const resetPage = () => setPage(1);
 
-  const resetPage = () => {
-    setPage(1);
+  const clearFilters = () => {
+    setCaseFilter("");
+    setLawyerFilter("");
+    setClientFilter("");
+    resetPage();
   };
 
-  // ==========================================
-  // UNIQUE VALUES
-  // ==========================================
+  const filterClass =
+    "appearance-none w-full h-10 pr-3 pl-9 bg-[#F8FAFD] border border-[#E5EEFF] rounded-lg text-xs text-[#45464D] outline-none cursor-pointer";
 
-  const cases = [...new Set(data.map((item) => item.caseNumber))];
+  const avatar = (image, name, size = "w-8 h-8") =>
+    image ? (
+      <img
+        src={image}
+        alt={name}
+        className={`${size} rounded-full object-cover border border-[#E5EEFF]`}
+      />
+    ) : (
+      <div
+        className={`flex items-center justify-center ${size} rounded-full bg-[#E5EEFF] text-[#315DAA] text-xs font-semibold`}
+      >
+        {name && name !== "غير محدد"
+          ? name.charAt(0)
+          : "؟"}
+      </div>
+    );
 
-  const lawyers = [...new Set(data.map((item) => item.lawyer))];
+  const status = (item) => (
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium ${
+        STATUS_STYLES[item.status] ||
+        "bg-[#F1F5FC] text-[#586377]"
+      }`}
+    >
+      {STATUS_LABELS[item.status] ||
+        item.status ||
+        "غير محددة"}
+    </span>
+  );
 
-  const clients = [...new Set(data.map((item) => item.client))];
+  const lawyersView = (item, card = false) => {
+    const lawyers = item.lawyers || [];
+
+    if (!lawyers.length) {
+      return (
+        <span className="text-xs text-[#586377]">
+          غير محدد
+        </span>
+      );
+    }
+
+    const firstLawyer = lawyers[0];
+    const remainingCount = lawyers.length - 1;
+
+    return (
+      <div className="flex items-center gap-2">
+        {avatar(
+          firstLawyer?.profileImage?.url,
+          firstLawyer?.name || "المحامي",
+          card ? "w-7 h-7" : "w-8 h-8"
+        )}
+
+        <span className="text-xs text-[#45464D]">
+          {firstLawyer?.name || "غير محدد"}
+        </span>
+
+        {remainingCount > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              selectCaseHandler(item, "details")
+            }
+            className="flex-shrink-0 px-2 py-1 text-[10px] font-semibold text-[#315DAA] bg-[#E5EEFF] rounded-full hover:bg-[#D8E6FF] transition"
+          >
+            +{remainingCount}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const actions = (item, card = false) => (
+    <div
+      className={`flex items-center gap-2 ${
+        card ? "w-full" : ""
+      }`}
+    >
+      <button
+        type="button"
+        title="عرض"
+        onClick={() =>
+          selectCaseHandler(item, "details")
+        }
+        className={
+          card
+            ? "flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg bg-[#E5EEFF] text-[#315DAA] text-[11px] font-medium"
+            : "flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F5FC] text-[#315DAA] hover:bg-[#E5EEFF]"
+        }
+      >
+        <LuEye size={card ? 14 : 15} />
+        {card && "عرض"}
+      </button>
+
+      <button
+        type="button"
+        title="تعديل"
+        onClick={() =>
+          selectCaseHandler(item, "update")
+        }
+        className={
+          card
+            ? "flex items-center justify-center w-9 h-9 rounded-lg bg-[#F1F5FC] text-[#586377]"
+            : "flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F5FC] text-[#586377] hover:bg-[#E5EEFF]"
+        }
+      >
+        <LuPencil size={card ? 14 : 15} />
+      </button>
+
+      <button
+        type="button"
+        title="حذف"
+        onClick={() =>
+          selectCaseHandler(item, "delete")
+        }
+        className={
+          card
+            ? "flex items-center justify-center w-9 h-9 rounded-lg bg-[#FFF1F1] text-[#C94A4A]"
+            : "flex items-center justify-center w-8 h-8 rounded-lg bg-[#FFF1F1] text-[#C94A4A] hover:bg-[#FFE2E2]"
+        }
+      >
+        <LuTrash2 size={card ? 14 : 15} />
+      </button>
+    </div>
+  );
 
   return (
-    <div
-      
-      className="w-full p-5 mt-6 bg-white shadow-sm rounded-xl"
-    >
+    <>
+      {openDeleteCase && selectCase && (
+        <DeleteCase selectCase={selectCase} />
+      )}
 
-      {/* ================================================= */}
-      {/* ================= FILTERS ======================= */}
-      {/* ================================================= */}
+      {openDetails && selectCase && (
+        <Details
+          selectCase={selectCase}
+          openDetails={openDetails}
+          setOpenDetails={setOpenDetails}
+        />
+      )}
 
-      <div className="mb-5">
+      {openUpdateCase && selectCase && (
+        <UpdateCase selectCase={selectCase} />
+      )}
 
-        <div
-          className="flex flex-col items-center gap-3 md:flex-row"
-        >
+      <div className="w-full p-5 mt-6 bg-white shadow-sm rounded-xl">
+        <div className="flex flex-col gap-3 mb-5 md:flex-row">
+          {[
+            {
+              value: caseFilter,
+              setValue: setCaseFilter,
+              placeholder: "كل القضايا",
+              options: caseOptions,
+            },
+            {
+              value: lawyerFilter,
+              setValue: setLawyerFilter,
+              placeholder: "كل المحامين",
+              options: lawyerOptions,
+            },
+            {
+              value: clientFilter,
+              setValue: setClientFilter,
+              placeholder: "كل العملاء",
+              options: clientOptions,
+            },
+          ].map((filter, index) => (
+            <div
+              key={index}
+              className="relative w-full md:w-48"
+            >
+              <select
+                value={filter.value}
+                onChange={(e) => {
+                  filter.setValue(e.target.value);
+                  resetPage();
+                }}
+                className={filterClass}
+              >
+                <option value="">
+                  {filter.placeholder}
+                </option>
 
-          {/* ================= CASE FILTER ================= */}
+                {filter.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
 
-          <FilterSelect
-            value={caseFilter}
-            onChange={(value) => {
-              setCaseFilter(value);
-              resetPage();
-            }}
-            placeholder="كل القضايا"
-            options={cases}
-          />
-
-          {/* ================= LAWYER FILTER ================= */}
-
-          <FilterSelect
-            value={lawyerFilter}
-            onChange={(value) => {
-              setLawyerFilter(value);
-              resetPage();
-            }}
-            placeholder="كل المحامين"
-            options={lawyers}
-          />
-
-          {/* ================= CLIENT FILTER ================= */}
-
-          <FilterSelect
-            value={clientFilter}
-            onChange={(value) => {
-              setClientFilter(value);
-              resetPage();
-            }}
-            placeholder="كل العملاء"
-            options={clients}
-          />
-
-          {/* ================= RESET FILTERS ================= */}
+              <LuChevronDown
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#586377] pointer-events-none"
+              />
+            </div>
+          ))}
 
           {(caseFilter ||
             lawyerFilter ||
             clientFilter) && (
-
             <button
-              onClick={() => {
-                setCaseFilter("");
-                setLawyerFilter("");
-                setClientFilter("");
-                resetPage();
-              }}
-              className="
-                h-10
-                px-4
-                rounded-lg
-                text-xs
-                font-medium
-                text-[#C94A4A]
-                bg-[#FFF1F1]
-                hover:bg-[#FFE5E5]
-                transition
-                whitespace-nowrap
-              "
+              type="button"
+              onClick={clearFilters}
+              className="h-10 px-4 rounded-lg text-[11px] font-medium text-[#C94A4A] bg-[#FFF1F1] hover:bg-[#FFE5E5] transition whitespace-nowrap"
             >
               مسح الفلاتر
             </button>
-
           )}
-
         </div>
 
-      </div>
+        <div className="flex flex-col gap-4 mb-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-base font-bold text-[#0B1C30]">
+              القضايا المسجلة
+            </h2>
 
-      {/* ================================================= */}
-      {/* ================= HEADER ======================== */}
-      {/* ================================================= */}
-
-      <div
-        className="flex flex-col gap-4 mb-5 lg:flex-row lg:items-center lg:justify-between"
-      >
-
-        {/* ================= TITLE ================= */}
-
-        <div>
-
-          <h2
-            className="
-              text-[#0B1C30]
-              text-lg
-              font-bold
-            "
-          >
-            القضايا المسجلة
-          </h2>
-
-          <p
-            className="
-              text-[#45464D]
-              text-xs
-              mt-1
-            "
-          >
-            عرض وإدارة جميع القضايا المسجلة
-          </p>
-
-        </div>
-
-        {/* ================= CONTROLS ================= */}
-
-        <div
-          className="flex flex-col gap-3 sm:flex-row"
-        >
-
-          {/* ================= SEARCH ================= */}
-
-          <div className="relative">
-
-            <LuSearch
-              size={18}
-              className="
-                absolute
-                right-3
-                top-1/2
-                -translate-y-1/2
-                text-[#586377]
-              "
-            />
-
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              placeholder="بحث عن قضية..."
-              className="
-                w-full
-                sm:w-64
-                h-10
-                pr-10
-                pl-3
-                text-sm
-                text-[#0B1C30]
-                bg-[#F8FAFD]
-                border
-                border-[#E5EEFF]
-                rounded-lg
-                outline-none
-                focus:border-[#B8CCF5]
-                transition
-              "
-            />
-
+            <p className="mt-1 text-[11px] text-[#45464D]">
+              عرض وإدارة جميع القضايا المسجلة
+            </p>
           </div>
 
-          {/* ================= VIEW TOGGLE ================= */}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative">
+              <LuSearch
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#586377]"
+              />
 
-          <div
-            className="
-              flex
-              items-center
-              bg-[#F8FAFD]
-              border
-              border-[#E5EEFF]
-              rounded-lg
-              p-1
-            "
-          >
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  resetPage();
+                }}
+                placeholder="بحث عن قضية..."
+                className="w-full sm:w-64 h-10 pr-10 pl-3 text-xs text-[#0B1C30] bg-[#F8FAFD] border border-[#E5EEFF] rounded-lg outline-none focus:border-[#B8CCF5]"
+              />
+            </div>
 
-            {/* TABLE */}
-
-            <button
-              onClick={() => setView("table")}
-              className={`
-                w-9
-                h-8
-                flex
-                items-center
-                justify-center
-                rounded-md
-                transition
-
-                ${
+            <div className="flex items-center p-1 bg-[#F8FAFD] border border-[#E5EEFF] rounded-lg">
+              <button
+                type="button"
+                onClick={() => setView("table")}
+                className={`flex items-center justify-center w-9 h-8 rounded-md ${
                   view === "table"
                     ? "bg-[#E5EEFF] text-[#0B1C30]"
                     : "text-[#586377]"
-                }
-              `}
-            >
-              <LuList size={18} />
-            </button>
+                }`}
+              >
+                <LuList size={17} />
+              </button>
 
-            {/* CARDS */}
-
-            <button
-              onClick={() => setView("cards")}
-              className={`
-                w-9
-                h-8
-                flex
-                items-center
-                justify-center
-                rounded-md
-                transition
-
-                ${
+              <button
+                type="button"
+                onClick={() => setView("cards")}
+                className={`flex items-center justify-center w-9 h-8 rounded-md ${
                   view === "cards"
                     ? "bg-[#E5EEFF] text-[#0B1C30]"
                     : "text-[#586377]"
-                }
-              `}
-            >
-              <LuLayoutGrid size={18} />
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ================================================= */}
-      {/* ================= TABLE VIEW ==================== */}
-      {/* ================================================= */}
-
-      {view === "table" && (
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full text-sm text-right">
-
-            {/* ================= THEAD ================= */}
-
-            <thead>
-
-              <tr
-                className="
-                  border-b
-                  border-[#E5EEFF]
-                  text-[#586377]
-                "
+                }`}
               >
-
-                <th className="px-3 py-4 font-medium">
-                  رقم القضية
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  صاحب القضية
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  المحامي
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  نوع القضية
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  التاريخ
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  الحالة
-                </th>
-
-                <th className="px-3 py-4 font-medium">
-                  الإجراءات
-                </th>
-
-              </tr>
-
-            </thead>
-
-            {/* ================= TBODY ================= */}
-
-            <tbody>
-
-              {currentData.map((item) => (
-
-                <tr
-                  key={item.id}
-                  className="
-                    border-b
-                    border-[#F0F3F8]
-                    hover:bg-[#F8FAFD]
-                    transition
-                  "
-                >
-
-                  {/* CASE NUMBER */}
-
-                  <td
-                    className="
-                      py-4
-                      px-3
-                      font-semibold
-                      text-[#0B1C30]
-                    "
-                  >
-                    {item.caseNumber}
-                  </td>
-
-                  {/* OWNER */}
-
-                  <td className="px-3 py-4">
-
-                    <div
-                      className="flex items-center gap-3 "
-                    >
-
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="
-                          w-9
-                          h-9
-                          rounded-full
-                          object-cover
-                          border
-                          border-[#E5EEFF]
-                        "
-                      />
-
-                      <div className="flex flex-col">
-
-                        <span
-                          className="
-                            text-[#0B1C30]
-                            font-medium
-                            text-sm
-                          "
-                        >
-                          {item.name}
-                        </span>
-
-                        <span
-                          className="
-                            text-[#586377]
-                            text-[11px]
-                          "
-                        >
-                          العميل
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  {/* LAWYER */}
-
-                  <td
-                    className="
-                      py-4
-                      px-3
-                      text-[#45464D]
-                    "
-                  >
-                    {item.lawyer}
-                  </td>
-
-                  {/* TYPE */}
-
-                  <td
-                    className="
-                      py-4
-                      px-3
-                      text-[#45464D]
-                    "
-                  >
-                    {item.type}
-                  </td>
-
-                  {/* DATE */}
-
-                  <td
-                    className="
-                      py-4
-                      px-3
-                      text-[#586377]
-                    "
-                  >
-                    {item.date}
-                  </td>
-
-                  {/* STATUS */}
-
-                  <td className="px-3 py-4">
-
-                    <Status status={item.status} />
-
-                  </td>
-
-                  {/* ACTIONS */}
-
-                  <td className="px-3 py-4">
-
-                    <div
-                      className="flex items-center gap-2 "
-                    >
-
-                      <button
-                        title="عرض"
-                        className="
-                          w-8
-                          h-8
-                          flex
-                          items-center
-                          justify-center
-                          rounded-lg
-                          bg-[#F1F5FC]
-                          text-[#315DAA]
-                          hover:bg-[#E5EEFF]
-                          transition
-                        "
-                      >
-                        <LuEye size={16} />
-                      </button>
-
-                      <button
-                        title="تعديل"
-                        className="
-                          w-8
-                          h-8
-                          flex
-                          items-center
-                          justify-center
-                          rounded-lg
-                          bg-[#F1F5FC]
-                          text-[#586377]
-                          hover:bg-[#E5EEFF]
-                          transition
-                        "
-                      >
-                        <LuPencil size={16} />
-                      </button>
-
-                      <button
-                        title="حذف"
-                        className="
-                          w-8
-                          h-8
-                          flex
-                          items-center
-                          justify-center
-                          rounded-lg
-                          bg-[#FFF1F1]
-                          text-[#C94A4A]
-                          hover:bg-[#FFE2E2]
-                          transition
-                        "
-                      >
-                        <LuTrash2 size={16} />
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
+                <LuLayoutGrid size={17} />
+              </button>
+            </div>
+          </div>
         </div>
 
-      )}
+        {view === "table" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-right">
+              <thead>
+                <tr className="border-b border-[#E5EEFF] text-[#586377]">
+                  {[
+                    "رقم القضية",
+                    "صاحب القضية",
+                    "المحامي",
+                    "التاريخ",
+                    "الحالة",
+                    "الإجراءات",
+                  ].map((title) => (
+                    <th
+                      key={title}
+                      className="px-3 py-3.5 font-medium"
+                    >
+                      {title}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
 
-      {/* ================================================= */}
-      {/* ================= CARDS VIEW =================== */}
-      {/* ================================================= */}
-
-      {view === "cards" && (
-
-        <div
-          className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-        >
-
-          {currentData.map((item) => (
-
-            <div
-              key={item.id}
-              className="
-                relative
-                overflow-hidden
-                bg-white
-                border
-                border-[#E5EEFF]
-                rounded-xl
-                p-4
-                transition-all
-                duration-300
-                hover:-translate-y-1
-                hover:shadow-md
-              "
-            >
-
-              {/* DECORATIVE CIRCLE */}
-
-              <div
-                className="
-                  absolute
-                  -left-7
-                  -bottom-7
-                  w-20
-                  h-20
-                  rounded-full
-                  bg-[#EFF4FF]
-                "
-              />
-
-              <div className="relative">
-
-                {/* CARD HEADER */}
-
-                <div
-                  className="flex items-center justify-between mb-4 "
-                >
-
-                  <span
-                    className="
-                      text-xs
-                      text-[#586377]
-                    "
+              <tbody>
+                {currentData.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="border-b border-[#F0F3F8] hover:bg-[#F8FAFD] transition"
                   >
-                    رقم القضية
-                  </span>
+                    <td className="px-3 py-4 font-semibold text-xs text-[#0B1C30]">
+                      {item.caseNumber || "-"}
+                    </td>
 
-                  <Status status={item.status} />
+                    <td className="px-3 py-4">
+                      <div className="flex items-center gap-2.5">
+                        {avatar(
+                          item.clientImage,
+                          item.clientName
+                        )}
 
-                </div>
+                        <div>
+                          <span className="text-xs font-medium text-[#0B1C30]">
+                            {item.clientName}
+                          </span>
 
-                {/* CASE NUMBER */}
+                          <span className="block text-[10px] text-[#586377]">
+                            العميل
+                          </span>
+                        </div>
+                      </div>
+                    </td>
 
-                <h3
-                  className="
-                    text-[#0B1C30]
-                    font-bold
-                    text-lg
-                    mb-4
-                  "
-                >
-                  {item.caseNumber}
-                </h3>
+                    <td className="px-3 py-4">
+                      {lawyersView(item)}
+                    </td>
 
-                {/* OWNER */}
+                    <td className="px-3 py-4 text-xs text-[#586377]">
+                      {item.formattedDate}
+                    </td>
 
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-3
-                    mb-4
-                    pb-4
-                    border-b
-                    border-[#E5EEFF]
-                  "
-                >
+                    <td className="px-3 py-4">
+                      {status(item)}
+                    </td>
 
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="
-                      w-10
-                      h-10
-                      rounded-full
-                      object-cover
-                      border
-                      border-[#E5EEFF]
-                    "
-                  />
+                    <td className="px-3 py-4">
+                      {actions(item)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                  <div className="flex flex-col">
+        {view === "cards" && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {currentData.map((item) => (
+              <div
+                key={item._id}
+                className="relative overflow-hidden bg-white border border-[#E5EEFF] rounded-xl p-4 transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="absolute -left-7 -bottom-7 w-20 h-20 rounded-full bg-[#EFF4FF]" />
 
-                    <span
-                      className="
-                        text-[#0B1C30]
-                        font-semibold
-                        text-sm
-                      "
-                    >
-                      {item.name}
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-[#586377]">
+                      رقم القضية
                     </span>
 
-                    <span
-                      className="
-                        text-[#586377]
-                        text-[11px]
-                      "
-                    >
-                      العميل
-                    </span>
-
+                    {status(item)}
                   </div>
 
-                </div>
+                  <h3 className="mb-4 text-base font-bold text-[#0B1C30]">
+                    {item.caseNumber || "-"}
+                  </h3>
 
-                {/* INFO */}
+                  <div className="pb-4 mb-4 border-b border-[#E5EEFF]">
+                    <div className="flex items-center gap-2.5">
+                      {avatar(
+                        item.clientImage,
+                        item.clientName,
+                        "w-9 h-9"
+                      )}
 
-                <div className="space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium text-[#0B1C30]">
+                          {item.clientName}
+                        </p>
 
-                  <div
-                    className="flex items-center justify-between "
-                  >
+                        <p className="text-[10px] text-[#586377]">
+                          العميل
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                    <span className="text-[#586377]">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-xs text-[#586377]">
                       المحامي
                     </span>
 
-                    <span
-                      className="
-                        text-[#45464D]
-                        font-medium
-                      "
-                    >
-                      {item.lawyer}
-                    </span>
-
+                    {lawyersView(item, true)}
                   </div>
 
-                  <div
-                    className="flex items-center justify-between "
-                  >
-
-                    <span className="text-[#586377]">
-                      نوع القضية
-                    </span>
-
-                    <span
-                      className="
-                        text-[#45464D]
-                        font-medium
-                      "
-                    >
-                      {item.type}
-                    </span>
-
-                  </div>
-
-                  <div
-                    className="flex items-center justify-between "
-                  >
-
-                    <span className="text-[#586377]">
+                  <div className="flex items-center justify-between gap-4 mt-4">
+                    <span className="text-xs text-[#586377]">
                       التاريخ
                     </span>
 
-                    <span className="text-[#45464D]">
-                      {item.date}
+                    <span className="text-xs font-medium text-[#45464D]">
+                      {item.formattedDate}
                     </span>
-
                   </div>
 
+                  <div className="pt-3 mt-4 border-t border-[#E5EEFF]">
+                    {actions(item, true)}
+                  </div>
                 </div>
-
-                {/* ACTIONS */}
-
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    mt-4
-                    pt-3
-                    border-t
-                    border-[#E5EEFF]
-                  "
-                >
-
-                  <button
-                    className="
-                      flex-1
-                      h-9
-                      flex
-                      items-center
-                      justify-center
-                      gap-1.5
-                      rounded-lg
-                      bg-[#E5EEFF]
-                      text-[#315DAA]
-                      text-xs
-                      font-medium
-                      hover:bg-[#D8E5FC]
-                      transition
-                    "
-                  >
-                    <LuEye size={15} />
-                    عرض
-                  </button>
-
-                  <button
-                    title="تعديل"
-                    className="
-                      w-9
-                      h-9
-                      flex
-                      items-center
-                      justify-center
-                      rounded-lg
-                      bg-[#F1F5FC]
-                      text-[#586377]
-                      hover:bg-[#E5EEFF]
-                      transition
-                    "
-                  >
-                    <LuPencil size={15} />
-                  </button>
-
-                  <button
-                    title="حذف"
-                    className="
-                      w-9
-                      h-9
-                      flex
-                      items-center
-                      justify-center
-                      rounded-lg
-                      bg-[#FFF1F1]
-                      text-[#C94A4A]
-                      hover:bg-[#FFE2E2]
-                      transition
-                    "
-                  >
-                    <LuTrash2 size={15} />
-                  </button>
-
-                </div>
-
               </div>
+            ))}
+          </div>
+        )}
 
-            </div>
+        {!currentData.length && (
+          <div className="py-12 text-xs text-center text-[#586377]">
+            لا توجد نتائج مطابقة للفلاتر أو البحث
+          </div>
+        )}
 
-          ))}
+        {totalPages > 0 && (
+          <div className="flex flex-col items-center justify-between gap-4 pt-4 mt-5 border-t border-[#E5EEFF] sm:flex-row">
+            <p className="text-[11px] text-[#586377]">
+              عرض{" "}
+              <span className="font-semibold text-[#0B1C30]">
+                {(page - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              إلى{" "}
+              <span className="font-semibold text-[#0B1C30]">
+                {Math.min(
+                  page * ITEMS_PER_PAGE,
+                  filteredData.length
+                )}
+              </span>{" "}
+              من{" "}
+              <span className="font-semibold text-[#0B1C30]">
+                {filteredData.length}
+              </span>
+            </p>
 
-        </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg border border-[#E5EEFF] text-[#586377] text-xs disabled:opacity-40"
+              >
+                ‹
+              </button>
 
-      )}
-
-      {/* ================================================= */}
-      {/* ================= EMPTY STATE ================== */}
-      {/* ================================================= */}
-
-      {currentData.length === 0 && (
-
-        <div
-          className="
-            py-12
-            text-center
-            text-[#586377]
-            text-sm
-          "
-        >
-          لا توجد نتائج مطابقة للفلاتر أو البحث
-        </div>
-
-      )}
-
-      {/* ================================================= */}
-      {/* ================= PAGINATION ==================== */}
-      {/* ================================================= */}
-
-      {totalPages > 0 && (
-
-        <div
-          className="
-            flex
-            flex-col
-            sm:flex-row
-            items-center
-            justify-between
-            gap-4
-            mt-5
-            pt-4
-            border-t
-            border-[#E5EEFF]
-          "
-        >
-
-          {/* RESULTS */}
-
-          <p className="text-xs text-[#586377]">
-
-            عرض{" "}
-
-            <span
-              className="
-                font-semibold
-                text-[#0B1C30]
-              "
-            >
-              {(page - 1) * itemsPerPage + 1}
-            </span>
-
-            {" "}إلى{" "}
-
-            <span
-              className="
-                font-semibold
-                text-[#0B1C30]
-              "
-            >
-              {Math.min(
-                page * itemsPerPage,
-                filteredData.length
-              )}
-            </span>
-
-            {" "}من{" "}
-
-            <span
-              className="
-                font-semibold
-                text-[#0B1C30]
-              "
-            >
-              {filteredData.length}
-            </span>
-
-          </p>
-
-          {/* PAGINATION */}
-
-          <div
-            className="flex items-center gap-1 "
-          >
-
-            {/* PREVIOUS */}
-
-            <button
-              disabled={page === 1}
-              onClick={() =>
-                setPage((p) => p - 1)
-              }
-              className="
-                w-9
-                h-9
-                rounded-lg
-                border
-                border-[#E5EEFF]
-                text-[#586377]
-                disabled:opacity-40
-                hover:bg-[#F8FAFD]
-                transition
-              "
-            >
-              ‹
-            </button>
-
-            {/* PAGES */}
-
-            {Array.from(
-              { length: totalPages },
-              (_, index) => (
-
-                <button
-                  key={index}
-                  onClick={() =>
-                    setPage(index + 1)
-                  }
-                  className={`
-                    w-9
-                    h-9
-                    rounded-lg
-                    text-xs
-                    font-medium
-                    transition
-
-                    ${
+              {Array.from(
+                { length: totalPages },
+                (_, index) => (
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={() => setPage(index + 1)}
+                    className={`flex items-center justify-center w-8 h-8 rounded-lg text-[11px] font-medium ${
                       page === index + 1
                         ? "bg-[#E5EEFF] text-[#0B1C30]"
                         : "text-[#586377] hover:bg-[#F8FAFD]"
-                    }
-                  `}
-                >
-                  {index + 1}
-                </button>
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              )}
 
-              )
-            )}
-
-            {/* NEXT */}
-
-            <button
-              disabled={page === totalPages}
-              onClick={() =>
-                setPage((p) => p + 1)
-              }
-              className="
-                w-9
-                h-9
-                rounded-lg
-                border
-                border-[#E5EEFF]
-                text-[#586377]
-                disabled:opacity-40
-                hover:bg-[#F8FAFD]
-                transition
-              "
-            >
-              ›
-            </button>
-
+              <button
+                type="button"
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg border border-[#E5EEFF] text-[#586377] text-xs disabled:opacity-40"
+              >
+                ›
+              </button>
+            </div>
           </div>
-
-        </div>
-
-      )}
-
-    </div>
-  );
-};
-
-// =====================================================
-// FILTER SELECT COMPONENT
-// =====================================================
-
-const FilterSelect = ({
-  value,
-  onChange,
-  placeholder,
-  options,
-}) => {
-  return (
-    <div className="relative w-full md:w-48">
-
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="
-          appearance-none
-          w-full
-          h-10
-          pr-3
-          pl-9
-          bg-[#F8FAFD]
-          border
-          border-[#E5EEFF]
-          rounded-lg
-          text-sm
-          text-[#45464D]
-          outline-none
-          cursor-pointer
-          focus:border-[#B8CCF5]
-          transition
-        "
-      >
-
-        <option value="">
-          {placeholder}
-        </option>
-
-        {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-          >
-            {option}
-          </option>
-        ))}
-
-      </select>
-
-      <LuChevronDown
-        size={16}
-        className="
-          absolute
-          left-3
-          top-1/2
-          -translate-y-1/2
-          text-[#586377]
-          pointer-events-none
-        "
-      />
-
-    </div>
-  );
-};
-
-// =====================================================
-// STATUS COMPONENT
-// =====================================================
-
-const Status = ({ status }) => {
-
-  const styles = {
-    "قيد النظر":
-      "bg-[#E5EEFF] text-[#315DAA]",
-
-    "مغلقة":
-      "bg-[#E8F5EC] text-[#31804A]",
-
-    "معلقة":
-      "bg-[#FFF3DC] text-[#A66A00]",
-  };
-
-  return (
-    <span
-      className={`
-        inline-flex
-        items-center
-        px-2.5
-        py-1
-        rounded-md
-        text-[11px]
-        font-medium
-        ${styles[status]}
-      `}
-    >
-      {status}
-    </span>
+        )}
+      </div>
+    </>
   );
 };
 

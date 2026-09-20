@@ -1,10 +1,17 @@
-import React from 'react'
-import ForgetPassword from '../components/ForgetPassword/ForgetPassword.jsx'
+import ForgetPassword from "../components/ForgetPassword/ForgetPassword.jsx";
 
-const page = () => {
-  return <>
-  <ForgetPassword/>
-  </>
-}
+export const metadata = {
+  title: "نسيت كلمة المرور",
+  description: "استعادة كلمة المرور لحسابك في منصة قضاء.",
 
-export default page
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+const Page = () => {
+  return <ForgetPassword />;
+};
+
+export default Page;

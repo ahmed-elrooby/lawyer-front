@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useContext } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -17,11 +17,17 @@ import {
   FaBell,
   FaCog,
   FaEllipsisV,
+  FaUser,
 } from "react-icons/fa";
-
+import { OwnerContext } from "../../../../Providers/LawyerOwner/OwnerProvider.js";
+import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
+import logo from "../../../../Images/قضاء.jpg"
+import Image from "next/image.js";
 const Aside = ({ sidebarOpen, onClose }) => {
+  const {dashboardStatisics,unreadNotifications} = useContext(OwnerContext);
+  const {profile}=useContext(authContext)
   const pathname = usePathname();
-
+console.log(profile)
   const menuItems = [
     {
       title: "الرئيسية",
@@ -37,26 +43,28 @@ const Aside = ({ sidebarOpen, onClose }) => {
       title: "القضايا",
       icon: FaBriefcase,
       href: "/Lawyer_Owner/Cases",
-      badge: "128",
+      badge: dashboardStatisics?.cases?.total || 0,
       badgeClass: "bg-blue-50 text-blue-600",
     },
     {
       title: "العملاء",
       icon: FaUsers,
       href: "/Lawyer_Owner/ClientsPage",
+      badge: dashboardStatisics?.clients?.total || 0,
+      badgeClass: "bg-blue-50 text-blue-600",
     },
     {
       title: "فريق المحامين",
       icon: FaUserTie,
       href: "/Lawyer_Owner/LawyersPage",
-      badge: "12",
+      badge: dashboardStatisics?.lawyers?.total || 0,
       badgeClass: "bg-blue-50 text-blue-600",
     },
     {
       title: "الجلسات",
       icon: FaClock,
       href: "/Lawyer_Owner/Sessions",
-      badge: "47",
+      badge: dashboardStatisics?.sessions?.total || 0,
       badgeClass: "bg-amber-100 text-amber-700",
     },
     {
@@ -74,9 +82,9 @@ const Aside = ({ sidebarOpen, onClose }) => {
       title: "التنبيهات",
       icon: FaBell,
       href: "/Lawyer_Owner/Notifications",
-      badge: "4",
+      badge: unreadNotifications?.count || 0,
       badgeClass: "bg-red-100 text-red-600",
-      badgeBold: true,
+     
     }
   ];
 
@@ -108,21 +116,26 @@ const Aside = ({ sidebarOpen, onClose }) => {
         `}
       >
         {/* ================= Brand ================= */}
-        <div className="mb-5 flex items-center gap-2.5 px-2">
-          <div className="flex items-center justify-center text-white shadow-sm h-9 w-9 rounded-xl bg-slate-900">
-            <span className="text-lg font-extrabold">ق</span>
-          </div>
+<div className="mb-5 flex items-center gap-2.5 px-2">
+  <div className="relative overflow-hidden shadow-sm h-9 w-9 shrink-0 rounded-xl">
+    <Image
+      src={logo}
+      alt="قضاء"
+      fill
+      className="object-cover"
+    />
+  </div>
 
-          <div className="leading-tight">
-            <div className="text-sm font-extrabold text-slate-900">
-              قضاء
-            </div>
+  <div className="leading-tight">
+    <div className="text-sm font-extrabold text-slate-900">
+      قضاء
+    </div>
 
-            <div className="text-[9px] text-slate-400">
-              منصة إدارة مكاتب المحاماة
-            </div>
-          </div>
-        </div>
+    <div className="text-[9px] text-slate-400">
+      منصة إدارة مكاتب المحاماة
+    </div>
+  </div>
+</div>
 
         {/* ================= Office Card ================= */}
         <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
@@ -133,11 +146,11 @@ const Aside = ({ sidebarOpen, onClose }) => {
 
             <div className="flex-1 min-w-0">
               <div className="truncate text-[10px] font-bold text-slate-800">
-                مكتب العدالة
+               {profile?.user?.officeId?.name}
               </div>
 
               <div className="truncate text-[8px] text-slate-400">
-                مكتب محاماة • 48 موظف
+                مكتب محاماة • {dashboardStatisics?.lawyers?.total || 0} موظف
               </div>
             </div>
 
@@ -175,7 +188,7 @@ const Aside = ({ sidebarOpen, onClose }) => {
                       ? "bg-slate-900 text-white"
                       : "justify-start text-slate-600 hover:bg-slate-100"
                   }
-                  ${item.badge ? "justify-between" : ""}
+                  ${item.badge > 0 ? "justify-between" : ""}
                 `}
               >
                 {/* Menu Item */}
@@ -193,19 +206,22 @@ const Aside = ({ sidebarOpen, onClose }) => {
                 </span>
 
                 {/* Badge */}
-                {item.badge && (
-                  <span
-                    className={`
-                      rounded-full
-                      px-1.5 py-0.5
-                      text-[8px]
-                      ${item.badgeClass}
-                      ${item.badgeBold ? "font-bold" : ""}
-                    `}
-                  >
-                    {item.badge}
-                  </span>
-                )}
+{item.badge > 0 && (
+  <span
+    className={`
+      ml-2
+      min-w-[22px]
+      rounded-full
+      px-2 py-0.5
+      text-center
+      text-[8px]
+      ${item.badgeClass}
+      ${item.badgeBold ? "font-bold" : "font-semibold"}
+    `}
+  >
+    {item.badge}
+  </span>
+)}
               </Link>
             );
           })}
@@ -215,14 +231,22 @@ const Aside = ({ sidebarOpen, onClose }) => {
         <Link href="/Lawyer_Owner/Profile" className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
           <div className="flex items-center gap-2">
             {/* Avatar */}
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-              أ
-            </div>
+           <div className="flex items-center justify-center w-8 h-8 overflow-hidden rounded-full shrink-0 bg-slate-200">
+  {profile?.user?.profileImage ? (
+    <img
+      src={profile?.user?.profileImage?.url}
+      alt={profile?.user?.name || "المستخدم"}
+      className="object-cover w-full h-full"
+    />
+  ) : (
+    <FaUser size={12} className="text-slate-400" />
+  )}
+</div>
 
             {/* User Info */}
             <div className="flex-1 min-w-0">
               <div className="truncate text-[10px] font-bold text-slate-800">
-                أحمد الروبي
+               {profile?.user?.name}
               </div>
 
               <div className="truncate text-[8px] text-slate-400">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import {
   Search,
   SlidersHorizontal,
@@ -13,172 +13,193 @@ import {
   MapPin,
   UserRound,
   Gavel,
-  ChevronLeft,
-  ChevronRight,
   X,
   LayoutGrid,
   List,
+  UsersRound,
 } from "lucide-react";
 
+import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider.js";
+import Details from "./Details.jsx";
+import Delete from "./Delete.jsx";
+import UpdateSession from "./UpdateSession.jsx";
+
 const AllSessions = () => {
+  const {
+    sessions = [],
+    setOpenUpdateSession,openUpdateSession,
+    setOpenDeleteSession,openDeleteSession
+  } = useContext(OwnerContext);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("الكل");
   const [lawyerFilter, setLawyerFilter] = useState("الكل");
   const [courtFilter, setCourtFilter] = useState("الكل");
   const [dateFilter, setDateFilter] = useState("الكل");
-
-  // Table / Card
+const [openDetails, setOpenDetails] = useState(false);
   const [viewMode, setViewMode] = useState("table");
 
-  const [selectedSession, setSelectedSession] = useState(null);
+  const [selectSession, setSelectSession] = useState(null);
   const [deleteSession, setDeleteSession] = useState(null);
 
-  const sessions = [
-    {
-      id: 1,
-      time: "09:00 ص",
-      date: "18 سبتمبر 2026",
-      caseNumber: "#1024",
-      caseName: "قضية شركة النور التجارية",
-      lawyer: "أحمد محمد علي",
-      lawyerImage: "https://i.pravatar.cc/150?img=11",
-      court: "محكمة القاهرة",
-      chamber: "الدائرة 12",
-      type: "تجاري",
-      status: "قادمة",
-    },
-    {
-      id: 2,
-      time: "10:30 ص",
-      date: "18 سبتمبر 2026",
-      caseNumber: "#1031",
-      caseName: "قضية أحمد محمود عبد الله",
-      lawyer: "خالد عبد الرحمن",
-      lawyerImage: "https://i.pravatar.cc/150?img=32",
-      court: "محكمة جنوب القاهرة",
-      chamber: "الدائرة 8",
-      type: "أحوال شخصية",
-      status: "جارية",
-    },
-    {
-      id: 3,
-      time: "12:00 م",
-      date: "18 سبتمبر 2026",
-      caseNumber: "#1048",
-      caseName: "قضية مؤسسة المستقبل",
-      lawyer: "محمد أحمد حسن",
-      lawyerImage: "https://i.pravatar.cc/150?img=47",
-      court: "محكمة الجيزة",
-      chamber: "الدائرة 5",
-      type: "مدني",
-      status: "قادمة",
-    },
-    {
-      id: 4,
-      time: "01:30 م",
-      date: "18 سبتمبر 2026",
-      caseNumber: "#1082",
-      caseName: "قضية خالد إبراهيم",
-      lawyer: "سامي محمود",
-      lawyerImage: "https://i.pravatar.cc/150?img=5",
-      court: "محكمة القاهرة",
-      chamber: "الدائرة 15",
-      type: "جنائي",
-      status: "قادمة",
-    },
-    {
-      id: 5,
-      time: "03:00 م",
-      date: "18 سبتمبر 2026",
-      caseNumber: "#1106",
-      caseName: "قضية شركة الأمل",
-      lawyer: "ياسر إبراهيم",
-      lawyerImage: "https://i.pravatar.cc/150?img=44",
-      court: "محكمة الجيزة",
-      chamber: "الدائرة 7",
-      type: "تجاري",
-      status: "قادمة",
-    },
-    {
-      id: 6,
-      time: "09:30 ص",
-      date: "17 سبتمبر 2026",
-      caseNumber: "#1112",
-      caseName: "قضية محمود حسن",
-      lawyer: "عمر حسن",
-      lawyerImage: "https://i.pravatar.cc/150?img=68",
-      court: "محكمة القاهرة",
-      chamber: "الدائرة 4",
-      type: "جنائي",
-      status: "منتهية",
-    },
-    {
-      id: 7,
-      time: "11:00 ص",
-      date: "17 سبتمبر 2026",
-      caseNumber: "#1130",
-      caseName: "قضية شركة الإعمار",
-      lawyer: "أحمد محمد علي",
-      lawyerImage: "https://i.pravatar.cc/150?img=11",
-      court: "محكمة الجيزة",
-      chamber: "الدائرة 9",
-      type: "مدني",
-      status: "مؤجلة",
-    },
-    {
-      id: 8,
-      time: "02:00 م",
-      date: "16 سبتمبر 2026",
-      caseNumber: "#1142",
-      caseName: "قضية محمد السيد",
-      lawyer: "خالد عبد الرحمن",
-      lawyerImage: "https://i.pravatar.cc/150?img=32",
-      court: "محكمة جنوب القاهرة",
-      chamber: "الدائرة 3",
-      type: "أحوال شخصية",
-      status: "منتهية",
-    },
-  ];
+  /* ================================================= */
+  /* STATUS */
+  /* ================================================= */
 
-  const statusStyles = {
-    قادمة: {
+  const statusConfig = {
+    scheduled: {
+      label: "مجدولة",
       badge: "bg-[#E8F0FF] text-[#3559A8]",
       dot: "bg-[#4B70D1]",
     },
-    جارية: {
+
+    attended: {
+      label: "تم الحضور",
       badge: "bg-[#E7F7EF] text-[#168354]",
       dot: "bg-[#21A366]",
     },
-    منتهية: {
-      badge: "bg-[#F0F1F3] text-[#5B616B]",
-      dot: "bg-[#7A818C]",
-    },
-    مؤجلة: {
+
+    postponed: {
+      label: "مؤجلة",
       badge: "bg-[#FFF4D8] text-[#927000]",
       dot: "bg-[#C49A00]",
     },
+
+    completed: {
+      label: "مكتملة",
+      badge: "bg-[#F0F1F3] text-[#5B616B]",
+      dot: "bg-[#7A818C]",
+    },
+
+    cancelled: {
+      label: "ملغاة",
+      badge: "bg-[#FFF1F1] text-[#B24B4B]",
+      dot: "bg-[#B24B4B]",
+    },
   };
 
+  /* ================================================= */
+  /* HELPERS */
+  /* ================================================= */
+
+  const formatDate = (date) => {
+    if (!date) return "غير محدد";
+
+    return new Date(date).toLocaleDateString("ar-EG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formatDateForFilter = (date) => {
+    if (!date) return "";
+
+    return new Date(date).toLocaleDateString("ar-EG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const getLawyers = (session) => {
+    if (!Array.isArray(session?.caseId?.lawyers)) return [];
+
+    return session.caseId.lawyers;
+  };
+
+  const getLawyerNames = (session) => {
+    return getLawyers(session)
+      .map((lawyer) => lawyer?.name)
+      .filter(Boolean);
+  };
+
+  const getClientName = (session) => {
+    if (
+      session?.caseId?.clientId &&
+      typeof session.caseId.clientId === "object"
+    ) {
+      return session.caseId.clientId.name || "غير محدد";
+    }
+
+    return "غير محدد";
+  };
+
+  /* ================================================= */
+  /* DYNAMIC FILTER OPTIONS */
+  /* ================================================= */
+
+  const lawyerOptions = useMemo(() => {
+    const names = sessions.flatMap((session) =>
+      getLawyerNames(session)
+    );
+
+    return ["الكل", ...new Set(names)];
+  }, [sessions]);
+
+  const courtOptions = useMemo(() => {
+    const courts = sessions
+      .map((session) => session?.caseId?.court)
+      .filter(Boolean);
+
+    return ["الكل", ...new Set(courts)];
+  }, [sessions]);
+
+  const dateOptions = useMemo(() => {
+    const dates = sessions
+      .map((session) => formatDateForFilter(session?.sessionDate))
+      .filter(Boolean);
+
+    return ["الكل", ...new Set(dates)];
+  }, [sessions]);
+
+  /* ================================================= */
+  /* FILTER */
+  /* ================================================= */
+
   const filteredSessions = useMemo(() => {
+    const searchValue = search.trim().toLowerCase();
+
     return sessions.filter((session) => {
-      const searchValue = search.toLowerCase();
+      const caseNumber =
+        session?.caseId?.caseNumber?.toString().toLowerCase() || "";
+
+      const title =
+        session?.title?.toLowerCase() || "";
+
+      const court =
+        session?.caseId?.court?.toLowerCase() || "";
+
+      const client =
+        getClientName(session)?.toLowerCase() || "";
+
+      const lawyers = getLawyerNames(session);
 
       const matchesSearch =
-        session.caseName.toLowerCase().includes(searchValue) ||
-        session.caseNumber.toLowerCase().includes(searchValue) ||
-        session.lawyer.toLowerCase().includes(searchValue);
+        !searchValue ||
+        title.includes(searchValue) ||
+        caseNumber.includes(searchValue) ||
+        court.includes(searchValue) ||
+        client.includes(searchValue) ||
+        lawyers.some((name) =>
+          name.toLowerCase().includes(searchValue)
+        );
 
       const matchesStatus =
-        statusFilter === "الكل" || session.status === statusFilter;
+        statusFilter === "الكل" ||
+        statusConfig[session.status]?.label === statusFilter;
 
       const matchesLawyer =
-        lawyerFilter === "الكل" || session.lawyer === lawyerFilter;
+        lawyerFilter === "الكل" ||
+        lawyers.includes(lawyerFilter);
 
       const matchesCourt =
-        courtFilter === "الكل" || session.court === courtFilter;
+        courtFilter === "الكل" ||
+        session?.caseId?.court === courtFilter;
 
       const matchesDate =
-        dateFilter === "الكل" || session.date === dateFilter;
+        dateFilter === "الكل" ||
+        formatDateForFilter(session?.sessionDate) === dateFilter;
 
       return (
         matchesSearch &&
@@ -189,6 +210,7 @@ const AllSessions = () => {
       );
     });
   }, [
+    sessions,
     search,
     statusFilter,
     lawyerFilter,
@@ -196,21 +218,26 @@ const AllSessions = () => {
     dateFilter,
   ]);
 
-  const handleView = (session) => {
-    setSelectedSession(session);
-  };
+  /* ================================================= */
+  /* ACTIONS */
+  /* ================================================= */
+
+
 
   const handleEdit = (session) => {
-    console.log("Edit session:", session);
+    setSelectedSession(null);
+
+    if (setOpenUpdateSession) {
+      setOpenUpdateSession(session);
+    }
   };
 
   const handleDelete = (session) => {
     setDeleteSession(session);
-  };
 
-  const confirmDelete = () => {
-    console.log("Delete session:", deleteSession);
-    setDeleteSession(null);
+    if (setOpenDeleteSession) {
+      setOpenDeleteSession(session);
+    }
   };
 
   const clearFilters = () => {
@@ -226,19 +253,37 @@ const AllSessions = () => {
     lawyerFilter !== "الكل" ||
     courtFilter !== "الكل" ||
     dateFilter !== "الكل" ||
-    search;
+    search.trim();
 
   return (
     <>
-      <section dir="rtl" className="w-full mt-6">
+    {
+  openDetails && (
+        <Details
+          selectSession={selectSession}
+          openDetails={openDetails}
+          setOpenDetails={setOpenDetails}
+        />
+      )
+}
+{
+  openDeleteSession && <Delete selectSession={selectSession}
+/>
+}
+{
+  openUpdateSession && <UpdateSession selectSession={selectSession}/>
+}
+      <section className="w-full mt-6">
         <div className="overflow-hidden rounded-2xl border border-[#E7EAF0] bg-white">
 
           {/* ================= HEADER ================= */}
+
           <div className="border-b border-[#EEF0F4] px-5 py-5">
 
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
               {/* Title */}
+
               <div>
                 <div className="flex items-center gap-2">
 
@@ -260,9 +305,11 @@ const AllSessions = () => {
               </div>
 
               {/* Search + View */}
+
               <div className="flex flex-col w-full gap-3 sm:flex-row xl:w-auto">
 
                 {/* View Toggle */}
+
                 <div className="flex h-11 items-center rounded-xl border border-[#E3E6EC] bg-[#F8F9FB] p-1">
 
                   <button
@@ -292,6 +339,7 @@ const AllSessions = () => {
                 </div>
 
                 {/* Search */}
+
                 <div className="relative w-full sm:w-[330px]">
 
                   <Search
@@ -303,7 +351,7 @@ const AllSessions = () => {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="ابحث باسم القضية أو رقمها أو المحامي..."
+                    placeholder="ابحث بعنوان الجلسة أو رقم القضية أو المحامي..."
                     className="h-11 w-full rounded-xl border border-[#E3E6EC] bg-[#FAFBFC] pr-10 pl-4 text-[12px] text-[#202733] outline-none transition placeholder:text-[#9AA0A9] focus:border-[#8EA4D8] focus:bg-white"
                   />
 
@@ -314,6 +362,7 @@ const AllSessions = () => {
             </div>
 
             {/* ================= FILTERS ================= */}
+
             <div className="flex flex-wrap items-center gap-2 mt-5">
 
               <div className="flex items-center gap-2 text-[11px] font-semibold text-[#656C77]">
@@ -326,47 +375,28 @@ const AllSessions = () => {
                 onChange={setStatusFilter}
                 options={[
                   "الكل",
-                  "قادمة",
-                  "جارية",
-                  "منتهية",
-                  "مؤجلة",
+                  ...Object.values(statusConfig).map(
+                    (item) => item.label
+                  ),
                 ]}
               />
 
               <FilterSelect
                 value={lawyerFilter}
                 onChange={setLawyerFilter}
-                options={[
-                  "الكل",
-                  "أحمد محمد علي",
-                  "محمد أحمد حسن",
-                  "خالد عبد الرحمن",
-                  "سامي محمود",
-                  "ياسر إبراهيم",
-                  "عمر حسن",
-                ]}
+                options={lawyerOptions}
               />
 
               <FilterSelect
                 value={courtFilter}
                 onChange={setCourtFilter}
-                options={[
-                  "الكل",
-                  "محكمة القاهرة",
-                  "محكمة الجيزة",
-                  "محكمة جنوب القاهرة",
-                ]}
+                options={courtOptions}
               />
 
               <FilterSelect
                 value={dateFilter}
                 onChange={setDateFilter}
-                options={[
-                  "الكل",
-                  "18 سبتمبر 2026",
-                  "17 سبتمبر 2026",
-                  "16 سبتمبر 2026",
-                ]}
+                options={dateOptions}
               />
 
               {hasFilters && (
@@ -384,10 +414,11 @@ const AllSessions = () => {
           </div>
 
           {/* ================= CONTENT ================= */}
+
           <div className="w-full">
 
             {/* ================================================= */}
-            {/* TABLE VIEW */}
+            {/* TABLE */}
             {/* ================================================= */}
 
             {viewMode === "table" && (
@@ -407,15 +438,15 @@ const AllSessions = () => {
                       </th>
 
                       <th className="px-4 py-4 text-[11px] font-bold text-[#737A85]">
-                        المحامي المسؤول
+                        العميل
+                      </th>
+
+                      <th className="px-4 py-4 text-[11px] font-bold text-[#737A85]">
+                        المحامي
                       </th>
 
                       <th className="px-4 py-4 text-[11px] font-bold text-[#737A85]">
                         المحكمة
-                      </th>
-
-                      <th className="px-4 py-4 text-[11px] font-bold text-[#737A85]">
-                        نوع القضية
                       </th>
 
                       <th className="px-4 py-4 text-[11px] font-bold text-[#737A85]">
@@ -435,15 +466,20 @@ const AllSessions = () => {
 
                       filteredSessions.map((session) => {
 
-                        const style = statusStyles[session.status];
+                        const style =
+                          statusConfig[session.status] ||
+                          statusConfig.scheduled;
+
+                        const lawyers = getLawyers(session);
 
                         return (
                           <tr
-                            key={session.id}
+                            key={session._id}
                             className="group border-b border-[#F0F1F4] transition hover:bg-[#FBFCFE]"
                           >
 
                             {/* Session */}
+
                             <td className="px-5 py-4">
 
                               <div className="flex items-center gap-3">
@@ -456,22 +492,19 @@ const AllSessions = () => {
                                   />
 
                                   <span className="mt-0.5 text-[9px] font-bold text-[#4C5666]">
-                                    {session.time}
+                                    {session.sessionTime || "--"}
                                   </span>
 
                                 </div>
 
-                                <div>
+                                <div className="min-w-0">
 
                                   <p className="text-[12px] font-bold text-[#1B2635]">
-                                    {session.date}
+                                    {session.title || "جلسة بدون عنوان"}
                                   </p>
 
                                   <p className="mt-1 text-[10px] text-[#8A919C]">
-                                    جلسة #
-                                    {session.id
-                                      .toString()
-                                      .padStart(3, "0")}
+                                    {formatDate(session.sessionDate)}
                                   </p>
 
                                 </div>
@@ -481,101 +514,116 @@ const AllSessions = () => {
                             </td>
 
                             {/* Case */}
+
                             <td className="px-4 py-4">
 
-                              <div>
+                              <span className="rounded-md bg-[#F1F3F7] px-2 py-1 text-[10px] font-semibold text-[#69717D]">
+                                {session?.caseId?.caseNumber
+                                  ? `#${session.caseId.caseNumber}`
+                                  : "غير محددة"}
+                              </span>
 
-                                <p className="max-w-[210px] truncate text-[12px] font-bold text-[#1B2635]">
-                                  {session.caseName}
-                                </p>
+                            </td>
 
-                                <div className="mt-1 flex items-center gap-1.5">
+                            {/* Client */}
 
-                                  <span className="rounded-md bg-[#F1F3F7] px-1.5 py-0.5 text-[9px] font-semibold text-[#69717D]">
-                                    {session.caseNumber}
-                                  </span>
+                            <td className="px-4 py-4">
 
-                                  <span className="text-[10px] text-[#9AA0A9]">
-                                    •
-                                  </span>
+                              <div className="flex items-center gap-2">
 
-                                  <span className="text-[10px] text-[#858C97]">
-                                    {session.chamber}
-                                  </span>
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F3F5F9] text-[#66707D]">
+
+                                  {session?.caseId?.clientId?.profileImage?.url ? (
+                                    <img
+                                      src={
+                                        session.caseId.clientId.profileImage.url
+                                      }
+                                      alt={
+                                        session.caseId.clientId.name || ""
+                                      }
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <UserRound size={14} />
+                                  )}
 
                                 </div>
+
+                                <p className="max-w-[130px] truncate text-[11px] font-semibold text-[#293342]">
+                                  {getClientName(session)}
+                                </p>
 
                               </div>
 
                             </td>
 
-                            {/* Lawyer */}
+                            {/* Lawyers */}
+
                             <td className="px-4 py-4">
 
-                              <div className="flex items-center gap-2.5">
+                              {lawyers.length > 0 ? (
 
-                                <img
-                                  src={session.lawyerImage}
-                                  alt={session.lawyer}
-                                  className="object-cover rounded-full h-9 w-9"
-                                />
+                                <div className="flex -space-x-2 space-x-reverse">
 
-                                <div>
+                                  {lawyers.slice(0, 3).map((lawyer) => (
+                                    <div
+                                      key={lawyer._id}
+                                      title={lawyer.name}
+                                      className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-[#111827] text-[9px] font-bold text-white"
+                                    >
 
-                                  <p className="text-[11px] font-bold text-[#293342]">
-                                    {session.lawyer}
-                                  </p>
+                                      {lawyer?.profileImage?.url ? (
+                                        <img
+                                          src={lawyer.profileImage.url}
+                                          alt={lawyer.name}
+                                          className="object-cover w-full h-full"
+                                        />
+                                      ) : (
+                                        lawyer?.name?.charAt(0) || "م"
+                                      )}
 
-                                  <p className="mt-0.5 text-[9px] text-[#9298A2]">
-                                    المحامي المسؤول
-                                  </p>
+                                    </div>
+                                  ))}
+
+                                  {lawyers.length > 3 && (
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#F1F3F7] text-[9px] font-bold text-[#69717D]">
+                                      +{lawyers.length - 3}
+                                    </div>
+                                  )}
 
                                 </div>
 
-                              </div>
+                              ) : (
+                                <span className="text-[10px] text-[#9298A2]">
+                                  لا يوجد
+                                </span>
+                              )}
 
                             </td>
 
                             {/* Court */}
+
                             <td className="px-4 py-4">
 
                               <div className="flex items-center gap-2">
 
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F5F6F8]">
-
                                   <MapPin
                                     size={13}
                                     className="text-[#737B88]"
                                   />
-
                                 </div>
 
-                                <div>
-
-                                  <p className="text-[11px] font-semibold text-[#384150]">
-                                    {session.court}
-                                  </p>
-
-                                  <p className="mt-0.5 text-[9px] text-[#9298A2]">
-                                    {session.chamber}
-                                  </p>
-
-                                </div>
+                                <p className="max-w-[130px] truncate text-[11px] font-semibold text-[#384150]">
+                                  {session?.caseId?.court || "غير محددة"}
+                                </p>
 
                               </div>
 
                             </td>
 
-                            {/* Type */}
-                            <td className="px-4 py-4">
-
-                              <span className="inline-flex rounded-lg bg-[#F3F5F8] px-2.5 py-1.5 text-[10px] font-semibold text-[#596170]">
-                                {session.type}
-                              </span>
-
-                            </td>
-
                             {/* Status */}
+
                             <td className="px-4 py-4">
 
                               <span
@@ -586,19 +634,23 @@ const AllSessions = () => {
                                   className={`h-1.5 w-1.5 rounded-full ${style.dot}`}
                                 />
 
-                                {session.status}
+                                {style.label}
 
                               </span>
 
                             </td>
 
                             {/* Actions */}
+
                             <td className="px-5 py-4">
 
                               <div className="flex items-center justify-center gap-1.5">
 
                                 <button
-                                  onClick={() => handleView(session)}
+                                  onClick={() => {
+                                    setSelectSession(session);
+                                    setOpenDetails(true);
+                                  }}
                                   title="التفاصيل"
                                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#B7C4E2] hover:bg-[#F3F6FD] hover:text-[#4263B5]"
                                 >
@@ -606,7 +658,10 @@ const AllSessions = () => {
                                 </button>
 
                                 <button
-                                  onClick={() => handleEdit(session)}
+                                  onClick={() => {
+                                    setSelectSession(session)
+                                    setOpenUpdateSession(true)
+                                  }}
                                   title="تعديل"
                                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#C8B88A] hover:bg-[#FFF9E9] hover:text-[#967400]"
                                 >
@@ -614,7 +669,10 @@ const AllSessions = () => {
                                 </button>
 
                                 <button
-                                  onClick={() => handleDelete(session)}
+                                  onClick={() => {
+                                    setSelectSession(session)
+                                    setOpenDeleteSession(true)
+                                  }}
                                   title="حذف"
                                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#E1B9B9] hover:bg-[#FFF3F3] hover:text-[#B24B4B]"
                                 >
@@ -632,14 +690,12 @@ const AllSessions = () => {
                     ) : (
 
                       <tr>
-
                         <td
                           colSpan="7"
                           className="px-5 py-16 text-center"
                         >
                           <EmptyState />
                         </td>
-
                       </tr>
 
                     )}
@@ -652,7 +708,7 @@ const AllSessions = () => {
             )}
 
             {/* ================================================= */}
-            {/* CARD VIEW */}
+            {/* CARD */}
             {/* ================================================= */}
 
             {viewMode === "card" && (
@@ -662,18 +718,23 @@ const AllSessions = () => {
 
                   filteredSessions.map((session) => {
 
-                    const style = statusStyles[session.status];
+                    const style =
+                      statusConfig[session.status] ||
+                      statusConfig.scheduled;
+
+                    const lawyers = getLawyers(session);
 
                     return (
                       <div
-                        key={session.id}
+                        key={session._id}
                         className="group rounded-2xl border border-[#E8EBF0] bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#CDD6E8] hover:shadow-md"
                       >
 
-                        {/* Card Header */}
+                        {/* Header */}
+
                         <div className="flex items-start justify-between gap-3">
 
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center min-w-0 gap-3">
 
                             <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl bg-[#F3F5F9]">
 
@@ -683,22 +744,19 @@ const AllSessions = () => {
                               />
 
                               <span className="mt-0.5 text-[9px] font-bold text-[#4C5666]">
-                                {session.time}
+                                {session.sessionTime || "--"}
                               </span>
 
                             </div>
 
-                            <div>
+                            <div className="min-w-0">
 
-                              <p className="text-[12px] font-bold text-[#1B2635]">
-                                {session.date}
+                              <p className="truncate text-[12px] font-bold text-[#1B2635]">
+                                {session.title || "جلسة بدون عنوان"}
                               </p>
 
                               <p className="mt-1 text-[10px] text-[#8A919C]">
-                                جلسة #
-                                {session.id
-                                  .toString()
-                                  .padStart(3, "0")}
+                                {formatDate(session.sessionDate)}
                               </p>
 
                             </div>
@@ -713,99 +771,137 @@ const AllSessions = () => {
                               className={`h-1.5 w-1.5 rounded-full ${style.dot}`}
                             />
 
-                            {session.status}
+                            {style.label}
 
                           </span>
 
                         </div>
 
                         {/* Case */}
+
                         <div className="mt-4 rounded-xl bg-[#F8F9FB] p-3">
 
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center justify-between gap-2">
 
-                            <p className="text-[12px] font-bold leading-5 text-[#1B2635]">
-                              {session.caseName}
-                            </p>
+                            <div className="flex items-center gap-2">
 
-                            <span className="shrink-0 rounded-md bg-white px-1.5 py-0.5 text-[9px] font-semibold text-[#69717D]">
-                              {session.caseNumber}
+                              <Gavel
+                                size={14}
+                                className="text-[#52627A]"
+                              />
+
+                              <span className="text-[10px] text-[#858C97]">
+                                رقم القضية
+                              </span>
+
+                            </div>
+
+                            <span className="rounded-md bg-white px-2 py-1 text-[9px] font-semibold text-[#69717D]">
+                              {session?.caseId?.caseNumber
+                                ? `#${session.caseId.caseNumber}`
+                                : "غير محددة"}
                             </span>
 
                           </div>
 
-                          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-[#858C97]">
-
-                            <Gavel size={12} />
-
-                            <span>
-                              {session.type}
-                            </span>
-
-                            <span>•</span>
-
-                            <span>
-                              {session.chamber}
-                            </span>
-
-                          </div>
-
-                        </div>
-
-                        {/* Lawyer */}
-                        <div className="flex items-center gap-3 mt-4">
-
-                          <img
-                            src={session.lawyerImage}
-                            alt={session.lawyer}
-                            className="object-cover rounded-full h-9 w-9"
-                          />
-
-                          <div className="min-w-0">
-
-                            <p className="text-[11px] font-bold text-[#293342]">
-                              {session.lawyer}
-                            </p>
-
-                            <p className="mt-0.5 text-[9px] text-[#9298A2]">
-                              المحامي المسؤول
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                        {/* Court */}
-                        <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#EEF0F4] px-3 py-2.5">
-
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F6F8]">
+                          <div className="flex items-center gap-2 mt-3">
 
                             <MapPin
                               size={13}
                               className="text-[#737B88]"
                             />
 
+                            <span className="truncate text-[10px] text-[#858C97]">
+                              {session?.caseId?.court || "المحكمة غير محددة"}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                        {/* Client */}
+
+                        <div className="flex items-center gap-3 mt-4">
+
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F3F5F9] text-[#66707D]">
+
+                            {session?.caseId?.clientId?.profileImage?.url ? (
+                              <img
+                                src={
+                                  session.caseId.clientId.profileImage.url
+                                }
+                                alt={getClientName(session)}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              <UserRound size={15} />
+                            )}
+
                           </div>
 
                           <div className="min-w-0">
 
-                            <p className="truncate text-[10px] font-semibold text-[#384150]">
-                              {session.court}
+                            <p className="truncate text-[11px] font-bold text-[#293342]">
+                              {getClientName(session)}
                             </p>
 
                             <p className="mt-0.5 text-[9px] text-[#9298A2]">
-                              {session.chamber}
+                              العميل
                             </p>
 
                           </div>
 
                         </div>
 
+                        {/* Lawyers */}
+
+                        <div className="mt-4 rounded-xl border border-[#EEF0F4] px-3 py-2.5">
+
+                          <div className="flex items-center gap-2 mb-2">
+
+                            <UsersRound
+                              size={13}
+                              className="text-[#737B88]"
+                            />
+
+                            <span className="text-[9px] text-[#9298A2]">
+                              المحامون
+                            </span>
+
+                          </div>
+
+                          {lawyers.length > 0 ? (
+
+                            <div className="flex flex-wrap gap-1.5">
+
+                              {lawyers.map((lawyer) => (
+                                <span
+                                  key={lawyer._id}
+                                  className="rounded-lg bg-[#F5F6F8] px-2 py-1 text-[9px] font-semibold text-[#596170]"
+                                >
+                                  {lawyer.name}
+                                </span>
+                              ))}
+
+                            </div>
+
+                          ) : (
+                            <span className="text-[9px] text-[#9298A2]">
+                              لا يوجد محامون
+                            </span>
+                          )}
+
+                        </div>
+
                         {/* Actions */}
+
                         <div className="mt-4 flex items-center gap-2 border-t border-[#EEF0F4] pt-3">
 
                           <button
-                            onClick={() => handleView(session)}
+                            onClick={() =>{
+                              setSelectSession(session)
+                              setOpenDetails(true)
+                            }}
                             className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#E4E7EC] text-[10px] font-semibold text-[#66707D] transition hover:border-[#B7C4E2] hover:bg-[#F3F6FD] hover:text-[#4263B5]"
                           >
                             <Eye size={14} />
@@ -813,16 +909,20 @@ const AllSessions = () => {
                           </button>
 
                           <button
-                            onClick={() => handleEdit(session)}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#C8B88A] hover:bg-[#FFF9E9] hover:text-[#967400]"
+  onClick={() => {
+                                    setSelectSession(session)
+                                    setOpenUpdateSession(true)
+                                  }}                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#C8B88A] hover:bg-[#FFF9E9] hover:text-[#967400]"
                             title="تعديل"
                           >
                             <Pencil size={14} />
                           </button>
 
                           <button
-                            onClick={() => handleDelete(session)}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#E1B9B9] hover:bg-[#FFF3F3] hover:text-[#B24B4B]"
+  onClick={() => {
+                                    setSelectSession(session)
+                                    setOpenDeleteSession(true)
+                                  }}                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#66707D] transition hover:border-[#E1B9B9] hover:bg-[#FFF3F3] hover:text-[#B24B4B]"
                             title="حذف"
                           >
                             <Trash2 size={14} />
@@ -848,6 +948,7 @@ const AllSessions = () => {
           </div>
 
           {/* ================= FOOTER ================= */}
+
           <div className="flex flex-col gap-3 border-t border-[#EEF0F4] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
             <p className="text-[10px] text-[#8B919B]">
@@ -868,227 +969,16 @@ const AllSessions = () => {
 
             </p>
 
-            <div className="flex items-center gap-1.5">
-
-              <button
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#8A919C] transition hover:bg-[#F5F6F8]"
-              >
-                <ChevronRight size={14} />
-              </button>
-
-              <button className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-[#0B1C30] px-2 text-[10px] font-bold text-white">
-                1
-              </button>
-
-              <button className="flex h-8 min-w-8 items-center justify-center rounded-lg border border-[#E4E7EC] px-2 text-[10px] font-semibold text-[#68717E] transition hover:bg-[#F5F6F8]">
-                2
-              </button>
-
-              <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] text-[#8A919C] transition hover:bg-[#F5F6F8]">
-                <ChevronLeft size={14} />
-              </button>
-
-            </div>
+            <p className="text-[10px] text-[#9AA0A9]">
+              إجمالي الجلسات المسجلة: {sessions.length}
+            </p>
 
           </div>
 
         </div>
       </section>
 
-      {/* ================================================= */}
-      {/* DETAILS MODAL */}
-      {/* ================================================= */}
-
-      {selectedSession && (
-        <div
-          dir="rtl"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#07111F]/45 p-4 backdrop-blur-[2px]"
-          onClick={() => setSelectedSession(null)}
-        >
-
-          <div
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#EEF0F4] px-5 py-4">
-
-              <div>
-
-                <h3 className="text-[16px] font-bold text-[#0B1C30]">
-                  تفاصيل الجلسة
-                </h3>
-
-                <p className="mt-1 text-[10px] text-[#8A919C]">
-                  {selectedSession.caseNumber}
-                </p>
-
-              </div>
-
-              <button
-                onClick={() => setSelectedSession(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F4F5F7] text-[#707782] transition hover:bg-[#ECEEF1]"
-              >
-                <X size={15} />
-              </button>
-
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-5 space-y-4">
-
-              {/* Case */}
-              <div className="rounded-xl bg-[#F7F9FC] p-4">
-
-                <p className="text-[10px] text-[#8A919C]">
-                  القضية
-                </p>
-
-                <p className="mt-1 text-[13px] font-bold text-[#202A38]">
-                  {selectedSession.caseName}
-                </p>
-
-              </div>
-
-              {/* Info */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-
-                <InfoItem
-                  icon={<Clock3 size={14} />}
-                  label="موعد الجلسة"
-                  value={`${selectedSession.date} - ${selectedSession.time}`}
-                />
-
-                <InfoItem
-                  icon={<UserRound size={14} />}
-                  label="المحامي"
-                  value={selectedSession.lawyer}
-                />
-
-                <InfoItem
-                  icon={<MapPin size={14} />}
-                  label="المحكمة"
-                  value={selectedSession.court}
-                />
-
-                <InfoItem
-                  icon={<Gavel size={14} />}
-                  label="الدائرة"
-                  value={selectedSession.chamber}
-                />
-
-              </div>
-
-              {/* Status */}
-              <div className="flex items-center justify-between rounded-xl border border-[#EEF0F4] px-4 py-3">
-
-                <span className="text-[11px] text-[#7C838D]">
-                  حالة الجلسة
-                </span>
-
-                <span
-                  className={`rounded-full px-3 py-1.5 text-[10px] font-bold ${
-                    statusStyles[selectedSession.status].badge
-                  }`}
-                >
-                  {selectedSession.status}
-                </span>
-
-              </div>
-
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-2 border-t border-[#EEF0F4] px-5 py-4">
-
-              <button
-                onClick={() => setSelectedSession(null)}
-                className="rounded-lg border border-[#E2E5EA] px-4 py-2 text-[11px] font-semibold text-[#646C78] transition hover:bg-[#F7F8FA]"
-              >
-                إغلاق
-              </button>
-
-              <button
-                onClick={() => {
-                  handleEdit(selectedSession);
-                  setSelectedSession(null);
-                }}
-                className="rounded-lg bg-[#0B1C30] px-4 py-2 text-[11px] font-semibold text-white transition hover:bg-[#142A42]"
-              >
-                تعديل الجلسة
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
-      {/* ================================================= */}
-      {/* DELETE MODAL */}
-      {/* ================================================= */}
-
-      {deleteSession && (
-        <div
-          dir="rtl"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#07111F]/45 p-4 backdrop-blur-[2px]"
-          onClick={() => setDeleteSession(null)}
-        >
-
-          <div
-            className="w-full max-w-sm p-6 text-center bg-white shadow-2xl rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF1F1] text-[#B24B4B]">
-              <Trash2 size={19} />
-            </div>
-
-            <h3 className="mt-4 text-[15px] font-bold text-[#202936]">
-              حذف الجلسة؟
-            </h3>
-
-            <p className="mt-2 text-[11px] leading-5 text-[#858C97]">
-
-              هل أنت متأكد من حذف جلسة{" "}
-
-              <span className="font-bold text-[#4A5260]">
-                {deleteSession.caseName}
-              </span>
-
-              ؟
-
-              <br />
-
-              لا يمكن التراجع عن هذا الإجراء.
-
-            </p>
-
-            <div className="flex gap-2 mt-6">
-
-              <button
-                onClick={() => setDeleteSession(null)}
-                className="flex-1 rounded-lg border border-[#E2E5EA] py-2.5 text-[11px] font-semibold text-[#626A76] transition hover:bg-[#F7F8FA]"
-              >
-                إلغاء
-              </button>
-
-              <button
-                onClick={confirmDelete}
-                className="flex-1 rounded-lg bg-[#B24B4B] py-2.5 text-[11px] font-semibold text-white transition hover:bg-[#963D3D]"
-              >
-                حذف الجلسة
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
+    
     </>
   );
 };
@@ -1116,9 +1006,7 @@ const FilterSelect = ({
             key={option}
             value={option}
           >
-            {option === "الكل"
-              ? "الكل"
-              : option}
+            {option}
           </option>
         ))}
 

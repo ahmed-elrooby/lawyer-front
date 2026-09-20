@@ -48,7 +48,7 @@ const {profile,handleLogoutFun} = useContext(authContext);
     },
    
     {
-      title: "إدارة الملفات",
+      title: "صيغ الدعاوي",
       icon: FolderOpen,
       href: "/Lawyer/FilesPage",
     },

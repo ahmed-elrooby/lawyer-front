@@ -279,7 +279,7 @@ const [openDetails, setOpenDetails] = useState(false);
 
             <div className="min-w-0">
               <h2 className="text-[15px] font-bold text-[#0B1C30] sm:text-[16px]">
-                أجندة الجلسات
+               الأجنده القضائيه
               </h2>
 
               <div className="flex flex-wrap items-center gap-2 mt-1">

@@ -5,7 +5,7 @@ import { OwnerContext } from "../../../../../Providers/LawyerOwner/OwnerProvider
 import AddLawyer from "./AddLawyer.jsx";
 
 const Header = () => {
-  const {setOpenAddLawyer,openAddLawyer}=useContext(OwnerContext)
+  const {setOpenAddLawyer,openAddLawyer,lawyers}=useContext(OwnerContext)
   return <>
 {
   openAddLawyer && <AddLawyer/>
@@ -18,11 +18,11 @@ const Header = () => {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-[22px] font-bold text-[#0B1C30]">
-              فريق المحامين والمستشارين
+              فريق العمل
             </h1>
 
             <span className="bg-[#D5E0F8] px-2.5 py-1 rounded-full text-[11px] text-[#45464D] font-bold whitespace-nowrap">
-              12 عضواً مرخصاً
+             {lawyers?.length || 0} عضواً مرخصاً
             </span>
           </div>
 

@@ -44,7 +44,7 @@ const StatsCards = () => {
         valueColor: "text-[#0B1C30]",
       },
       {
-        title: "القضايا المغلقة",
+        title: "القضايا المنتهيه",
         value: closedCases,
         description: "قضية تم الانتهاء منها",
         icon: FileCheck2,

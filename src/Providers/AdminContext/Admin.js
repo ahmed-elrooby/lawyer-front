@@ -113,7 +113,7 @@ const {
     },
     onError: (err) => {
       toast.error(
-        err?.response?.data?.message | "حدث خطأ اثناء اضافة المحامي ",
+        err?.response?.data?.message || "حدث خطأ اثناء اضافة المحامي ",
       );
     },
   });

@@ -60,7 +60,7 @@ const Header = () => {
             "
           >
             <Plus size={16} />
-            إضافة صيغة جديدة
+            إضافة ملف
           </button>
 
         </div>

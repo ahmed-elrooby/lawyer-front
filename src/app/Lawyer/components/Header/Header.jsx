@@ -71,7 +71,7 @@ const Header = () => {
   // الانتقال لصفحة الإشعارات
   const handleGoToNotifications = () => {
     setOpenNotifications(false);
-    window.location.href = "/Lawyer/Notifications";
+    window.location.href = "/Lawyer/Notification";
   };
 
   // الانتقال للملف الشخصي

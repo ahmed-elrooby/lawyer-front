@@ -27,7 +27,6 @@ const Aside = ({ sidebarOpen, onClose }) => {
   const {dashboardStatisics,unreadNotifications} = useContext(OwnerContext);
   const {profile}=useContext(authContext)
   const pathname = usePathname();
-console.log(profile)
   const menuItems = [
     {
       title: "الرئيسية",
@@ -35,15 +34,15 @@ console.log(profile)
       href: "/Lawyer_Owner",
     },
     {
-      title: "مركز القيادة",
+      title: "إدارة المكتب",
       icon: FaCompass,
       href: "/Lawyer_Owner/Managment",
     },
     {
-      title: "القضايا",
-      icon: FaBriefcase,
-      href: "/Lawyer_Owner/Cases",
-      badge: dashboardStatisics?.cases?.total || 0,
+      title: "فريق المحامين",
+      icon: FaUserTie,
+      href: "/Lawyer_Owner/LawyersPage",
+      badge: dashboardStatisics?.lawyers?.total || 0,
       badgeClass: "bg-blue-50 text-blue-600",
     },
     {
@@ -54,10 +53,10 @@ console.log(profile)
       badgeClass: "bg-blue-50 text-blue-600",
     },
     {
-      title: "فريق المحامين",
-      icon: FaUserTie,
-      href: "/Lawyer_Owner/LawyersPage",
-      badge: dashboardStatisics?.lawyers?.total || 0,
+      title: "القضايا",
+      icon: FaBriefcase,
+      href: "/Lawyer_Owner/Cases",
+      badge: dashboardStatisics?.cases?.total || 0,
       badgeClass: "bg-blue-50 text-blue-600",
     },
     {
@@ -77,15 +76,13 @@ console.log(profile)
       icon: FaChartBar,
       href: "/Lawyer_Owner/PerformanceOffice",
     },
-  
     {
       title: "التنبيهات",
       icon: FaBell,
       href: "/Lawyer_Owner/Notifications",
       badge: unreadNotifications?.count || 0,
       badgeClass: "bg-red-100 text-red-600",
-     
-    }
+    },
   ];
 
   return (

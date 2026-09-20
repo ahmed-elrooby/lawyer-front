@@ -12,11 +12,13 @@ const Home = () => {
     <>
       <Cards />
       <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2">
+          <Notification />
         <ComingSeesion />
-        <Cases />
+       
       </div>
       <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2">
-        <Notification />
+               <Cases />
+
         <TimeLine />
       </div>
       <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2">

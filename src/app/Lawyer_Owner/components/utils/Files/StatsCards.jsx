@@ -13,10 +13,10 @@ const StatsCards = () => {
   const { documents = [] } = useContext(OwnerContext);
 
   const stats = useMemo(() => {
-    const totalDocuments = documents.length;
+    const totalDocuments = documents?.length;
 
     // مفيش isActive في الـ document schema حاليًا
-    const activeDocuments = documents.length;
+    const activeDocuments = documents?.length;
 
     // مفيش usageCount في الـ document schema حاليًا
     const mostUsed = 0;

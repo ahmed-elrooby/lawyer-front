@@ -67,13 +67,7 @@ const UpdateProfile = () => {
     setPreview(imageUrl);
   };
 
-  const handleSubmit = async (values) => {
-    const success = await handleUpdateProfileFun(values);
 
-    if (success !== false) {
-      setOpenUpdateProfile(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -106,7 +100,7 @@ const UpdateProfile = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           enableReinitialize
-          onSubmit={handleSubmit}
+          onSubmit={handleUpdateProfileFun}
         >
           {({ setFieldValue }) => (
             <Form>

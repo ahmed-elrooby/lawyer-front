@@ -66,19 +66,12 @@ const UpdateProfile = () => {
     setPreview(imageUrl);
   };
 
-  const handleSubmit = async (values) => {
-    const success = await handleUpdateProfileFun(values);
-
-    if (success !== false) {
-      setOpenUpdateProfile(false);
-    }
-  };
+  
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B1C30]/35 backdrop-blur-sm">
       <div
         className="w-full max-w-lg max-h-[90vh] overflow-hidden border shadow-2xl bg-white border-[#E6E8EC] rounded-2xl"
-        dir="rtl"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E8EAF0] bg-white">
@@ -105,7 +98,7 @@ const UpdateProfile = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           enableReinitialize
-          onSubmit={handleSubmit}
+          onSubmit={handleUpdateProfileFun}
         >
           {({ setFieldValue }) => (
             <Form className="flex flex-col max-h-[calc(90vh-81px)]">

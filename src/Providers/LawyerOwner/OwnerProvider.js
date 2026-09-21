@@ -1288,6 +1288,122 @@ const handleUpdateDocument = async ({ id, values }) => {
   const handleDeleteDocumentFun = (id) => {
     handleDeleteDocumentMutation.mutate(id);
   };
+  // ================================ TASKS ======================
+  const getTasks = async()=>{
+    try{
+      const {data}= await axios.get(`${baseUrl}/tasks`,{
+        headers:{
+          "content-type":"application/json",
+          Authorization:`Bearer ${Cookies.get("token")}`
+        }
+      })
+      return data?.tasks
+    }catch(err){
+      throw err
+    }
+  }
+  const {data:tasks}=useQuery({
+    queryKey:["tasks"],
+    queryFn:getTasks
+  })
+// ===================== ADD TASKS ============
+const handleAddTask = async(values)=>{
+  try{
+    setLoadding(true)
+    const {data}= await axios.post(`${baseUrl}/tasks`,values,{
+      headers:{
+  "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,      }
+    })
+    return data
+  }catch(err){
+    throw err
+  }finally{
+    setLoadding(false)
+  }
+}
+const [openAddTask,setOpenAddTask]=useState(false)
+const taskQuery = useQueryClient()
+const handleAddTaskMutation=useMutation({
+  mutationKey:["addtask"],
+  mutationFn:handleAddTask,
+  onSuccess:(data)=>{
+    toast.success(data?.message || "تم اضافة المهمه بنجاح")
+    taskQuery.invalidateQueries(["tasks"])
+    setOpenAddTask(false)
+  },
+  onError:(err)=>{
+    toast.error(err?.response?.data?.message || "حدث خطأ ")
+  }
+})
+const handleAddTaskFunc = (values)=>{
+  handleAddTaskMutation.mutate(values)
+}
+// =================== DELETE TASK =====================
+const handleDeleteTask =async(id)=>{
+  try{
+    setLoadding(true)
+    const {data}= await axios.delete(`${baseUrl}/tasks/${id}`,{
+      headers:{
+  "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,      }
+    })
+    return data
+  }catch(err){
+    throw err
+  }finally{
+    setLoadding(false)
+  }
+}
+const [openDeleteTask,setOpenDeleteTask]=useState(false)
+const handleDeleteTaskMutation=useMutation({
+  mutationKey:["deletetask"],
+  mutationFn:handleDeleteTask,
+  onSuccess:(data)=>{
+    toast.success(data?.message || "تم حذف المهمه بنجاح")
+    taskQuery.invalidateQueries(["tasks"])
+    setOpenDeleteTask(false)
+  },
+  onError:(err)=>{
+    toast.error(err?.response?.data?.message || "حدث خطاء ")
+  }
+})
+const handleDeleteTaskFun = (id)=>{
+  handleDeleteTaskMutation.mutate(id)
+}
+// ========================= UPDATE TASK ====================
+const handleUpdateTask = async({id,values})=>{
+  try{
+    setLoadding(true)
+    const {data}= await axios.put(`${baseUrl}/tasks/${id}`,values,{
+      headers:{
+  "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,      }
+    })
+    return data
+  }catch(err){
+    throw err
+  }finally{
+    setLoadding(false)
+  }
+}
+const [openUpdateTask,setOpenUpdateTask]=useState(false)
+const handleUpdateTaskMutation=useMutation({
+  mutationKey:["updatetask"],
+  mutationFn:handleUpdateTask,
+  onSuccess:(data)=>{
+    toast.success(data?.message || "تم تعديل المهمه بنجاح")
+    taskQuery.invalidateQueries(["tasks"])
+    setOpenUpdateTask(false)
+  },
+  onError:(err)=>{
+    toast.error(err?.response?.data?.message || "حدث خطاء ")
+  }
+})
+const handleUpdateTaskFun = ({id,values})=>{
+  handleUpdateTaskMutation.mutate({id,values})
+}
+
   return <OwnerContext.Provider value={{lawyers,handleDeleteLawyerFun,openDeleteLawyer
     ,sessions,openAddSession, setOpenAddSession,handleAddSessionFun,setOpenUpdateSession,openUpdateSession,handleUpdateSessionFun,openDeleteSession,handleDeleteSessionFun,setOpenDeleteSession,
   setOpenDeleteLawyer,handleAddLawyerFun,openAddLawyer,clients,handleAddClientFun,openAddClient,handleUpdateClientFun,openUpdateClient,setOpenUpdateClient,setOpenAddClient,
@@ -1295,7 +1411,9 @@ const handleUpdateDocument = async ({ id, values }) => {
   setOpenUpdateLawyer,dashboardStatisics,openUpdateCase,setOpenUpdateCase,handleUpdateCaseFun,cases,handleAddCaseFun,handleDeleteDocumentOfCaseFun,handleDeleteCaseFun,setOpenAddCase,openAddCase,setOpenDeleteCase,openDeleteCase
   ,handleReadNoteFun,handleReadNotificationFun,unreadNotifications,notifications,
   handleDeleteDocumentFun,openDeleteDocument, setOpenDeleteDocument,handleUpdateDocumentFun,
-  openUpdateDocument, setOpenUpdateDocument,openAddDocument, setOpenAddDocument,handleAddDocumentFun,documents
+  openUpdateDocument, setOpenUpdateDocument,openAddDocument, setOpenAddDocument,handleAddDocumentFun,documents,
+  tasks,handleAddTaskFunc,openAddTask,setOpenAddTask,handleDeleteTaskFun,openDeleteTask,setOpenDeleteTask,
+  openUpdateTask,setOpenUpdateTask,handleUpdateTaskFun
   
   }}>
   {children}

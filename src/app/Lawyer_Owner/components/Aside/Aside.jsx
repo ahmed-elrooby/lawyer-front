@@ -18,6 +18,7 @@ import {
   FaCog,
   FaEllipsisV,
   FaUser,
+  FaTasks,
 } from "react-icons/fa";
 import { OwnerContext } from "../../../../Providers/LawyerOwner/OwnerProvider.js";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
@@ -83,6 +84,11 @@ const Aside = ({ sidebarOpen, onClose }) => {
       badge: unreadNotifications?.count || 0,
       badgeClass: "bg-red-100 text-red-600",
     },
+    {
+      title:"توزيع المهام",
+      icon:FaTasks,
+      href:"/Lawyer_Owner/Tasks"
+    }
   ];
 
   return (

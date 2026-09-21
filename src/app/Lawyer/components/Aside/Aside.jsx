@@ -20,7 +20,7 @@ import {
   FileText,
   Bell,
 } from "lucide-react";
-import { FaStickyNote } from "react-icons/fa";
+import { FaStickyNote, FaTasks } from "react-icons/fa";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
 import logo from "../../../../Images/قضاء.jpg"
 import Image from "next/image.js";
@@ -30,7 +30,6 @@ const Aside = ({ collapsed, setCollapsed }) => {
 
   const [openMobile, setOpenMobile] = useState(false);
 const {profile,handleLogoutFun} = useContext(authContext);
-console.log(profile)
   const menu = [
 
     {
@@ -61,6 +60,16 @@ console.log(profile)
       icon: Calendar,
       href: "/Lawyer/Session",
     },
+     ...(profile?.user?.role === "lawyer" && profile?.user?.officeId
+    ? [
+        {
+          title: "توزيع المهام",
+          icon: FaTasks,
+          href: "/Lawyer/Tasks",
+        },
+      ]
+    : []),
+
   {
   title: "الملاحظات",
   icon: FaStickyNote,

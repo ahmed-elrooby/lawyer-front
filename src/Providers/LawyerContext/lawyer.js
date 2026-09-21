@@ -1189,6 +1189,66 @@ const getTimeline = async (caseId = null) => {
 const handleReadNoteFun = () => {
   readNoteMutation.mutate();
 }
+// =============== TASKS ===============
+  const getTasks = async()=>{
+    try{
+      const {data}= await axios.get(`${baseUrl}/tasks`,{
+        headers:{
+          "content-type":"application/json",
+          Authorization:`Bearer ${Cookies.get("token")}`
+        }
+      })
+      return data?.tasks
+    }catch(err){
+      throw err
+    }
+  }
+  const {data:tasks}=useQuery({
+    queryKey:["tasks"],
+    queryFn:getTasks
+  })
+
+  // =====================CHANGE STATUS ============
+ const changeStatus = async ({id, status}) => {
+  try {
+    setLoadding(true);
+
+    const { data } = await axios.patch(
+      `${baseUrl}/tasks/${id}/status`,
+      {
+        status,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      }
+    );
+
+    return data;
+  } catch (err) {
+    throw err;
+  } finally {
+    setLoadding(false);
+  }
+};
+const taskQuery = useQueryClient()
+const [openChange, setOpenChange] = useState(false);
+const handleChangeStatusMutation = useMutation({
+  mutationKey: ["changestatus"],
+  mutationFn: changeStatus,
+  onSuccess: (data) => {
+    toast.success(data?.message || "تم تغيير الحالة بنجاح");
+    taskQuery.invalidateQueries(["tasks"]);
+  },
+  onError: (err) => {
+    toast.error(err?.response?.data?.message || "حدث خطاء اثناء تغيير الحالة");
+  },
+})
+const handleChangeStatusFun = ({id,status}) => {
+  handleChangeStatusMutation.mutate({id,status});
+}
   return (
     <LawyerContext.Provider
       value={{
@@ -1259,7 +1319,7 @@ const handleReadNoteFun = () => {
         unreadNotifications,
 
         handleReadNotificationFun,
-        handleReadNoteFun,
+        handleReadNoteFun,tasks,openChange, setOpenChange,handleChangeStatusFun
       }}
     >
       {children}

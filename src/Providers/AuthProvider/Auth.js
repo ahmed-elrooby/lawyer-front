@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState } from "react";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
@@ -15,7 +15,10 @@ const Auth = ({ children }) => {
 
   const baseUrl = process.env.NEXT_PUBLIC_API;
 
+  const queryClient = useQueryClient();
+
   // ==================== LOGIN ================================
+
   const handleLogin = async (values) => {
     try {
       setLoadding(true);
@@ -30,8 +33,6 @@ const Auth = ({ children }) => {
     }
   };
 
-  const profileQuery = useQueryClient();
-
   const handleLoginMutation = useMutation({
     mutationKey: ["login"],
     mutationFn: handleLogin,
@@ -39,14 +40,27 @@ const Auth = ({ children }) => {
     onSuccess: (data) => {
       toast.success(data?.message || "تم تسجيل الدخول بنجاح");
 
+      // =====================================================
+      // مهم جدًا:
+      // امسح أي Cache خاص بالمستخدم القديم
+      // =====================================================
+      queryClient.clear();
+
+      // =====================================================
+      // خزّن بيانات المستخدم الجديد
+      // =====================================================
+
       Cookies.set("token", data?.token, {
         path: "/",
       });
+
       Cookies.set("role", data?.user?.role, {
         path: "/",
       });
 
-      profileQuery.invalidateQueries(["profile"]);
+      // =====================================================
+      // توجيه المستخدم حسب الـ Role
+      // =====================================================
 
       if (data?.user?.role === "admin") {
         router.replace("/Admin");
@@ -60,7 +74,9 @@ const Auth = ({ children }) => {
     },
 
     onError: (err) => {
-      toast.error(err?.response?.data?.message);
+      toast.error(
+        err?.response?.data?.message || "حدث خطأ أثناء تسجيل الدخول"
+      );
     },
   });
 
@@ -69,6 +85,7 @@ const Auth = ({ children }) => {
   };
 
   // ==================== GET PROFILE ================================
+
   const getProfile = async () => {
     try {
       const { data } = await axios.get(`${baseUrl}/profile`, {
@@ -86,9 +103,13 @@ const Auth = ({ children }) => {
   const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
+
+    // شغّل الـQuery فقط لو فيه Token
+    enabled: !!Cookies.get("token"),
   });
 
   // ==================== USER ROLE ================================
+
   const user = profile?.user;
 
   const isLawyer = user?.role === "lawyer";
@@ -98,6 +119,7 @@ const Auth = ({ children }) => {
   const isIndependentLawyer = isLawyer && !user?.officeId;
 
   // ==================== UPDATE PROFILE ================================
+
   const handleUpdateProfile = async (values) => {
     try {
       setLoadding(true);
@@ -138,13 +160,18 @@ const Auth = ({ children }) => {
     onSuccess: (data) => {
       toast.success(data?.message);
 
-      profileQuery.invalidateQueries(["profile"]);
+      // تحديث بيانات الـProfile
+      queryClient.invalidateQueries({
+        queryKey: ["profile"],
+      });
 
       setOpenUpdateProfile(false);
     },
 
     onError: (error) => {
-      toast.error(error?.response?.data?.message);
+      toast.error(
+        error?.response?.data?.message || "حدث خطأ أثناء تحديث البيانات"
+      );
     },
   });
 
@@ -153,6 +180,7 @@ const Auth = ({ children }) => {
   };
 
   // ==================== LOGOUT ================================
+
   const handleLogout = async () => {
     try {
       setLoadding(true);
@@ -182,6 +210,10 @@ const Auth = ({ children }) => {
     onSuccess: (data) => {
       toast.success(data?.message || "تم تسجيل الخروج بنجاح");
 
+      // =====================================================
+      // امسح بيانات تسجيل الدخول
+      // =====================================================
+
       Cookies.remove("token", {
         path: "/",
       });
@@ -189,6 +221,17 @@ const Auth = ({ children }) => {
       Cookies.remove("role", {
         path: "/",
       });
+
+      // =====================================================
+      // مهم جدًا:
+      // امسح كل Cache الخاص بالمستخدم القديم
+      // =====================================================
+
+      queryClient.clear();
+
+      // =====================================================
+      // رجوع لصفحة Login
+      // =====================================================
 
       router.replace("/");
     },
@@ -205,6 +248,7 @@ const Auth = ({ children }) => {
   };
 
   // ==================== FORGET PASSWORD ================================
+
   const handleForgetPassword = async (values) => {
     try {
       setLoadding(true);
@@ -287,6 +331,8 @@ const Auth = ({ children }) => {
     });
   };
 
+  // ==================== PROVIDER ================================
+
   return (
     <authContext.Provider
       value={{
@@ -295,17 +341,20 @@ const Auth = ({ children }) => {
         profile,
 
         // ==================== USER ====================
+
         user,
         isLawyer,
         isOfficeLawyer,
         isIndependentLawyer,
 
         // ==================== PROFILE ====================
+
         setOpenUpdateProfile,
         openUpdateProfile,
         handleUpdateProfileFun,
 
         // ==================== AUTH ====================
+
         handleLogoutFun,
         handleForgetPasswordFun,
         handleResetPasswordFun,

@@ -20,11 +20,11 @@ import {
   FileText,
   Bell,
 } from "lucide-react";
-import { FaStickyNote, FaTasks } from "react-icons/fa";
+import { FaBalanceScale, FaStickyNote, FaTasks } from "react-icons/fa";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
 import logo from "../../../../Images/قضاء.jpg"
 import Image from "next/image.js";
-
+import { FaGlobe } from "react-icons/fa";
 const Aside = ({ collapsed, setCollapsed }) => {
   const pathname = usePathname();
 
@@ -69,7 +69,18 @@ const {profile,handleLogoutFun} = useContext(authContext);
         },
       ]
     : []),
-
+ {
+  title: "منظومة النيابة العامة",
+  icon: FaBalanceScale,
+  href: "https://www.ppo.gov.eg/ppo/r/ppoportal/ppoportal/home",
+  external: true,
+},
+{
+  title: "مصر الرقمية",
+  icon: FaGlobe,
+  href: "https://digital.gov.eg/",
+  external: true,
+},
   {
   title: "الملاحظات",
   icon: FaStickyNote,
@@ -227,88 +238,121 @@ const {profile,handleLogoutFun} = useContext(authContext);
             </div>
           )}
 
-          {menu.map((item) => {
-            const isActive = pathname === item.href;
+     {menu.map((item) => {
+  const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpenMobile(false)}
-                className={`
-                  relative
-                  flex
-                  items-center
-                  gap-3
-                  px-3
-                  py-3
-                  rounded-xl
-                  transition-all
-                  duration-200
-                  group
+  const ItemContent = (
+    <>
+      {/* Active Indicator */}
+      {isActive && (
+        <span
+          className="absolute right-0 w-1 h-6 -translate-y-1/2 rounded-l-full top-1/2 bg-emerald-500"
+        />
+      )}
 
-                  ${
-                    isActive
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
-                  }
+      {/* Icon */}
+      <item.icon
+        className={`
+          w-5
+          h-5
+          shrink-0
+          transition-colors
 
-                  ${collapsed ? "justify-center" : ""}
-                `}
-              >
-                {/* Active Indicator */}
-                {isActive && (
-                  <span
-                    className="absolute right-0 w-1 h-6 -translate-y-1/2 rounded-l-full top-1/2 bg-emerald-500"
-                  />
-                )}
+          ${
+            isActive
+              ? "text-emerald-400"
+              : "text-slate-400 group-hover:text-white"
+          }
+        `}
+      />
 
-                {/* Icon */}
-                <item.icon
-                  className={`
-                    w-5
-                    h-5
-                    shrink-0
-                    transition-colors
+      {/* Title */}
+      {!collapsed && (
+        <span
+          className={`
+            text-sm
+            font-medium
+            truncate
 
-                    ${
-                      isActive
-                        ? "text-emerald-400"
-                        : "text-slate-400 group-hover:text-white"
-                    }
-                  `}
-                />
+            ${
+              isActive
+                ? "text-emerald-400"
+                : "text-slate-300 group-hover:text-white"
+            }
+          `}
+        >
+          {item.title}
+        </span>
+      )}
 
-                {/* Title */}
-                {!collapsed && (
-                  <span
-                    className={`
-                      text-sm
-                      font-medium
-                      truncate
+      {/* Tooltip when collapsed */}
+      {collapsed && (
+        <span
+          className="absolute invisible px-3 py-2 mr-3 text-xs font-medium text-white transition-all duration-200 translate-x-1 border rounded-lg shadow-xl opacity-0 pointer-events-none right-full whitespace-nowrap bg-slate-800 border-slate-700 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0"
+        >
+          {item.title}
+        </span>
+      )}
+    </>
+  );
 
-                      ${
-                        isActive
-                          ? "text-emerald-400"
-                          : "text-slate-300 group-hover:text-white"
-                      }
-                    `}
-                  >
-                    {item.title}
-                  </span>
-                )}
+  return item.external ? (
+    <a
+      key={item.href}
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => setOpenMobile(false)}
+      className={`
+        relative
+        flex
+        items-center
+        gap-3
+        px-3
+        py-3
+        rounded-xl
+        transition-all
+        duration-200
+        group
+        text-slate-400
+        hover:bg-slate-800
+        hover:text-white
 
-                {/* Tooltip when collapsed */}
-                {collapsed && (
-                  <span
-                    className="absolute invisible px-3 py-2 mr-3 text-xs font-medium text-white transition-all duration-200 translate-x-1 border rounded-lg shadow-xl opacity-0 pointer-events-none right-full whitespace-nowrap bg-slate-800 border-slate-700 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0"
-                  >
-                    {item.title}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        ${collapsed ? "justify-center" : ""}
+      `}
+    >
+      {ItemContent}
+    </a>
+  ) : (
+    <Link
+      key={item.href}
+      href={item.href}
+      onClick={() => setOpenMobile(false)}
+      className={`
+        relative
+        flex
+        items-center
+        gap-3
+        px-3
+        py-3
+        rounded-xl
+        transition-all
+        duration-200
+        group
+
+        ${
+          isActive
+            ? "bg-emerald-500/10 text-emerald-400"
+            : "text-slate-400 hover:bg-slate-800 hover:text-white"
+        }
+
+        ${collapsed ? "justify-center" : ""}
+      `}
+    >
+      {ItemContent}
+    </Link>
+  );
+})}
         </nav>
 
         {/* ================= Bottom Section ================= */}

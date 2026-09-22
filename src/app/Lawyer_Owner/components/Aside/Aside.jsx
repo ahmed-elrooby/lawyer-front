@@ -18,7 +18,7 @@ import {
   FaCog,
   FaEllipsisV,
   FaUser,
-  FaTasks,
+  FaTasks,FaGlobe,FaBalanceScale
 } from "react-icons/fa";
 import { OwnerContext } from "../../../../Providers/LawyerOwner/OwnerProvider.js";
 import { authContext } from "../../../../Providers/AuthProvider/Auth.js";
@@ -71,7 +71,18 @@ const Aside = ({ sidebarOpen, onClose }) => {
       title: "صيغ الدعاوي",
       icon: FaFolder,
       href: "/Lawyer_Owner/Files",
-    },
+    }, {
+  title: "منظومة النيابة العامة",
+  icon: FaBalanceScale,
+  href: "https://www.ppo.gov.eg/ppo/r/ppoportal/ppoportal/home",
+  external: true,
+},
+{
+  title: "مصر الرقمية",
+  icon: FaGlobe,
+  href: "https://digital.gov.eg/",
+  external: true,
+},
     {
       title: "أداء المكتب",
       icon: FaChartBar,
@@ -170,64 +181,79 @@ const Aside = ({ sidebarOpen, onClose }) => {
 
         {/* ================= Navigation ================= */}
         <nav className="flex-1 space-y-1 overflow-y-auto scrollbar">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
+    {menuItems.map((item) => {
+  const Icon = item.icon;
 
-            // Active حسب الـ pathname
-            const isActive = pathname === item.href;
+  // Active حسب الـ pathname
+  const isActive = !item.external && pathname === item.href;
 
-            return (
-              <Link
-                key={item.title}
-                href={item.href}
-                onClick={onClose}
-                className={`
-                  flex w-full items-center rounded-xl
-                  px-3 py-2.5
-                  text-[11px]
-                  transition-colors duration-150
-                  ${
-                    isActive
-                      ? "bg-slate-900 text-white"
-                      : "justify-start text-slate-600 hover:bg-slate-100"
-                  }
-                  ${item.badge > 0 ? "justify-between" : ""}
-                `}
-              >
-                {/* Menu Item */}
-                <span className="flex items-center gap-2">
-                  <Icon
-                    size={13}
-                    className={
-                      isActive
-                        ? "text-white"
-                        : "text-slate-400"
-                    }
-                  />
+  const content = (
+    <>
+      {/* Menu Item */}
+      <span className="flex items-center gap-2">
+        <Icon
+          size={13}
+          className={isActive ? "text-white" : "text-slate-400"}
+        />
 
-                  <span>{item.title}</span>
-                </span>
+        <span>{item.title}</span>
+      </span>
 
-                {/* Badge */}
-{item.badge > 0 && (
-  <span
-    className={`
-      ml-2
-      min-w-[22px]
-      rounded-full
-      px-2 py-0.5
-      text-center
-      text-[8px]
-      ${item.badgeClass}
-      ${item.badgeBold ? "font-bold" : "font-semibold"}
-    `}
-  >
-    {item.badge}
-  </span>
-)}
-              </Link>
-            );
-          })}
+      {/* Badge */}
+      {item.badge > 0 && (
+        <span
+          className={`
+            ml-2
+            min-w-[22px]
+            rounded-full
+            px-2 py-0.5
+            text-center
+            text-[8px]
+            ${item.badgeClass}
+            ${item.badgeBold ? "font-bold" : "font-semibold"}
+          `}
+        >
+          {item.badge}
+        </span>
+      )}
+    </>
+  );
+
+  const className = `
+    flex w-full items-center rounded-xl
+    px-3 py-2.5
+    text-[11px]
+    transition-colors duration-150
+    ${
+      isActive
+        ? "bg-slate-900 text-white"
+        : "justify-start text-slate-600 hover:bg-slate-100"
+    }
+    ${item.badge > 0 ? "justify-between" : ""}
+  `;
+
+  return item.external ? (
+    <a
+      key={item.title}
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClose}
+      className={className}
+    >
+      {content}
+    </a>
+  ) : (
+    <Link
+      key={item.title}
+      href={item.href}
+      onClick={onClose}
+      className={className}
+    >
+      {content}
+    </Link>
+  );
+})}
         </nav>
 
         {/* ================= User ================= */}
